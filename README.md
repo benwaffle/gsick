@@ -1,7 +1,7 @@
 [gsick](http://gsick.com) is a platform to post and discover stuff.
 every post goes in a single channel.
 you can follow users.
-posts by people you follow appear in 'stream'
+posts by people you follow appear in 'stream'.
 new posts by everyone appear in 'new'.
 posts with most votes appear in 'top'.
 you can go to a random post.
