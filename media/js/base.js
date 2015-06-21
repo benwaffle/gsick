@@ -1232,7 +1232,7 @@ function get_pins(uname)
 				}
 				else
 				{
-					if(uname === '')
+					if(loggedin !== 'yes')
 					{
 						setHeader('pins by ' + data['uname'] 
 							      + ' | <a onClick="change_user(\''+data['uname']+'\');return false;" href="#">posts</a>' 
@@ -2099,15 +2099,13 @@ function change_user(uname)
 				}
 				else
 				{
-					if(uname === '')
+					if(loggedin !== 'yes')
 					{
-						setHeader('posts by ' + data['uname'] 
-						       + ' | <a onClick="get_pins(\''+data['uname']+'\');return false;" href="#">pins</a>');
+						setHeader('posts by ' + data['uname']);
 					}
 					else
 					{
 						setHeader('posts by ' + data['uname'] 
-						       + ' | <a onClick="get_pins(\''+data['uname']+'\');return false;" href="#">pins</a>' 
 						       + ' | <a onClick="chat(\''+data['uname']+'\');return false;" href="#">chat</a>'
 							   + ' | <a id="following_status" onClick="toggle_follow(\''+data['uname']+'\');return false;" href="#">' + data['following'] + '</a>');
 					}
