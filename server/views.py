@@ -611,6 +611,8 @@ def get_stream(request):
 			followed.append(f.followed)
 		posts = Post.objects.filter(user__in=followed).order_by('-id')[:10]
 		posts = posts_to_html(request, posts, 'stream')
+	if posts == '':
+		posts = '<center>follow people to see their posts here</center>'
 	data = {'posts':posts}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 

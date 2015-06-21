@@ -2170,6 +2170,12 @@ function toggle_follow(uname)
 
 function stream()
 {
+	if(loggedin !== 'yes')
+	{
+		show_guest_status();
+		clear();
+		return false;
+	}
 	if(typeof event !== 'undefined' && event.which == 2)
 	{
 		window.open('/stream/', "_blank");
