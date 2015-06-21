@@ -1167,19 +1167,16 @@ def pin_post(request):
 	id = request.POST.get('id',0)
 	post = Post.objects.get(id=id)
 	try:
-		pins = Pin.objects.filter(user=request.user,post=post)
-		for p in pins:
-			p.delete()
+		pin = Pin.objects.get(user=request.user,post=post)
 	except:
-		pass
-	pin = Pin(user=request.user,post=post,date=datetime.datetime.now())
-	pin.save()
-	if post.user != request.user:
-		try:
-			a = Alert.objects.get(user=post.user, type='pin', info1=request.user.username, info2=post.id)
-		except:
-			alert = Alert(user=post.user, type='pin', info1=request.user.username, info2=post.id, date=datetime.datetime.now())
-			alert.save()
+		pin = Pin(user=request.user,post=post,date=datetime.datetime.now())
+		pin.save()
+		if post.user != request.user:
+			try:
+				a = Alert.objects.get(user=post.user, type='pin', info1=request.user.username, info2=post.id)
+			except:
+				alert = Alert(user=post.user, type='pin', info1=request.user.username, info2=post.id, date=datetime.datetime.now())
+				alert.save()
 	num_pins = Pin.objects.filter(post=post).count()
 	status = 'ok'
 	data = {'status':status, 'num_pins':num_pins}
