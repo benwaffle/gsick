@@ -1631,7 +1631,10 @@ function check_images()
 			if($(this).height() > $(this).closest('.image_parent').height())
 			{
 				var s = "<div class='too_long_text'> (image is too long, click it to see it in full size) </div>";
-				$(this).closest('.image_parent').after(s)
+				if($(this).closest('.post_parent').find('.too_long_text').length < 1)
+				{
+					$(this).closest('.image_parent').after(s)
+				}
 			}
 		})
 	});

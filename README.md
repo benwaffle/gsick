@@ -5,7 +5,8 @@ posts by people you follow appear in 'stream'.
 new posts by everyone appear in 'new'.
 posts with most votes appear in 'top'.
 you can go to a random post.
-you can also go to channels, user posts and posts the user has voted.
+you can go to channels.
+you can see posts made by a user.
 you can message a user.
 you can completely change the color theme.
 playing video or audio stop playing when you play another one.
