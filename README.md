@@ -13,7 +13,7 @@ playing video or audio stop playing when you play another one.
 you can go back to the same position you were at.
 reponsive design adapts to window resize.
 receive alerts whenever there has been activity on your posts,
-including votes, comments, mentions and replies.
+including follows, votes, comments, mentions and replies.
 
 
 ![](http://i.imgur.com/rDbB7Y8.jpg)
