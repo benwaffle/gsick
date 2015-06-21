@@ -1186,9 +1186,9 @@ function pin(id)
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
-			dialog('pinned');
+			$('#post_' + id).find('.pins_status').html('pinned (' + data['num_pins'] + ')')
 		}
 	});
 	return false;	
