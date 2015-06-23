@@ -27,7 +27,7 @@ from server.models import *
 from server.magik import *
 
 admin_list = ('madprops',)
-forbidden_channels = ('top', 'new', 'chat', 'settings', 'alerts', 'posts', 'pins', 'random')
+forbidden_channels = ('top', 'new', 'chat', 'settings', 'alerts', 'posts', 'pins', 'random', 'stream')
 
 def create_c(request):
 	c = {}

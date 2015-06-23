@@ -1947,6 +1947,11 @@ function change_channel(cname)
 	}
 	else
 	{
+		if(cname === 'stream')
+		{
+			stream();
+			return false;
+		}
 		if(cname === 'new')
 		{
 			new_posts();
@@ -2935,6 +2940,21 @@ function resize_videos()
     check_images();
 }
 
+function get_yt_id(player)
+{
+	for (property in player) 
+	{
+		for (sub in player[property]) 
+		{
+			if(sub === 'id') 
+		  	{
+		  		return(player[property][sub])
+		  	}
+			
+		}
+	} 
+}
+
 function create_yt_players()
 {
 	$("#posts iframe[src^='https://www.youtube.com']").each(function()
@@ -2946,12 +2966,12 @@ function create_yt_players()
             'onStateChange': onYouTubeStateChange
           }
         });
-        var id = $(player.c).prop('id');
+        var id = $(this).attr('id');
         var pid = 0;
         var has_it = false;
         for(var i=0; i < yt_players.length; i++)
 		{
-			pid = $(yt_players[i].c).prop('id')
+			pid = get_yt_id(yt_players[i])
 			if(id === pid)
 			{
 				has_it = true;
@@ -3109,12 +3129,12 @@ function on_vimeo_play(id)
 function onYouTubeStateChange(event)
 {
 
-	var id = $(event.target.c).prop('id');
+	var id = get_yt_id(event.target);
 	if(event.data == YT.PlayerState.PLAYING)
 	{
 		for(var i=0; i<yt_players.length; i++)
 		{
-			var pid = $(yt_players[i].c).prop('id')
+			var pid = get_yt_id(yt_players[i]);
 			if(pid !== id)
 			{
 				yt_players[i].pauseVideo();
@@ -3129,7 +3149,7 @@ function onYouTubeStateChange(event)
 	{
 		for(var i=0; i<yt_players.length; i++)
 		{
-			var pid = $(yt_players[i].c).prop('id')
+			var pid = get_yt_id(yt_players[i]);
 			if(pid !== id)
 			{
 				yt_players[i].pauseVideo();
