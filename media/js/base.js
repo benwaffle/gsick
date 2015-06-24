@@ -1188,7 +1188,14 @@ function pin(id)
 	{
 		if(data['status'] === 'ok')
 		{
-			$('#post_' + id).find('.pins_status').html('pinned (' + data['num_pins'] + ')')
+			if($('#mode').val() === 'post')
+			{
+				$('#posts').find('.pins_status').html('pinned (' + data['num_pins'] + ')')
+			}
+			else
+			{
+				$('#post_' + id).find('.pins_status').html('pinned (' + data['num_pins'] + ')')
+			}
 		}
 	});
 	return false;	

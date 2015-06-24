@@ -68,3 +68,8 @@ class Follow(models.Model):
     followed = models.ForeignKey(User, related_name='followed')
     follower = models.ForeignKey(User, related_name='follower')
     date = models.DateTimeField(default=datetime.datetime.now())
+
+class Visited(models.Model):
+    user = models.ForeignKey(User, related_name='user_visiting')
+    channel = models.CharField(max_length=100, default='')
+    count = models.IntegerField(default=0)

@@ -1258,6 +1258,14 @@ def get_channel(request, cname=''):
 		cname = random_channel_name()
 	posts = ''
 	status = 'ok'
+	if request.user.is_authenticated():
+		try:
+			v = Visited.objects.get(user=request.user, channel=cname)
+			v.count = v.count + 1
+			v.save()
+		except:
+			v = Visited(user=request.user, channel=cname, count=1)
+			v.save()
 	try:
 		channel = Channel.objects.get(name=cname)
 		posts = get_channel_posts(request, channel)
@@ -1274,7 +1282,10 @@ def get_channel_posts(request, channel):
 
 def get_channel_list(request):
 	status = 'ok'
-	channels = random_channels_to_html()
+	if request.user.is_authenticated():
+		channels = visited_channels_to_html(request);
+	else:
+		channels = random_channels_to_html()
 	data = {'status':status, 'channels': channels}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 	
@@ -1928,4 +1939,11 @@ def random_channels_to_html():
 	s = ""
 	for c in channels:
 		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + c.name + "\");return false;'class='channels_item'>" + c.name + "</a>"
+	return s
+
+def visited_channels_to_html(request):
+	visited = Visited.objects.filter(user=request.user).order_by('-count')[:50]
+	s = ""
+	for v in visited:
+		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
 	return s
