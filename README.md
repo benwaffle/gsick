@@ -12,6 +12,7 @@ you can completely change the color theme.
 playing video or audio stop playing when you play another one.
 you can go back to the same position you were at.
 reponsive design adapts to window resize.
+'goto' populates a list of your most visited channels.
 receive alerts whenever there has been activity on your posts,
 including follows, votes, comments, mentions and replies.
 
