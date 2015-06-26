@@ -1689,11 +1689,11 @@ def post_to_html(request, post):
 	num_pins = Pin.objects.filter(post=post).count()
 	if request.user.is_authenticated():
 		if Pin.objects.filter(post=post, user=request.user).count() > 0:
-			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>pinned (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	else:
-		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	if request.user.username in admin_list or request.user == post.user:
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	else:
@@ -1720,11 +1720,11 @@ def posts_to_html(request, posts, mode="channel"):
 		num_pins = Pin.objects.filter(post=p).count()
 		if request.user.is_authenticated():
 			if Pin.objects.filter(post=p, user=request.user).count() > 0:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>pinned (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 			else:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		if mode == "channel":
 			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		elif mode == "new":
@@ -1754,15 +1754,19 @@ def pins_to_html(request, posts, mode="channel"):
 	for p in posts:
 		num_comments = Comment.objects.filter(post=p.post).count()
 		post = ""
+		if request.user.username in admin_list or request.user == p.post.user:
+			delete = "<a onClick='delete_post(\""+str(p.post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
+		else:
+			delete = ""
 		num_pins = Pin.objects.filter(post=p.post).count()
 		if request.user.is_authenticated():
 			if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>pinned (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 			else:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>pin (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
-		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='change_channel(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='change_channel(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent'>"
 		post = post + 	"<div class='post_container'>"
@@ -1886,7 +1890,7 @@ def alerts_to_html(request, alerts):
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':	
 				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
-				s = s + ' pinned your '
+				s = s + ' appreciated your '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'

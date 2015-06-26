@@ -4,7 +4,8 @@ you can follow users.
 posts by people you follow appear in 'stream'.
 new posts by everyone appear in 'new'.
 posts with most votes appear in 'top'.
-you can go to a random post.
+posts you've made appear in 'posts'
+posts you've appreciated appear in 'pins'.
 you can go to channels.
 you can see posts made by a user.
 you can message a user.
@@ -17,6 +18,6 @@ receive alerts whenever there has been activity on your posts,
 including follows, votes, comments, mentions and replies.
 
 
-![](http://i.imgur.com/rDbB7Y8.jpg)
+![](http://i.imgur.com/c71emms.jpg)
 
 ![](http://i.imgur.com/BM3QEBS.jpg)

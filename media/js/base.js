@@ -1190,11 +1190,11 @@ function pin(id)
 		{
 			if($('#mode').val() === 'post')
 			{
-				$('#posts').find('.pins_status').html('pinned (' + data['num_pins'] + ')')
+				$('#posts').find('.pins_status').html('appreciated (' + data['num_pins'] + ')')
 			}
 			else
 			{
-				$('#post_' + id).find('.pins_status').html('pinned (' + data['num_pins'] + ')')
+				$('#post_' + id).find('.pins_status').html('appreciated (' + data['num_pins'] + ')')
 			}
 		}
 	});
