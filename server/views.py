@@ -36,7 +36,13 @@ def create_c(request):
 
 def main(request, mode='start', info=''):
 	c = create_c(request)
-	c['mode'] = mode
+	if mode == 'start':
+		if request.user.is_authenticated():
+			c['mode'] = 'stream'
+		else:
+			c['mode'] = 'new'
+	else:
+		c['mode'] = mode
 	c['info'] = info
 	c['loggedin'] = 'no'
 	c['username'] = ''
