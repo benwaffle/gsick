@@ -3257,6 +3257,14 @@ function delete_post(id)
 		{
 			$('#post_' + id).remove();
 		}
+		if($('#mode').val() === 'stream')
+		{
+			$('#post_' + id).remove();
+		}
+		if($('#mode').val() === 'pins')
+		{
+			$('#post_' + id).remove();
+		}
 	});
     return false;        
 }
