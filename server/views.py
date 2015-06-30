@@ -1885,7 +1885,6 @@ def theme_to_html(request):
 	
 def alerts_to_html(request, alerts):
 	ss = ''
-	eo = get_embed_option(request.user)
 	for a in alerts:
 		s = ''
 		try:
@@ -1905,10 +1904,7 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
 				s = s + ' commented on your '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'		
-				if eo == 'embed':
-					s = s + '<div class="text2" style="padding-top:5px">' + ultralize(comment.content) + '</div>'	
-				else:
-					s = s + '<div class="text2" style="padding-top:5px">' + urlize(comment.content) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'mention':
@@ -1916,10 +1912,7 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
 				s = s + ' mentioned you in a '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
-				if eo == 'embed':
-					s = s + '<div class="text2" style="padding-top:5px">' + ultralize(comment.content) + '</div>'
-				else:
-					s = s + '<div class="text2" style="padding-top:5px">' + urlize(comment.content) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'reply':
@@ -1928,12 +1921,9 @@ def alerts_to_html(request, alerts):
 				s = s + ' replied to you in a '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 				s = s + "<div style=''>----------------------</div>"
-				s = s + "<div class='reply' style='width:100%;float:left'>" + linebreaks(ultralize(comment.reply.content)) + "</div>"
+				s = s + "<div class='reply' style='width:100%;float:left'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
 				s = s + "<div style='clear:both'>----------------------</div>"
-				if eo == 'embed':
-					s = s + "<div class='text2' style=''>" + linebreaks(ultralize(comment.content)) + "</div>"
-				else:
-					s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
+				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			s = s + '</div>'
