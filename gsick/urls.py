@@ -8,7 +8,7 @@ handler500 = 'server.views.error'
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 urlpatterns = patterns('',
-	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root':os.path.join(BASE_DIR, 'media')}),
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve', {'document_root':os.path.join(BASE_DIR, 'media')}),
     (r'^enter/$', 'server.views.enter'),
     (r'^logout/$', 'server.views.logout'),
     (r'^check_login/$', 'server.views.check_login'),
@@ -100,6 +100,8 @@ urlpatterns = patterns('',
     (r'^load_more_alerts/$', 'server.views.load_more_alerts'),
     (r'^reply_to_comment/$', 'server.views.reply_to_comment'),
     (r'^toggle_follow/$', 'server.views.toggle_follow'),
+    (r'^paste/$', 'server.views.paste_form'),
+    (r'^paste/(?P<id>\w+)/$', 'server.views.show_paste'),
     (r'^(?P<channel>\w+)/$', 'server.views.show_channel'),
     (r'^$', 'server.views.main'),
 )

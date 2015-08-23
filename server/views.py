@@ -1802,11 +1802,11 @@ def comments_to_html(request,comments):
 			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
 		s = s +   "<time datetime='" + c.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(c.date)) +"</time>"
 		if c.reply:
-			s = s + "<div style='float:left'> ----------------- &nbsp;quote by &nbsp;</div>" + "<a style='float:left' onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>" + "<div style='float:left'> &nbsp;&nbsp;----------------- </div>"
-			s = s + "<div style='clear:both;padding-top:8px'></div>"
-			s = s + "<div style='width:100%;float:left;' class='comment_content reply'>" + linebreaks(urlize(c.reply.content)) + "</div>"
-			s = s + "<div style='clear:both;padding-bottom:8px'></div>"
-			s = s + "<div style='padding-bottom:10px'>---------------------------------------------------------</div>"
+			s = s + "<div class='quote_body'>"
+			s = s + "<span> quote by </span>" + "<a class='quote_username' onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>"
+			s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(c.reply.content)) + "</div>"
+			s = s + "</div>"
+			s = s + "<div style='padding-bottom:8px'></div>"
 		s = s +   "<div class='comment_content text2'>" + linebreaks(urlize(c.content)) + "</div>"
 		s = s +  "</div>"
 		s = s + "</div>"
@@ -1920,9 +1920,11 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
 				s = s + ' replied to you in a '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
-				s = s + "<div style=''>----------------------</div>"
-				s = s + "<div class='reply' style='width:100%;float:left'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
-				s = s + "<div style='clear:both'>----------------------</div>"
+				s = s + "<div style='padding-top:8px'></div>"
+				s = s + "<div class='quote_body'>"
+				s = s + "<div class='reply'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
+				s = s + "</div>"
+				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
@@ -1946,3 +1948,23 @@ def visited_channels_to_html(request):
 	for v in visited:
 		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
 	return s
+
+@csrf_exempt
+def paste_form(request):
+	if request.method == 'POST':
+		text = request.POST['text']
+		if len(text) > 100000 or len(text.strip()) < 1:
+			c = create_c(request)
+			return render_to_response('paste_form.html', c, context_instance=RequestContext(request))	
+		paste = Paste(content=text, date=datetime.datetime.now())
+		paste.save()
+		return HttpResponseRedirect('/paste/' + str(paste.id))
+	else:
+		c = create_c(request)
+		return render_to_response('paste_form.html', c, context_instance=RequestContext(request))
+
+def show_paste(request, id):
+	c = create_c(request)
+	paste = Paste.objects.get(id=id)
+	c['paste'] = paste
+	return render_to_response('paste.html', c, context_instance=RequestContext(request))

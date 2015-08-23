@@ -1,0 +1,93 @@
+<html>
+	<head> 
+		<title> paste </title>
+	    <link rel="icon" href="favicon.ico" type="image/x-icon">
+	    <link rel="shortcut icon" href="../site_media/img/favicon.ico" type="image/x-icon"> 
+    	<script type="text/javascript" src="/site_media/js/jquery.js"></script>
+        <style>
+
+	    	body, html
+	    	{
+				height: 100%;
+	    		margin: 0px;
+	    		padding: 0px;
+	    		background-color: #2D2D2D;
+	    	}
+	    	body 
+	    	{
+	    	    display: flex;
+	    	    flex-direction: column;
+	    	}
+	    	#top
+	    	{
+	    	    margin: 0; 
+	    	    padding: 0;
+	    	    padding-top: 5px;
+	    	    padding-bottom: 20px;
+	    		top: 0;
+	    		height: 2em;
+	            background-color: #2D2D2D;
+	    	}
+	    	.menu
+	    	{
+	    		color: white;
+	    		font-size: 2em;
+	    		padding-left: 10px;
+	    		font-family: serif;
+	    		cursor: pointer;
+	    	}
+	    	#form
+	    	{
+	    		position: relative;
+	    		bottom: 0;
+	            background-color: #2D2D2D;
+	            margin: 0; 
+	            padding: 0;
+				height: 100%;
+				width: 100%;
+	    	}
+	    	#text
+	    	{
+	    		position: absolute;
+	            background-color: #2D2D2D;
+	            margin: 0; 
+	            padding: 0;
+				overflow: auto;
+				height: 100%;
+				width: 100%;
+				resize: none;
+				border: none;
+				color: white;
+				padding-left: 10px;
+				font-size: 1.3em;
+	    	}
+
+        </style>
+	    <script>
+
+	    	function save()
+	    	{
+	    		var form = document.getElementById('form');
+	    		form.submit();
+	    	}
+
+		    $(function()
+		    {
+		    	$('#text').focus();
+		    })
+
+        </script>
+	</head>
+
+	<body> 
+
+		<div id='top'>
+			<div class='menu' onclick='save();'> save </div>
+		</div>
+
+		<form name='form' id='form' method='post' action='.'> 
+			<textarea name='text' id='text'></textarea>
+		</form>
+
+	</body>
+</html>

@@ -538,6 +538,14 @@ function update_theme()
 	{
 		$('.nicescroll-cursors').css('background-color', theme_scroll_background)
 	}
+	if(theme_background !== '' && theme_text !== '')
+	{
+		$('.quote_body').css('background-color', theme_text);
+		$('.quote_body').css('color', theme_background);
+		$('.quote_username:link').css('color', theme_background);
+		$('.quote_username:visited').css('color', theme_background);
+		$('.quote_username:hover').css('color', theme_background);
+	}
 }
 
 function notes()
@@ -2636,27 +2644,27 @@ function refresh_user()
 function refresh()
 {
 	mode = $('#mode').val();
-	if(mode=='channel')
+	if(mode === 'channel')
 	{
 		//refresh_channel();
 	}
-	if(mode=='user')
+	if(mode === 'user')
 	{
 		//refresh_user();
 	}
-	if(mode=='chat')
+	if(mode === 'chat')
 	{
 		refresh_chat();
 	}
-	if(mode=='inbox')
+	if(mode === 'inbox')
 	{
 		refresh_inbox();
 	}
-	if(mode=='chatall')
+	if(mode === 'chatall')
 	{
 		refresh_chatall();
 	}
-	if(mode=='sent')
+	if(mode === 'sent')
 	{
 		refresh_sent();
 	}

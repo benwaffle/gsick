@@ -73,3 +73,7 @@ class Visited(models.Model):
     user = models.ForeignKey(User, related_name='user_visiting')
     channel = models.CharField(max_length=100, default='')
     count = models.IntegerField(default=0)
+
+class Paste(models.Model):
+    content = models.TextField(max_length=100000, default=None, null=False) 
+    date = models.DateTimeField(default=datetime.datetime.now())

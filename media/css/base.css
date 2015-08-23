@@ -426,13 +426,6 @@ a
     word-wrap:break-word;
 }
 
-.reply
-{
-    font-size:15px;
-    word-wrap:break-word;
-    font-style:italic;
-}
-
 .comment_container
 {
     padding-top:20px;
@@ -670,4 +663,21 @@ a:hover
     padding-top: 10px;
     padding-bottom: 10px;
     font-size:15px;
+}
+
+.quote_body
+{
+
+}
+
+a.quote_username:link, a.quote_username:visited, a.quote_username:hover
+{
+    color: #0d0d0d;
+    text-decoration: underline;
+}
+
+.reply
+{
+    font-size: 15px;
+    word-wrap: break-word;
 }

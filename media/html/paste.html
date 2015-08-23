@@ -1,0 +1,162 @@
+<html>
+	<head> 
+		<title> paste </title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon">
+	    <link rel="shortcut icon" href="../site_media/img/favicon.ico" type="image/x-icon"> 
+    	<link rel="stylesheet" type="text/css" href="/site_media/css/tomorrow-night-eighties.css"> 
+    	<script type="text/javascript" src="/site_media/js/jquery.js"></script>
+        <script type="text/javascript" src="/site_media/js/highlight.pack.js"></script>
+    	<script type="text/javascript" src="/site_media/js/timeago.js"></script>
+        <style>
+
+	    	body, html
+	    	{
+				height: 100%;
+	    		margin: 0px;
+	    		padding: 0px;
+	    		background-color: #2D2D2D;
+	    	}
+	    	body 
+	    	{
+	    	    display: flex;
+	    	    flex-direction: column;
+	    	}
+	    	#top
+	    	{
+	    	    margin: 0; 
+	    	    padding: 0;
+	    	    padding-top: 5px;
+	    	    padding-bottom: 20px;
+	    		top: 0;
+	    		height: 2em;
+	            background-color: #2D2D2D;
+	    	}
+	    	.menu
+	    	{
+	    		color: white;
+	    		font-size: 2em;
+	    		padding-left: 10px;
+	    		padding-right: 40px;
+	    		font-family: serif;
+	    		cursor: pointer;
+	    		float: left;
+	    	}
+	    	#container
+	    	{
+	    		position: relative;
+	    		bottom: 0;
+	            margin: 0; 
+	            padding: 0;
+				overflow: auto;
+				height: 100%;
+	    	}
+	    	pre
+	    	{
+	    		max-height: 100%;
+	    		margin: 0px;
+	    	}
+	    	code
+	    	{   max-height: 100%;     
+	    		padding: 0px;
+	    		padding: 0px;
+	    		font-size: 1.3em;
+	    	}
+
+        </style>
+
+	    <script>
+
+	    	function goto_new()
+	    	{
+	    		window.location = '..'
+	    	}
+
+	    	function select_all()
+	    	{
+	    		var doc = document
+	    		    , text = doc.getElementById('code')
+	    		    , range, selection
+	    		;    
+	    		if (doc.body.createTextRange) {
+	    		    range = document.body.createTextRange();
+	    		    range.moveToElementText(text);
+	    		    range.select();
+	    		} else if (window.getSelection) {
+	    		    selection = window.getSelection();        
+	    		    range = document.createRange();
+	    		    range.selectNodeContents(text);
+	    		    selection.removeAllRanges();
+	    		    selection.addRange(range);
+	    		}
+	    	}
+
+	    	function resize()
+	    	{
+	        	var container = document.getElementById('container');
+
+	        	$('code').height($('#container').height() + 100);
+
+	        	var counter = 0;
+
+	            while(true)
+	            {
+	            	counter += 1;
+	            	
+	            	if(counter > $('#container').height())
+	            	{
+	            		break;
+	            	}
+
+	            	if(container.offsetHeight < container.scrollHeight)
+	            	{
+	            		$('code').height($('code').height() - 1);
+	            	}
+	            	else
+	            	{
+	            		break;
+	            	}	
+	            }
+
+	    	}
+
+            $(function()
+            {
+            	hljs.configure(
+            	{
+            		tabReplace: '    '
+            	});
+
+            	$('pre code').each(function(i, block) 
+            	{
+            		hljs.highlightBlock(block);
+            	});
+
+            	$('code').height($('#container').height() / 2);
+
+            	resize();
+
+            	$(window).resize(function()
+            	{
+            		resize();
+            	})
+
+            	$('#date').timeago();
+            })
+
+        </script>
+
+	</head>
+
+	<body> 
+
+		<div id='top'>
+			<div class='menu' onclick='goto_new();'> new </div>
+			<div class='menu' onclick='select_all()'> select all </div>
+		</div>
+
+		<div id='container'>
+			<pre><code id='code'>{{ paste.content }}</code></pre>
+		</div>
+
+	</body>
+</html>
