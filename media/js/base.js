@@ -3817,7 +3817,7 @@ function activate_refresh()
 	setInterval(function()
 	{
 		refresh();
-	},60000);
+	},30000);
 }
 
 function activate_mousewheel()
