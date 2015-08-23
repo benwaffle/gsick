@@ -1803,7 +1803,7 @@ def comments_to_html(request,comments):
 		s = s +   "<time datetime='" + c.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(c.date)) +"</time>"
 		if c.reply:
 			s = s + "<div class='quote_body'>"
-			s = s + "<span> quote by </span>" + "<a class='quote_username' onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>"
+			s = s + "<span> quote by </span>" + "<a class='quote_username' onClick='change_user(\"" + c.reply.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>"
 			s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(c.reply.content)) + "</div>"
 			s = s + "</div>"
 			s = s + "<div style='padding-bottom:8px'></div>"
