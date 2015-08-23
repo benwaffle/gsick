@@ -681,3 +681,8 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     font-size: 15px;
     word-wrap: break-word;
 }
+
+.comment_content
+{
+    padding-top: 5px;
+}
