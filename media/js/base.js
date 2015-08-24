@@ -3238,6 +3238,14 @@ function delete_channel(cname)
 
 function delete_post(id)
 {
+	var html = $('#delete_post_' + id).html();
+
+	if(html === 'delete')
+	{
+		$('#delete_post_' + id).html('click again to delete');
+		return;
+	}
+
 	$.post('/delete_post/',
 		{
         id:id,
@@ -3249,36 +3257,27 @@ function delete_post(id)
 		{
 			my_history();
 		}
-		if($('#mode').val() === 'channel')
+		else
 		{
-			$('#post_' + id).remove();
-		}
-		if($('#mode').val() === 'new')
-		{
-			$('#post_' + id).remove();
-		}
-		if($('#mode').val() === 'top')
-		{
-			$('#post_' + id).remove();
-		}
-		if($('#mode').val() === 'user')
-		{
-			$('#post_' + id).remove();
-		}
-		if($('#mode').val() === 'stream')
-		{
-			$('#post_' + id).remove();
-		}
-		if($('#mode').val() === 'pins')
-		{
-			$('#post_' + id).remove();
+			$('#post_' + id).fadeOut(500, function()
+			{
+				$(this).remove();
+			});
 		}
 	});
-    return false;        
+    return false;
 }
 
 function delete_comment(id)
 {
+	var html = $('#delete_comment_' + id).html();
+
+	if(html === 'delete')
+	{
+		$('#delete_comment_' + id).html('click again to delete');
+		return;
+	}
+
 	$.post('/delete_comment/',
 		{
         id:id,
@@ -3286,7 +3285,10 @@ function delete_comment(id)
 		},
 	function(data) 
 	{
-		$('#comment_' + id).remove();
+		$('#comment_' + id).fadeOut(500, function()
+		{
+			$(this).remove();
+		});
 	});
     return false;        
 }

@@ -1701,7 +1701,7 @@ def post_to_html(request, post):
 	else:
 		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	if request.user.username in admin_list or request.user == post.user:
-		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
+		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_post_" + str(post.id) + "' onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	else:
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	s = s + 	    "<time datetime='" + post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(post.date)) +"</time>"
@@ -1720,7 +1720,7 @@ def posts_to_html(request, posts, mode="channel"):
 		num_comments = Comment.objects.filter(post=p).count()
 		post = ""
 		if request.user.username in admin_list or request.user == p.user:
-			delete = "<a onClick='delete_post(\""+str(p.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
+			delete = "<a id='delete_post_" + str(p.id) + "' onClick='delete_post(\""+str(p.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
 		num_pins = Pin.objects.filter(post=p).count()
@@ -1761,7 +1761,7 @@ def pins_to_html(request, posts, mode="channel"):
 		num_comments = Comment.objects.filter(post=p.post).count()
 		post = ""
 		if request.user.username in admin_list or request.user == p.post.user:
-			delete = "<a onClick='delete_post(\""+str(p.post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
+			delete = "<a id='delete_post_" + str(p.post.id) + "' onClick='delete_post(\""+str(p.post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
 		num_pins = Pin.objects.filter(post=p.post).count()
@@ -1797,7 +1797,7 @@ def comments_to_html(request,comments):
 		s = s +  "<div class='container'>"
 		s = s +   "<input type=\"hidden\" value=\"" + str(c.id) + "\" class=\"comment_id\">"
 		if request.user.username in admin_list or request.user == c.user:
-			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='delete_comment(\""+str(c.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;<a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
+			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_comment_" + str(c.id) + "' onClick='delete_comment(\""+str(c.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;<a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
 		else:
 			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
 		s = s +   "<time datetime='" + c.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(c.date)) +"</time>"
