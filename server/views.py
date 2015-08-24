@@ -1921,7 +1921,7 @@ def alerts_to_html(request, alerts):
 				s = s + linebreaks(urlize(comment.reply.content))
 				s = s + "<br> ---------------------------------------------------------"
 				s = s + "</div>"
-				s = s + "<div style='padding-bottom:8px'></div>"
+				s = s + "<div style='padding-bottom:4px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
