@@ -435,11 +435,6 @@ def error_comment(request, content, id):
 		return 'empty'
 	if len(content) > 2000:
 		return 'toobig'
-	try:
-		c = Comment.objects.get(user=request.user,post=post,content=content)
-		return 'duplicate'
-	except:
-		pass
 	return 'ok'
 
 def open_post(request, id=None):
@@ -1921,8 +1916,10 @@ def alerts_to_html(request, alerts):
 				s = s + ' replied to you in a '
 				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
-				s = s + "<div class='quote_body'>"
-				s = s + "<div class='reply'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
+				s = s + "<div class='reply'>"
+				s = s + "------------------------ <span style='font-style:italic;font-size:12px'> you said </span> ------------------------<br>"
+				s = s + linebreaks(urlize(comment.reply.content))
+				s = s + "<br> ---------------------------------------------------------"
 				s = s + "</div>"
 				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
