@@ -1,7 +1,7 @@
 html, body {
     height:100% auto;
     padding: 0;
-    font-size: 15px;
+    font-size: 16px;
     font-family: Verdana, "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Arial,sans-serif;
     overflow: hidden;
 }
@@ -22,7 +22,7 @@ html, body {
     background:#eee;
     border-top:4px solid #000;
     margin:0;
-    padding:6px 15px !important;
+    padding:6px 16px !important;
     text-align:right;
 }
 /* column container */
@@ -376,8 +376,8 @@ input[type=text], input[type=password], textarea, select, .vTextField {
 
 #divider {
     border-top: 1px solid  #777777;
-    margin-top: 15px;
-    padding-bottom:15px;
+    margin-top: 16px;
+    padding-bottom:16px;
     border-color:#000;
 }
 
@@ -421,7 +421,7 @@ a
 
 .text2
 {
-    font-size:15px;
+    font-size:16px;
     clear:both;
     word-wrap:break-word;
 }
@@ -662,7 +662,7 @@ a:hover
 {
     padding-top: 10px;
     padding-bottom: 10px;
-    font-size:15px;
+    font-size:16px;
 }
 
 .quote_body
@@ -680,6 +680,6 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
 
 .reply
 {
-    font-size: 15px;
+    font-size: 16px;
     word-wrap: break-word;
 }
