@@ -667,12 +667,14 @@ a:hover
 
 .quote_body
 {
-
+    background-color: #0D0D0D;
+    color: #FFFFFF;
+    word-wrap: break-word;
 }
 
 a.quote_username:link, a.quote_username:visited, a.quote_username:hover
 {
-    color: #0d0d0d;
+    color: #FFFFFF;
     text-decoration: underline;
 }
 
