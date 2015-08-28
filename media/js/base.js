@@ -3293,43 +3293,6 @@ function delete_comment(id)
     return false;        
 }
 
-function is_url(value)
-{
-	if(value.indexOf('www.') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('http://') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.com') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.net') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.org') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.jpg') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.png') >= 0)
-	{
-		return true;
-	}
-	if(value.indexOf('.gif') >= 0)
-	{
-		return true;
-	}
-	return false;
-}
-
 function count_words(input)
 {
 	number = 0;
@@ -3907,7 +3870,7 @@ function init(mode, info)
     {
     	sent();
     }
-    else if(mode=='settings')
+    else if(mode=='settings') 
     {
     	settings();
     }
