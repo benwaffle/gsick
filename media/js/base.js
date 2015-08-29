@@ -47,13 +47,13 @@ function silence(uname)
 		},
 	function(data)
  	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			msg =  "<a onClick='change_user(\"" + uname + "\");return false;' class='pm_user_link' href=\"#\">";
 			msg =  msg + uname + "</a>";
 			msg = msg + ' was silenced';
 			dialog(msg);
-			if($('#mode').val()=='silenced')
+			if($('#mode').val() === 'silenced')
 			{
 				silenced();
 			}
@@ -71,13 +71,13 @@ function unsilence(uname)
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			msg =  "<a onClick='change_user(\"" + uname + "\");return false;' class='pm_user_link' href=\"#\">";
 			msg =  msg + uname + "</a>";
 			msg = msg + ' was unsilenced';
 			dialog(msg);
-			if($('#mode').val()=='silenced')
+			if($('#mode').val() === 'silenced')
 			{
 				silenced();
 			}
@@ -146,7 +146,7 @@ function silenced(post_id)
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$('#mode').val('silenced');
 			$('#posts').html(data['html']);
@@ -170,14 +170,14 @@ function open_post(post_id)
 	function(data) 
 	{
 		before_post_load();
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$('#mode').val('channel');
 			$('#posts').html(data['post']);
 			setHeader('#' + data['cname']);
 			clear();
 			after_post_load();
-			if(data['cname']=='')
+			if(data['cname'] === '')
 			{
 				document.title = '#';
 			}
@@ -188,7 +188,7 @@ function open_post(post_id)
 		}
 		else
 		{
-			if(document.title=='')
+			if(document.title === '')
 			{
 				random_channel();
 				return false;
@@ -208,7 +208,7 @@ function open_user_post(post_id)
 	function(data) 
 	{
 		before_post_load();
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$('#mode').val('user');
 			$('#posts').html(data['post']);
@@ -563,7 +563,7 @@ function notes()
 	function(data) 
 	{
 		before_post_load();
-		if(data['status'] == 'ok')
+		if(data['status'] === 'ok')
 		{
 			$('#mode').val('notes');
 			$('#posts').html(data['notes']).ready(function()
@@ -701,7 +701,7 @@ function reply(input)
 		},
 	function(data) 
 	{
-		if(data['status'] == 'ok')
+		if(data['status'] === 'ok')
 		{
 			go_to_bottom();
 		}
@@ -726,7 +726,7 @@ function reply_to_comment(msg, comment_id, goto_bottom)
 		},
 	function(data) 
 	{
-		if(data['status'] == 'ok')
+		if(data['status'] === 'ok')
 		{
 			if(goto_bottom)
 			{
@@ -853,7 +853,7 @@ function chat(username)
 		function(data) 
 		{
 			before_post_load();
-			if(data['status'] == 'ok')
+			if(data['status'] === 'ok')
 			{
 				chattingwith = data['username'];
 				info1 = chattingwith;
@@ -884,7 +884,7 @@ function chat_back(username)
 	function(data) 
 	{
 		before_back();
-		if(data['status'] == 'ok')
+		if(data['status'] === 'ok')
 		{
 			chattingwith = data['username'];
 			info1 = chattingwith;
@@ -927,7 +927,7 @@ function refresh_chat()
 	 },
 	function(data)
 	{
-		if(data['status'] == "ok")
+		if(data['status'] === "ok")
 		{
             $(data['posts']).hide().prependTo('#posts').fadeIn('slow').ready(function()
         	{
@@ -955,7 +955,7 @@ function refresh_chatall()
 	 },
 	function(data)
 	{
-		if(data['status'] == "ok")
+		if(data['status'] === "ok")
 		{
             $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
         	{
@@ -984,7 +984,7 @@ function refresh_sent()
 	 },
 	function(data)
 	{
-		if(data['status'] == "ok")
+		if(data['status'] === "ok")
 		{
             $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
         	{
@@ -1013,7 +1013,7 @@ function refresh_inbox()
 	 },
 	function(data)
 	{
-		if(data['status'] == "ok")
+		if(data['status'] === "ok")
 		{
             $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
         	{
@@ -1042,7 +1042,7 @@ function note(note)
 		},
 	function(data) 
 	{
-        if($('#mode').val()=='notes')
+        if($('#mode').val() === 'notes')
         {
         	notes();
         }
@@ -1125,55 +1125,55 @@ var bottomtimer = (function()
 function load_more()
 {
 	mode = $('#mode').val()
-	if(mode=='channel')
+	if(mode === 'channel')
 	{
 		load_more_channel();
 	}
-	if(mode=='user')
+	if(mode === 'user')
 	{
 		load_more_user();
 	}
-	if(mode=='notes')
+	if(mode === 'notes')
 	{
 		load_more_notes();
 	}
-	else if(mode=='chat')
+	else if(mode === 'chat')
 	{
 		load_more_chat();
 	}
-	else if(mode=='chatall')
+	else if(mode === 'chatall')
 	{
 		load_more_chatall();
 	}
-	else if(mode=='sent')
+	else if(mode === 'sent')
 	{
 		load_more_sent();
 	}
-	else if(mode=='inbox')
+	else if(mode === 'inbox')
 	{
 		load_more_inbox();
 	}
-	else if(mode=='stream')
+	else if(mode === 'stream')
 	{
 		load_more_stream();
 	}
-	else if(mode=='new')
+	else if(mode === 'new')
 	{
 		load_more_new();
 	}
-	else if(mode=='post')
+	else if(mode === 'post')
 	{
 		load_more_comments();
 	}
-	else if(mode=='pins')
+	else if(mode === 'pins')
 	{
 		load_more_pins();
 	}
-	else if(mode=='alerts')
+	else if(mode === 'alerts')
 	{
 		load_more_alerts();
 	}
-	else if(mode=='useronchannel')
+	else if(mode === 'useronchannel')
 	{
 		load_more_useronchannel();
 	}
@@ -1234,13 +1234,13 @@ function get_pins(uname)
 		function(data) 
 		{
 			before_post_load();
-			if(data['status']=='ok')
+			if(data['status'] === 'ok')
 			{
 				$('#mode').val('pins');
 				$('#posts').html(data['pins']).ready(function()
 				{
 				});
-				if(data['uname']==tehusername)
+				if(data['uname'] === tehusername)
 				{
 					setHeader('pins');
 					document.title = 'pins';
@@ -1280,7 +1280,7 @@ function get_pins_back(h)
 	$('#posts').html(h.html).ready(function()
 	{
 	});
-	if(h.info==tehusername)
+	if(h.info === tehusername)
 	{
 		setHeader('pins');
 		document.title = 'pins';
@@ -1308,7 +1308,7 @@ function load_more_alerts()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['alerts']).hide().appendTo('#posts').fadeIn('slow').ready(function()
 			{
@@ -1329,7 +1329,7 @@ function load_more_channel()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['posts']).hide().appendTo('#posts').fadeIn('slow').ready(function()
 			{
@@ -1349,7 +1349,7 @@ function load_more_useronchannel()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['posts']).hide().appendTo('#posts').fadeIn('slow').ready(function()
 			{
@@ -1372,7 +1372,7 @@ function load_more_comments()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['comments']).appendTo('#posts');
 			after_post_load();
@@ -1391,7 +1391,7 @@ function load_more_pins()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['pins']).appendTo('#posts');
 			after_post_load();
@@ -1410,7 +1410,7 @@ function load_more_user()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['posts']).hide().appendTo('#posts').fadeIn('slow').ready(function()
 			{
@@ -1431,7 +1431,7 @@ function load_more_chatall()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			messages = data['messages'];
 			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
@@ -1453,7 +1453,7 @@ function load_more_chat()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			messages = data['messages']
 			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
@@ -1475,7 +1475,7 @@ function load_more_inbox()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			messages = data['messages'];
 			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
@@ -1497,7 +1497,7 @@ function load_more_sent()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			messages = data['messages'];
 			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
@@ -1519,7 +1519,7 @@ function load_more_notes()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			notes = data['notes'];
 			$(notes).hide().appendTo('#posts').fadeIn('slow').ready(function()
@@ -1635,7 +1635,7 @@ function check_images()
 			content = $(this).closest('.post_content');
 			container = $(this).closest('.post_parent');
 			$(this).closest('a').remove();
-			if(content.html()=='')
+			if(content.html() === '')
 			{
 				container.remove();
 			}
@@ -1811,11 +1811,11 @@ function post_comment(content)
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			show_last_comments();
 		}
-		if(data['status']=='duplicate')
+		if(data['status'] === 'duplicate')
 		{
 			dialog('you posted that already');
 		}
@@ -1922,30 +1922,30 @@ function post_to_channel()
 		clear();
 		return false;
 	}
-	if(document.title == "help" || document.title == "notes")
+	if(document.title === "help" || document.title === "notes")
 	{
 		return false;
 	}
 	content = $('#inputcontent').val();
     $.post('/post_to_channel/', { channel:channel, content:content, csrfmiddlewaretoken:csrf_token }, function(data)
     {
-		if(data['status']=="ok")
+		if(data['status'] === "ok")
 		{
 			change_channel(document.title);
 		}
-		else if(data['status']=='wait')
+		else if(data['status'] === 'wait')
 		{
 			dialog('you can post in this channel once every 12 hours');
 		}
-		else if(data['status']=='channelduplicate')
+		else if(data['status'] === 'channelduplicate')
 		{
 			dialog('that was already posted in this channel');
 		}
-		else if(data['status']=='toobig')
+		else if(data['status'] === 'toobig')
 		{
 			dialog('a post cannot exceed 2000 characters');
 		}
-		else if(data['status']=='postduplicate')
+		else if(data['status'] === 'postduplicate')
 		{
 			dialog('you posted that already');
 		}
@@ -2024,7 +2024,7 @@ function change_channel(cname)
 		function(data) 
 		{
 			before_post_load();
-			if(data['status']=='ok')
+			if(data['status'] === 'ok')
 			{
 				$('#mode').val('channel');
 				$('#posts').html(data['posts']);
@@ -2074,7 +2074,7 @@ function show_goto()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			activate_channel_list_scroll();
 			$('#channel_list').html(data['channels']);
@@ -2090,7 +2090,7 @@ function activate_channel_list_scroll()
 
 function defocus()
 {
-	if($('#inputcontent').val()=='')
+	if($('#inputcontent').val() === '')
 	{
 		$('#inputcontent').blur();
 	}
@@ -2115,7 +2115,7 @@ function change_user(uname)
 			{
 				$('#posts').html(data['posts']);
 				$('#mode').val('user');
-				if(data['uname']==tehusername)
+				if(data['uname'] === tehusername)
 				{
 					setHeader('posts');
 					document.title = 'posts'				
@@ -2150,7 +2150,7 @@ function change_user_back(h)
 	before_back();
 	$('#posts').html(h.html);
 	$('#mode').val('user');
-	if(h.info==tehusername)
+	if(h.info === tehusername)
 	{
 		setHeader('posts');
 		document.title = 'posts'				
@@ -2494,13 +2494,13 @@ function send_message()
 	content = '@' + chattingwith + ' ' + input;
 	$.post('/send_message/', { content:content, csrfmiddlewaretoken:csrf_token }, function(data)
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
-			if(mode=='chat' && chattingwith==data['username'])
+			if(mode === 'chat' && chattingwith === data['username'])
 			{
 				refresh_chat();
 			}
-			else if(mode=='sent')
+			else if(mode === 'sent')
 			{
 				refresh_sent();
 			}
@@ -2510,19 +2510,19 @@ function send_message()
 				dialog(msg);
 			}
 		}
-		else if(data['status']=='noreceiver')
+		else if(data['status'] === 'noreceiver')
 		{
 			dialog('user does not exist');
 		}
-		else if(data['status']=='sameuser')
+		else if(data['status'] === 'sameuser')
 		{
 			dialog('you can\'t send messages to yourself');
 		}
-		else if(data['status']=='notallowed')
+		else if(data['status'] === 'notallowed')
 		{
 			dialog('you can\'t send messages to this user');
 		}
-		else if(data['status']=='nologin')
+		else if(data['status'] === 'nologin')
 		{
 			show_guest_status();
 		}
@@ -2542,7 +2542,7 @@ function remove_duplicate_inbox_senders()
 		{
 			pid = $(this).children('.id').val();
 			puname = $(this).children('.username').val();
-			if(uname==puname)
+			if(uname === puname)
 			{
 				if(id > pid)
 				{
@@ -2563,7 +2563,7 @@ function remove_duplicate_sent_receivers()
 		{
 			pid = $(this).children('.id').val();
 			puname = $(this).children('.receiver').val();
-			if(uname==puname)
+			if(uname === puname)
 			{
 				if(id > pid)
 				{
@@ -2586,7 +2586,7 @@ function remove_duplicate_chatall()
 			pid = $(this).children('.id').val();
 			puname = $(this).children('.username').val();
 			pruname = $(this).children('.receiver').val();
-			if((uname==puname && uname != tehusername) || runame == pruname && runame != tehusername || uname==pruname && runame==puname)
+			if((uname === puname && uname != tehusername) || runame === pruname && runame != tehusername || uname === pruname && runame === puname)
 			{
 				if(id > pid)
 				{
@@ -2607,7 +2607,7 @@ function refresh_channel()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			var last_id = $('.post_id:first').val()
 			$(data['posts']).prependTo('#posts');
@@ -2632,7 +2632,7 @@ function refresh_user()
 		},
 	function(data) 
 	{
-		if(data['status']=='ok')
+		if(data['status'] === 'ok')
 		{
 			$(data['posts']).prependTo('#posts');
 			after_post_load();
@@ -2680,7 +2680,7 @@ function check_new_pms()
 		},
 	function(data) 
 	{
-		if(data['status']=='yes')
+		if(data['status'] === 'yes')
 		{
 			if ($('#mode').val() != 'chatall')
 			{
@@ -2702,7 +2702,7 @@ function check_new_alerts()
 		},
 	function(data) 
 	{
-		if(data['status']=='yes')
+		if(data['status'] === 'yes')
 		{
 			mode = $('#mode').val();
 			$('#menu_alerts').html("(" + data['num'] + ") alerts");
@@ -2736,64 +2736,64 @@ function go_back()
 	{
 		ahistory.pop();
 	}
-	if(url===undefined)
+	if(url === undefined)
 	{
 		clear();
 		return false;
 	}
 	info = url.info
 	mode = url.mode
-	if(mode=='channel')
+	if(mode === 'channel')
 	{
 		change_channel_back(url);
 		return false;
 	}
-	if(mode=='user')
+	if(mode === 'user')
 	{
 		change_user_back(url);
 		return false;
 	}
-	if(mode=='chat')
+	if(mode === 'chat')
 	{
 		chat_back(url.info);
 		return false;
 	}
-	if(mode=='chatall')
+	if(mode === 'chatall')
 	{
 		chatall_back();
 		return false;
 	}
-	if(mode=='settings')
+	if(mode ==='settings')
 	{
 		settings_back();
 		return false;
 	}
-	if(mode=='new')
+	if(mode ==='new')
 	{
 		new_posts_back(url);
 		return false;
 	}
-	if(mode=='post')
+	if(mode === 'post')
 	{
 		open_post_back(url);
 		return false;
 	}
-	if(mode=='top')
+	if(mode === 'top')
 	{
 		top_posts_back(url);
 		return false;
 	}
-	if(mode=='stream')
+	if(mode === 'stream')
 	{
 		stream_back(url);
 		return false;
 	}
-	if(mode=='pins')
+	if(mode === 'pins')
 	{
 		get_pins_back(url);
 		return false;
 	}
-	if(mode=='alerts')
+	if(mode === 'alerts')
 	{
 		alerts_back(url);
 		return false;
@@ -2807,83 +2807,83 @@ function update_url()
 	var ch = false;
 	bottomdown = false;
 	mode = $('#mode').val();
-	if(mode=='channel')
+	if(mode === 'channel')
 	{
 		url = document.title;
 		xinfo = document.title;
 	}
-	else if(mode=='user')
+	else if(mode === 'user')
 	{
 		url = 'user/' + info1;
 		xinfo = info1;
 	}
-	else if(mode=='chat')
+	else if(mode === 'chat')
 	{
 		url = "chat/" + info1;
 		xinfo = info1;
 	}
-	else if(mode=='notes')
+	else if(mode === 'notes')
 	{
 		url = "notes";
 		xinfo = '0';
 	}
-	else if(mode=='help')
+	else if(mode === 'help')
 	{
 		url = "help";
 		xinfo = '0';
 	}
-	else if(mode=='inbox')
+	else if(mode === 'inbox')
 	{
 		url = "inbox";
 		xinfo = '0';
 	}
-	else if(mode=='sent')
+	else if(mode === 'sent')
 	{
 		url = "sent";
 		xinfo = '0';
 	}
-	else if(mode=='chatall')
+	else if(mode === 'chatall')
 	{
 		url = "chat";
 		xinfo = '0';
 	}
-	else if(mode=='settings')
+	else if(mode === 'settings')
 	{
 		url = "settings";
 		xinfo = '0';
 	}
-	else if(mode=='new')
+	else if(mode === 'new')
 	{
 		url = "new";
 		xinfo = '0';
 	}
-	else if(mode=='stream')
+	else if(mode === 'stream')
 	{
 		url = "stream";
 		xinfo = '0';
 	}
-	else if(mode=='post')
+	else if(mode === 'post')
 	{
 		xinfo = $('.post_id:first').val();
 		url = "post/" + xinfo;
 		ch = channel;
 	}
-	else if(mode=='top')
+	else if(mode === 'top')
 	{
 		url = "top";
 		xinfo = '0';
 	}
-	else if(mode=='pins')
+	else if(mode === 'pins')
 	{
 		url = "pins/" + info1;
 		xinfo = info1;
 	}
-	else if(mode=='useronchannel')
+	else if(mode === 'useronchannel')
 	{
 		url = info1 + '/on/' + info2;
 		xinfo = info1 + ' on ' + info2
 	}
-	else if(mode=='alerts')
+	else if(mode === 'alerts')
 	{
 		url = 'alerts';
 		xinfo = 0;
@@ -2897,7 +2897,7 @@ function update_url()
 	try
 	{
 		last = ahistory[ahistory.length - 1];
-		if(last.mode==mode && last.info==xinfo)
+		if(last.mode === mode && last.info === xinfo)
 		{
 			window.history.pushState({"pageTitle": "title", content: "etc"}, "", '/'+url);
 			return false;
@@ -3220,7 +3220,7 @@ function stop_video_players()
 function delete_channel(cname)
 {
     clear();
-    if(cname.substring(0,1)=='#')
+    if(cname.substring(0,1) === '#')
     {
         cname = cname.substring(1);
     }
@@ -3321,7 +3321,7 @@ function activate_key_detection()
 				hide_overlay();
 		 	}
 		}
-		if(code === 13)
+		if(code == 13)
         {
         	if($('#goto_input').is(':focus'))
         	{
@@ -3344,7 +3344,7 @@ function activate_key_detection()
          //up
 		 if(code == 38)
 		 {
-		 	if(e.ctrlKey && $('#mode').val()=='post')
+		 	if(e.ctrlKey && $('#mode').val() === 'post')
 		 	{
 		 		open_post($('.post_id:first').val());
 		 		e.preventDefault();
@@ -3357,7 +3357,7 @@ function activate_key_detection()
 		 //down
 		 if(code == 40)
 		 {
-		 	if(e.ctrlKey && $('#mode').val()=='post')
+		 	if(e.ctrlKey && $('#mode').val() === 'post')
 		 	{
 		 		show_last_comments();
 		 		e.preventDefault();
@@ -3374,61 +3374,61 @@ function activate_key_detection()
 				if (code == 13)
 				{
 					var value = $('#inputcontent').val();
-					if(value.substring(0,7) == 'global:')
+					if(value.substring(0,7) === 'global:')
 					{
-                        if($.trim(value.substring(7))=="")
+                        if($.trim(value.substring(7)) === '')
                         {
                             clear();
                             return false;
                         }
 						send_global_pm();
 					}
-					else if(value == 'whoami')
+					else if(value === 'whoami')
 					{
 						whoami();
 					}
-					else if(value.substring(0,5) == 'seen ')
+					else if(value.substring(0,5) === 'seen ')
 					{
 						var username = $.trim($('#inputcontent').val().substring(5));
-                        if(username=="")
+                        if(username === '')
                         {
                             clear();
                             return false;
                         }
                         seen(username);
 					}
-					else if(value.substring(0,7) == 'notes ')
+					else if(value.substring(0,7) === 'notes ')
 					{
-                        if($.trim(value.substring(7)) == "")
+                        if($.trim(value.substring(7)) === '')
                         {
                             notes();
                             return false;
                         }
                         note(value.substring(7));
 					}
-					else if(value.substring(0,9) == '!silence ')
+					else if(value.substring(0,9) === '!silence ')
 					{
-                        if($.trim(value.substring(9)) == "")
+                        if($.trim(value.substring(9)) === '')
                         {
                             return false;
                         }
                         silence(value.substring(9));
 					}
-					else if(value.substring(0,11) == 'unsilence ')
+					else if(value.substring(0,11) === 'unsilence ')
 					{
-                        if($.trim(value.substring(11)) == "")
+                        if($.trim(value.substring(11)) === "")
                         {
                             return false;
                         }
                         unsilence(value.substring(11));
 					}
-					else if(value.substring(0,6) == '!note ')
+					else if(value.substring(0,6) === '!note ')
 					{
                         note(value.substring(6));
 					}
-					else if(value.substring(0,6) == '!calc ')
+					else if(value.substring(0,6) === '!calc ')
 					{
-                        if($.trim(value.substring(6))=="")
+                        if($.trim(value.substring(6)) === '')
                         {
                             clear();
                             return false;
@@ -3450,99 +3450,99 @@ function activate_key_detection()
                             return false;
                         }
 					}
-					else if(value.toLowerCase() == 'delchannel')
+					else if(value.toLowerCase() === 'delchannel')
 					{
                         delete_channel(document.title);
 					}
-					else if(value.toLowerCase() == 'delpost' && $('#mode').val()=='post')
+					else if(value.toLowerCase() === 'delpost' && $('#mode').val() === 'post')
 					{
                         delete_post();
                         clear();
 					}
-					else if(value.toLowerCase() == '!url')
+					else if(value.toLowerCase() === '!url')
 					{
 						show_url();
 					}
-					else if(value.toLowerCase() == '!silenced')
+					else if(value.toLowerCase() === '!silenced')
 					{
 						silenced();
 					}
-					else if(value.substring(0,6) == 'reply:')
+					else if(value.substring(0,6) === 'reply:')
 					{
 						reply_to_comment(value.substring(6), reply_to_id, true);
 					}
-					else if(value.toLowerCase() == '!tab')
+					else if(value.toLowerCase() === '!tab')
 					{
 						open_tab();
 					}
-					else if(value.toLowerCase() == '!close')
+					else if(value.toLowerCase() === '!close')
 					{
 						close_tab();
 					}
-					else if(value.toLowerCase() == '!login')
+					else if(value.toLowerCase() === '!login')
 					{
 						login();
 					}
-					else if(value.toLowerCase() == '!logout')
+					else if(value.toLowerCase() === '!logout')
 					{
 						login();
 					}
-					else if(value.toLowerCase() == '!notes')
+					else if(value.toLowerCase() === '!notes')
 					{
 						notes();
 					}
-					else if(value.toLowerCase() == '!note')
+					else if(value.toLowerCase() === '!note')
 					{
 						notes();
 					}
-					else if(value.toLowerCase() == '!settings')
+					else if(value.toLowerCase() === '!settings')
 					{
 						settings();
 					}
-					else if(value.toLowerCase() == '!chat')
+					else if(value.toLowerCase() === '!chat')
 					{
 						chatall();
 					}
-					else if(value.toLowerCase() == '!inbox')
+					else if(value.toLowerCase() === '!inbox')
 					{
 						inbox();
 					}
-					else if(value.toLowerCase() == '!sent')
+					else if(value.toLowerCase() === '!sent')
 					{
 						sent();
 					}
-					else if(value.toLowerCase() == '!back')
+					else if(value.toLowerCase() === '!back')
 					{
 						go_back();
 					}
-					else if(value.toLowerCase() == '!refresh')
+					else if(value.toLowerCase() === '!refresh')
 					{
 						refresh();
 						clear();
 					}
-					else if(value.toLowerCase() == '!posts')
+					else if(value.toLowerCase() === '!posts')
 					{
 						my_history();
 						clear();
 					}
-					else if(value.toLowerCase() == '!new')
+					else if(value.toLowerCase() === '!new')
 					{
 						new_posts();
 						clear();
 					}
-					else if(value.toLowerCase() == '!top')
+					else if(value.toLowerCase() === '!top')
 					{
 						top_posts();
 						clear();
 					}
-					else if(value.toLowerCase() == '!alerts')
+					else if(value.toLowerCase() === '!alerts')
 					{
 						alerts();
 						clear();
 					}
-					else if(value.toLowerCase() == '!pin')
+					else if(value.toLowerCase() === '!pin')
 					{
-						if($('#mode').val()=='post')
+						if($('#mode').val() === 'post')
 						{
 							id = $('.post_id').val();
 							pin(id);
@@ -3551,24 +3551,24 @@ function activate_key_detection()
 						clear();
 						return false;
 					}
-					else if(value.toLowerCase() == '!pins')
+					else if(value.toLowerCase() === '!pins')
 					{
 						get_pins(tehusername);
 						clear();
 					}							
-					else if($('#mode').val()=='channel')
+					else if($('#mode').val() === 'channel')
 					{
 						post_to_channel(value);
 					}
-					else if($('#mode').val()=='post')
+					else if($('#mode').val() === 'post')
 					{
                         post_comment(value);
 					}
-					else if($('#mode').val()=='chat')
+					else if($('#mode').val() === 'chat')
 					{
 						send_message();
 					}
-					else if($('#mode').val()=='notes')
+					else if($('#mode').val() === 'notes')
 					{
 						note(value);
 					}
@@ -3623,7 +3623,7 @@ function activate_key_detection()
 				return false;
 			}
 		}
-		if($('#inputcontent').val() == '' && ! $('.alert_reply_input').is(':focus') && ! $('.commentinput').is(':focus'))
+		if($('#inputcontent').val() === '' && ! $('.alert_reply_input').is(':focus') && ! $('.commentinput').is(':focus'))
 		{
 			//spacebar
 			if(code == 32)
@@ -3685,7 +3685,7 @@ function activate_scroller()
        	}
     	if(($('#postscroller').scrollTop()) == 0)
     	{
-    		if($('#mode').val()=='post')
+    		if($('#mode').val() === 'post')
     		{
        			show_older_comments();
     		}
@@ -3834,71 +3834,71 @@ function init(mode, info)
     start_left_menu();
     start_right_menu();
     initial_settings();
-    if(mode=='channel')
+    if(mode === 'channel')
     {
     	change_channel(info);
     }
-    else if(mode=='user')
+    else if(mode === 'user')
     {
     	change_user(info);
     }
-    else if(mode=='chat')
+    else if(mode === 'chat')
     {
     	chat(info);
     }
-    else if(mode=='new')
+    else if(mode === 'new')
     {
     	new_posts();
     }
-    else if(mode=='notes')
+    else if(mode === 'notes')
     {
     	notes();
     }
-    else if(mode=='help')
+    else if(mode === 'help')
     {
     	get_help();
     }
-    else if(mode=='chatall')
+    else if(mode === 'chatall')
     {
     	chatall();
     }
-    else if(mode=='inbox')
+    else if(mode === 'inbox')
     {
     	inbox();
     }
-    else if(mode=='sent')
+    else if(mode === 'sent')
     {
     	sent();
     }
-    else if(mode=='settings') 
+    else if(mode === 'settings') 
     {
     	settings();
     }
-    else if(mode=='post')
+    else if(mode === 'post')
     {
     	open_post(info);
     }
-    else if(mode=='top')
+    else if(mode === 'top')
     {
     	top_posts(info);
     }
-    else if(mode=='pins')
+    else if(mode === 'pins')
     {
     	get_pins(info);
     }
-    else if(mode=='useronchannel')
+    else if(mode === 'useronchannel')
     {
     	user_on_channel(info);
     }
-    else if(mode=='alerts')
+    else if(mode === 'alerts')
     {
     	alerts();
     }
-    else if(mode=='random')
+    else if(mode === 'random')
     {
     	random_post();
     }
-    else if(mode=='stream')
+    else if(mode === 'stream')
     {
     	stream();
     }
