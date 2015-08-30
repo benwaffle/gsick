@@ -18,6 +18,8 @@ receive alerts whenever there has been activity on your posts,
 including follows, appreciations, comments, mentions and replies.
 
 
+![](http://i.imgur.com/c71emms.jpg)
+
 ![](http://i.imgur.com/hzBXcQW.jpg)
 
 ![](http://i.imgur.com/BM3QEBS.jpg)
