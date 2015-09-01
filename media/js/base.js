@@ -2970,6 +2970,21 @@ function get_yt_id(player)
 	} 
 }
 
+function get_yt_state(player)
+{
+	for (property in player) 
+	{
+		for (sub in player[property]) 
+		{
+			if(sub === 'playerState') 
+		  	{
+		  		return(player[property][sub])
+		  	}
+			
+		}
+	} 
+}
+
 function create_yt_players()
 {
 	$("#posts iframe[src^='https://www.youtube.com']").each(function()
@@ -3152,7 +3167,12 @@ function onYouTubeStateChange(event)
 			var pid = get_yt_id(yt_players[i]);
 			if(pid !== id)
 			{
-				yt_players[i].pauseVideo();
+				var state = get_yt_state(yt_players[i]);
+
+				if(state === 1)
+				{
+					yt_players[i].pauseVideo();
+				}
 			}
 		}
 		stop_sc_players();
@@ -3181,7 +3201,12 @@ function stop_yt_players()
 {
 	for(var i=0; i<yt_players.length; i++)
 	{
-		yt_players[i].pauseVideo();
+		var state = get_yt_state(yt_players[i]);
+
+		if(state === 1)
+		{
+			yt_players[i].pauseVideo();
+		}
 	} 
 }
 
@@ -3285,10 +3310,18 @@ function delete_comment(id)
 		},
 	function(data) 
 	{
-		$('#comment_' + id).fadeOut(500, function()
+		if(data.status === 'replied')
 		{
-			$(this).remove();
-		});
+			dialog("can't delete a comment that has replies");
+			$('#delete_comment_' + id).html('delete');
+		}
+		else if(data.status === 'ok')
+		{
+			$('#comment_' + id).fadeOut(500, function()
+			{
+				$(this).remove();
+			});
+		}
 	});
     return false;        
 }

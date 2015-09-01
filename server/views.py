@@ -1647,15 +1647,19 @@ def delete_post(request):
 
 @login_required
 def delete_comment(request):
-	status = ''
+	status = 'ok'
 	comment_id = request.POST['id']
 	comment = Comment.objects.get(id=comment_id)
 	if request.user.username in admin_list or request.user == comment.user:
 		try:
-			comment.delete()
-			status = 'ok'
+			Comment.objects.get(reply=comment)
+			status = 'replied'
 		except:
-			pass
+			try:
+				comment.delete()
+				status = 'ok'
+			except:
+				pass
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
 
