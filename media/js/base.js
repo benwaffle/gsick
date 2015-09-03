@@ -3278,16 +3278,24 @@ function delete_post(id)
 		},
 	function(data) 
 	{
-		if($('#mode').val() === 'post')
+		if(data.status === 'commented')
 		{
-			my_history();
+			dialog("can't delete a post that has comments");
+			$('#delete_post_' + id).html('delete');
 		}
-		else
+		else if(data.status === 'ok')
 		{
-			$('#post_' + id).fadeOut(500, function()
+			if($('#mode').val() === 'post')
 			{
-				$(this).remove();
-			});
+				my_history();
+			}
+			else
+			{
+				$('#post_' + id).fadeOut(500, function()
+				{
+					$(this).remove();
+				});
+			}
 		}
 	});
     return false;
