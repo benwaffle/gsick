@@ -450,7 +450,7 @@ def open_post(request, id=None):
 	return HttpResponse(json.dumps(data), content_type="application/json")	
 
 def get_top_posts(request):
-	return Post.objects.annotate(num_pins=Count("pin")).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=500))).filter(num_pins__gt="0").order_by('-num_pins', '-date')[:10]
+	return Post.objects.annotate(num_pins=Count("pin")).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=7))).filter(num_pins__gt="10").order_by('-num_pins', '-date')[:10]
 
 def top_posts(request):
 	posts = ''
