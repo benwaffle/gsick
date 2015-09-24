@@ -1765,7 +1765,6 @@ function open_post_back(h)
 {
 	before_back();
 	$('#mode').val('post');
-	console.log(h);
 	$('#posts').html(h.html);
 	setHeader('a post on <a onClick="change_channel(\'' + h.channel + '\');return false;" href="#">' + h.channel + '</a>');
 	channel = h.channel;
@@ -3883,7 +3882,6 @@ function activate_history_listener()
 	{
 		if(e.state !== null)
 		{
-			console.log(window.history.state);
 			go_back();
 		}
 	});
