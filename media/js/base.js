@@ -1,4 +1,5 @@
-var ahistory = [];
+var history_counter = 1;
+var html_history = {};
 var info1;
 var info2;
 var chattingwith;
@@ -104,10 +105,9 @@ function before_back()
 function before_post_load()
 {
 	reset_players();
-	if(ahistory.length > 0)
+	if(window.history.state)
 	{
-		ahistory[ahistory.length - 1].html = $('#posts').html();
-		ahistory[ahistory.length - 1].scrollTop = $('#postscroller').scrollTop();
+		html_history['' + window.history.state.counter + ''] = [$('#posts').html(), $('#postscroller').scrollTop()]
 	}
 }
 
@@ -116,6 +116,32 @@ function after_post_load()
 	try
 	{
 		update_url();
+		resize_videos();
+		defocus();
+		if(loggedin === 'yes')
+		{
+			$('#posts').ready(function()
+			{
+				update_theme();
+			});
+		}
+		$('#postscroller').niceScroll().resize();
+		create_yt_players();
+		create_sc_players();
+		create_vimeo_players();
+		create_audio_players();
+		create_video_players();
+	}
+	catch(err)
+	{
+		//
+	}
+}
+
+function after_post_load_back()
+{	
+	try
+	{
 		resize_videos();
 		defocus();
 		if(loggedin === 'yes')
@@ -367,7 +393,7 @@ function settings_back()
 				$('#input_scroll_background_picker').ColorPicker({flat:true,color:scroll_background,onSubmit:set_scroll_background_color});
 			});
 		});
-		after_post_load();
+		after_post_load_back();
 		$('#postscroller').scrollTop(0);
 		show_input('this text is called the placeholder');
 	});
@@ -659,13 +685,13 @@ function alerts_back(h)
 {
 	before_back();
 	$('#mode').val('alerts');
-	$('#posts').html(h.html).ready(function()
+	$('#posts').html(html_history['' + h.counter + ''][0]).ready(function()
 	{
 	});
 	setHeader('alerts');
-	$('#postscroller').scrollTop(h.scrollTop);
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	document.title = 'alerts';
-	after_post_load();
+	after_post_load_back();
 	hide_input();
 	clear();
 }
@@ -794,7 +820,7 @@ function chatall_back()
 		$('#posts').html(data['posts'])
 		setHeader('chat');
 		document.title = 'chat';
-		after_post_load();
+		after_post_load_back();
 		$('#postscroller').scrollTop(0);
 		$('#menu_chat').html('chat');
 		hide_input();
@@ -892,7 +918,7 @@ function chat_back(username)
 			$('#mode').val('chat');
 			setHeader('chat with ' + '<a onClick="change_user(\''+data['username']+'\');return false;" href="#">' + data['username'] + '</a>');
 			document.title = 'chat with ' + data['username'];
-			after_post_load();
+			after_post_load_back();
 			$('#postscroller').scrollTop(0);
 			show_input('write a message');
 		}
@@ -1277,7 +1303,7 @@ function get_pins_back(h)
 {
 	before_back();
 	$('#mode').val('pins');
-	$('#posts').html(h.html).ready(function()
+	$('#posts').html(html_history['' + h.counter + ''][0]).ready(function()
 	{
 	});
 	if(h.info === tehusername)
@@ -1293,8 +1319,8 @@ function get_pins_back(h)
 		document.title = 'pins by ' + h.info;
 	} 
 	info1 = h.info;
-	after_post_load();
-	$('#postscroller').scrollTop(h.scrollTop);
+	after_post_load_back();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	hide_input();
 	clear();
 }
@@ -1730,12 +1756,12 @@ function open_post_back(h)
 {
 	before_back();
 	$('#mode').val('post');
-	$('#posts').html(h.html);
-	setHeader('a post on <a onClick="change_channel(\''+h.channel+'\');return false;" href="#">' + h.channel + '</a>');
+	$('#posts').html(html_history['' + h.counter + ''][0]);
+	setHeader('a post on <a onClick="change_channel(\'' + h.channel + '\');return false;" href="#">' + h.channel + '</a>');
 	channel = h.channel;
 	document.title = 'a post on ' + channel;
-	$('#postscroller').scrollTop(h.scrollTop);
-	after_post_load();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	after_post_load_back();
 	show_input('write a comment');
 	clear();
 }
@@ -1754,7 +1780,7 @@ function start_left_menu()
 	s = s + "<div class='menu_link'><a onClick='show_goto();return false;' href='#'>goto</a></div>";
 	s = s + "<div class='menu_link'><a onClick='top_posts();return false;' href='#'>top</a></div>";
 	s = s + "<div class='menu_link'><a onClick='new_posts();return false;' href='#'>new</a></div>";
-	s = s + "<div class='menu_link'><a class='menu_link' onClick='go_back();return false' href='#'>back</a></div>";
+	s = s + "<div class='menu_link'><a class='menu_link' onClick='window.history.back();return false' href='#'>back</a></div>";
 	s = s + "</div>"
 	$('#leftcol').html(s);
 }
@@ -2045,12 +2071,12 @@ function change_channel_back(h)
 {
 	before_back();
 	$('#mode').val('channel');
-	$('#posts').html(h.html);
+	$('#posts').html(html_history['' + h.counter + ''][0]);
 	setHeader(h.info);
-	$('#postscroller').scrollTop(h.scrollTop);
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	channel = h.info
 	document.title = channel;
-	after_post_load();
+	after_post_load_back();
 	show_input('post to the channel');
 	clear();
 }
@@ -2148,7 +2174,7 @@ function change_user(uname)
 function change_user_back(h)
 {
 	before_back();
-	$('#posts').html(h.html);
+	$('#posts').html(html_history['' + h.counter + ''][0]);
 	$('#mode').val('user');
 	if(h.info === tehusername)
 	{
@@ -2163,8 +2189,8 @@ function change_user_back(h)
 		document.title = 'posts by ' + h.info;
 	}
 	info1 = h.info;
-	after_post_load();
-	$('#postscroller').scrollTop(h.scrollTop);
+	after_post_load_back();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	hide_input();
 	clear()
 }
@@ -2230,11 +2256,11 @@ function stream_back(h)
 {
 	before_back();
 	setHeader('stream');
-	$('#posts').html(h.html);
+	$('#posts').html(html_history['' + h.counter + ''][0]);
 	$('#mode').val('stream');
 	document.title = 'stream';
-	after_post_load();
-	$('#postscroller').scrollTop(h.scrollTop);
+	after_post_load_back();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	hide_input();
 	clear();
 }
@@ -2295,11 +2321,11 @@ function top_posts_back(h)
 {
 	before_back();
 	setHeader('top');
-	$('#posts').html(h.html);
+	$('#posts').html(html_history['' + h.counter + ''][0]);
 	$('#mode').val('top');
 	document.title = 'top';
-	after_post_load();
-	$('#postscroller').scrollTop(h.scrollTop);
+	after_post_load_back();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	hide_input();
 	clear();
 }
@@ -2366,11 +2392,12 @@ function new_posts_back(h)
 {
 	before_back();
 	setHeader('new');
-	$('#posts').html(h.html);
+	console.log(h.html);
+	$('#posts').html(html_history['' + h.counter + ''][0]);
 	$('#mode').val('new');
 	document.title = 'new';
-	after_post_load();
-	$('#postscroller').scrollTop(h.scrollTop);
+	after_post_load_back();
+	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
 	hide_input();
 	clear()
 }
@@ -2726,36 +2753,29 @@ function UrlRecord(mode,info)
 
 function go_back()
 {
-	if(ahistory.length < 2)
-	{
-		return false;
-	}
-	url = ahistory[ahistory.length - 2];
-	ahistory.pop();
-	if(ahistory.length>1)
-	{
-		ahistory.pop();
-	}
-	if(url === undefined)
+	var state = window.history.state;
+
+	if(state === undefined)
 	{
 		clear();
 		return false;
 	}
-	info = url.info
-	mode = url.mode
+
+	mode = state.mode;
+
 	if(mode === 'channel')
 	{
-		change_channel_back(url);
+		change_channel_back(state);
 		return false;
 	}
 	if(mode === 'user')
 	{
-		change_user_back(url);
+		change_user_back(state);
 		return false;
 	}
 	if(mode === 'chat')
 	{
-		chat_back(url.info);
+		chat_back(state.info);
 		return false;
 	}
 	if(mode === 'chatall')
@@ -2770,155 +2790,138 @@ function go_back()
 	}
 	if(mode ==='new')
 	{
-		new_posts_back(url);
+		new_posts_back(state);
 		return false;
 	}
 	if(mode === 'post')
 	{
-		open_post_back(url);
+		open_post_back(state);
 		return false;
 	}
 	if(mode === 'top')
 	{
-		top_posts_back(url);
+		top_posts_back(state);
 		return false;
 	}
 	if(mode === 'stream')
 	{
-		stream_back(url);
+		stream_back(state);
 		return false;
 	}
 	if(mode === 'pins')
 	{
-		get_pins_back(url);
+		get_pins_back(state);
 		return false;
 	}
 	if(mode === 'alerts')
 	{
-		alerts_back(url);
+		alerts_back(state);
 		return false;
 	}
+
 	clear();
 	return false;
 }
 
 function update_url()
 {
-	var ch = false;
 	bottomdown = false;
 	mode = $('#mode').val();
+	var ch = '';
+	var info;
+	var url;
+
 	if(mode === 'channel')
 	{
 		url = document.title;
-		xinfo = document.title;
+		info = document.title;
 	}
 	else if(mode === 'user')
 	{
 		url = 'user/' + info1;
-		xinfo = info1;
+		info = info1;
 	}
 	else if(mode === 'chat')
 	{
-		url = "chat/" + info1;
-		xinfo = info1;
+		url = 'chat/' + info1;
+		info = info1;
 	}
 	else if(mode === 'notes')
 	{
-		url = "notes";
-		xinfo = '0';
+		url = 'notes';
+		info = '0';
 	}
 	else if(mode === 'help')
 	{
-		url = "help";
-		xinfo = '0';
+		url = 'help';
+		info = '0';
 	}
 	else if(mode === 'inbox')
 	{
-		url = "inbox";
-		xinfo = '0';
+		url = 'inbox';
+		info = '0';
 	}
 	else if(mode === 'sent')
 	{
-		url = "sent";
-		xinfo = '0';
+		url = 'sent';
+		info = '0';
 	}
 	else if(mode === 'chatall')
 	{
-		url = "chat";
-		xinfo = '0';
+		url = 'chat';
+		info = '0';
 	}
 	else if(mode === 'settings')
 	{
-		url = "settings";
-		xinfo = '0';
+		url = 'settings';
+		info = '0';
 	}
 	else if(mode === 'new')
 	{
-		url = "new";
-		xinfo = '0';
+		url = 'new';
+		info = '0';
 	}
 	else if(mode === 'stream')
 	{
-		url = "stream";
-		xinfo = '0';
+		url = 'stream';
+		info = '0';
 	}
 	else if(mode === 'post')
 	{
-		xinfo = $('.post_id:first').val();
-		url = "post/" + xinfo;
+		info = $('.post_id:first').val();
+		url = 'post/' + info;
 		ch = channel;
 	}
 	else if(mode === 'top')
 	{
-		url = "top";
-		xinfo = '0';
+		url = 'top';
+		info = '0';
 	}
 	else if(mode === 'pins')
 	{
-		url = "pins/" + info1;
-		xinfo = info1;
+		url = 'pins/' + info1;
+		info = info1;
 	}
 	else if(mode === 'useronchannel')
 	{
 		url = info1 + '/on/' + info2;
-		xinfo = info1 + ' on ' + info2
+		info = info1 + ' on ' + info2
 	}
 	else if(mode === 'alerts')
 	{
 		url = 'alerts';
-		xinfo = 0;
+		info = 0;
 	}
 	else
 	{
-		url = "";
+		url = '';
 		mode = 'empty'
-		xinfo = '0';
+		info = '0';
 	}
-	try
-	{
-		last = ahistory[ahistory.length - 1];
-		if(last.mode === mode && last.info === xinfo)
-		{
-			window.history.pushState({"pageTitle": "title", content: "etc"}, "", '/'+url);
-			return false;
-		}
-		else
-		{
-			
-		}
-	}
-	catch(err)
-	{}
-	window.history.pushState({"pageTitle": "title", content: "etc"}, "", '/'+url);
-	ahistory.push(new UrlRecord(mode,xinfo));
-	if(ahistory.length > 100)
-	{
-		ahistory.shift();
-	}
-	if(ch)
-	{
-		ahistory[ahistory.length - 1].channel = ch;
-	}
+
+	window.history.pushState({'counter': history_counter, 'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
+
+	history_counter += 1;
 }
 
 function clear_url()
@@ -3864,6 +3867,17 @@ function add_placeholder_style()
 	$('head').append(styleBlock);
 }
 
+function activate_history_listener()
+{
+	window.addEventListener('popstate', function(e) 
+	{
+		if(e.state !== null)
+		{
+			go_back();
+		}
+	});
+}
+
 function init(mode, info)
 {
 	$.ajaxSetup({ cache: false });
@@ -3954,4 +3968,5 @@ function init(mode, info)
     activate_mousewheel();
     check_new_pms();
     check_new_alerts();
+    activate_history_listener();
 }
