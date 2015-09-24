@@ -1,5 +1,3 @@
-var history_counter = 1;
-var html_history = {};
 var info1;
 var info2;
 var chattingwith;
@@ -107,7 +105,10 @@ function before_post_load()
 	reset_players();
 	if(window.history.state)
 	{
-		html_history['' + window.history.state.counter + ''] = [$('#posts').html(), $('#postscroller').scrollTop()]
+		var state = window.history.state;
+		state.html = $('#posts').html();
+		state.scrolltop = $('#postscroller').scrollTop();
+		window.history.replaceState(state, document.title);
 	}
 }
 
@@ -131,6 +132,14 @@ function after_post_load()
 		create_vimeo_players();
 		create_audio_players();
 		create_video_players();
+
+		if(window.history.state)
+		{
+			var state = window.history.state;
+			state.html = $('#posts').html();
+			state.scrolltop = $('#postscroller').scrollTop();
+			window.history.replaceState(state, document.title);
+		}
 	}
 	catch(err)
 	{
@@ -685,11 +694,11 @@ function alerts_back(h)
 {
 	before_back();
 	$('#mode').val('alerts');
-	$('#posts').html(html_history['' + h.counter + ''][0]).ready(function()
+	$('#posts').html(h.html).ready(function()
 	{
 	});
 	setHeader('alerts');
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	document.title = 'alerts';
 	after_post_load_back();
 	hide_input();
@@ -1303,7 +1312,7 @@ function get_pins_back(h)
 {
 	before_back();
 	$('#mode').val('pins');
-	$('#posts').html(html_history['' + h.counter + ''][0]).ready(function()
+	$('#posts').html(h.html).ready(function()
 	{
 	});
 	if(h.info === tehusername)
@@ -1320,7 +1329,7 @@ function get_pins_back(h)
 	} 
 	info1 = h.info;
 	after_post_load_back();
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear();
 }
@@ -1756,11 +1765,12 @@ function open_post_back(h)
 {
 	before_back();
 	$('#mode').val('post');
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	console.log(h);
+	$('#posts').html(h.html);
 	setHeader('a post on <a onClick="change_channel(\'' + h.channel + '\');return false;" href="#">' + h.channel + '</a>');
 	channel = h.channel;
 	document.title = 'a post on ' + channel;
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	after_post_load_back();
 	show_input('write a comment');
 	clear();
@@ -2071,9 +2081,9 @@ function change_channel_back(h)
 {
 	before_back();
 	$('#mode').val('channel');
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	$('#posts').html(h.html);
 	setHeader(h.info);
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	channel = h.info
 	document.title = channel;
 	after_post_load_back();
@@ -2174,7 +2184,7 @@ function change_user(uname)
 function change_user_back(h)
 {
 	before_back();
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	$('#posts').html(h.html);
 	$('#mode').val('user');
 	if(h.info === tehusername)
 	{
@@ -2190,7 +2200,7 @@ function change_user_back(h)
 	}
 	info1 = h.info;
 	after_post_load_back();
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear()
 }
@@ -2256,11 +2266,11 @@ function stream_back(h)
 {
 	before_back();
 	setHeader('stream');
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	$('#posts').html(h.html);
 	$('#mode').val('stream');
 	document.title = 'stream';
 	after_post_load_back();
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear();
 }
@@ -2321,11 +2331,11 @@ function top_posts_back(h)
 {
 	before_back();
 	setHeader('top');
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	$('#posts').html(h.html);
 	$('#mode').val('top');
 	document.title = 'top';
 	after_post_load_back();
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear();
 }
@@ -2392,11 +2402,11 @@ function new_posts_back(h)
 {
 	before_back();
 	setHeader('new');
-	$('#posts').html(html_history['' + h.counter + ''][0]);
+	$('#posts').html(h.html);
 	$('#mode').val('new');
 	document.title = 'new';
 	after_post_load_back();
-	$('#postscroller').scrollTop(html_history['' + h.counter + ''][1]);
+	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear()
 }
@@ -2926,8 +2936,7 @@ function update_url()
 		}
 	}
 
-	window.history.pushState({'counter': history_counter, 'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
-	history_counter += 1;
+	window.history.pushState({'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
 }
 
 function resize_videos()
@@ -3874,6 +3883,7 @@ function activate_history_listener()
 	{
 		if(e.state !== null)
 		{
+			console.log(window.history.state);
 			go_back();
 		}
 	});
