@@ -1701,9 +1701,9 @@ function open_post(id)
 	else
 	{
 		$.get('/open_post/',
-			{
+		{
 	        id: id
-			},
+		},
 		function(data) 
 		{
 			before_post_load();
@@ -2392,7 +2392,6 @@ function new_posts_back(h)
 {
 	before_back();
 	setHeader('new');
-	console.log(h.html);
 	$('#posts').html(html_history['' + h.counter + ''][0]);
 	$('#mode').val('new');
 	document.title = 'new';
@@ -2919,14 +2918,17 @@ function update_url()
 		info = '0';
 	}
 
+	if(window.history.state)
+	{
+		if(window.history.state.url === url)
+		{
+			return false;
+		}
+	}
+
 	window.history.pushState({'counter': history_counter, 'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
-
+	console.log('aaaaaa');
 	history_counter += 1;
-}
-
-function clear_url()
-{
-	window.history.pushState({"pageTitle": "title", content: "etc"}, "", '/');
 }
 
 function resize_videos()
