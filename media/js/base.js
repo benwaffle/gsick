@@ -2927,7 +2927,6 @@ function update_url()
 	}
 
 	window.history.pushState({'counter': history_counter, 'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
-	console.log('aaaaaa');
 	history_counter += 1;
 }
 
