@@ -629,9 +629,13 @@ def check_new_pms(request):
 	uname = ''
 	p = get_profile(request.user)
 	try:
+		if p.last_pm_read == None:
+			lpmr = 0
+		else:
+			lpmr = p.last_pm_read.id
 		last_pm = PrivateMessage.objects.filter(user=request.user).order_by('-id')[0]
-		num = PrivateMessage.objects.filter(user=request.user, id__gt=p.last_pm_read.id).order_by('-id').count()
-		if last_pm.id > p.last_pm_read.id:
+		num = PrivateMessage.objects.filter(user=request.user, id__gt=lpmr).order_by('-id').count()
+		if last_pm.id > lpmr:
 			status = 'yes'
 			id = last_pm.id
 			uname = last_pm.sender.username
@@ -645,9 +649,13 @@ def check_new_alerts(request):
 	id = ''
 	uname = ''
 	p = get_profile(request.user)
+	if p.last_alert_read == None:
+		lar = 0
+	else:
+		lar = p.last_alert_read.id
 	last_alert = Alert.objects.filter(user=request.user).order_by('-id')[0]
-	num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read.id).order_by('-id').count()
-	if last_alert.id > p.last_alert_read.id:
+	num = Alert.objects.filter(user=request.user, id__gt=lar).order_by('-id').count()
+	if last_alert.id > lar:
 		status = 'yes'
 		id = last_alert.id
 	data = {'status': status, 'id':id, 'num':num}
