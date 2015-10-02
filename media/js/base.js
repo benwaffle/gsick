@@ -625,34 +625,6 @@ function new_note()
 	$('#inputcontent').focus().val('note: ');
 }
 
-function inbox()
-{
-	if(loggedin !== 'yes')
-	{
-		show_guest_status();
-		clear();
-		return false;
-	}
-	$.get('/view_inbox/',
-		{
-        
-		},
-	function(data) 
-	{
-		before_post_load();
-		$('#mode').val('inbox');
-		$('#posts').html(data['posts']);
-		setHeader('inbox');
-		clear();
-		after_post_load();
-		$('#postscroller').scrollTop(0);
-		document.title = 'inbox';
-		$('#menu_chat').html('chat');
-	});
-	clear();
-    return false;	
-}
-
 function alerts()
 {
 	if(loggedin !== 'yes')
@@ -1024,35 +996,6 @@ function refresh_sent()
             $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
         	{
         		remove_duplicate_sent_receivers();
-        	});
-			after_post_load();
-		}
-		return false;
-	});
-	return false;
-}
-
-function refresh_inbox()
-{
-	id = $('#chat_post:first').attr('value')
-	if(id)
-	{
-
-	}
-	else{
-		id = 0;
-	}
-	$.get('/refresh_inbox/',
-	 {
-	 	first_chat_id:id,
-	 },
-	function(data)
-	{
-		if(data['status'] === "ok")
-		{
-            $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
-        	{
-        		remove_duplicate_inbox_senders();	
         	});
 			after_post_load();
 		}
@@ -2717,7 +2660,7 @@ function check_new_pms()
 	{
 		if(data['status'] === 'yes')
 		{
-			if ($('#mode').val() != 'chatall')
+			if ($('#mode').val() != 'chatall' && $('#mode').val() != 'chat')
 			{
 				$('#menu_chat').html("(" + data['num'] + ") &nbsp; chat");
 			}

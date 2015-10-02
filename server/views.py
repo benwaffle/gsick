@@ -153,9 +153,9 @@ def view_chat(request):
 	s = ''
 	try:
 		posts = chat_to_html(request, get_chat_messages(request), 'chatall')
+		status = 'ok'
 	except:
-		posts = ""
-	status = 'ok'
+		posts = ''
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -173,23 +173,10 @@ def view_alerts(request):
 		alerts = alerts_to_html(request, xalerts)
 		p = get_profile(request.user)
 		lalerts = list(xalerts)
-		p.last_alert_read = lalerts[0].id
+		p.last_alert_read = lalerts[0]
 		p.save()
 		status = 'ok'
 	data = {'alerts':alerts, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def view_inbox(request):
-	data = ''
-	status = 'error'
-	posts = ''
-	s = ''
-	try:
-		posts = chat_to_html(request, get_inbox_messages(request),'inbox')
-		status = 'ok'
-	except:
-		pass
-	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def sent_messages(request):
@@ -252,8 +239,8 @@ def refresh_chat(request):
 	p = get_profile(request.user)
 	last_pm_read = p.last_pm_read
 	for x in pmr:
-		if x.id > last_pm_read:
-			last_pm_read = x.id
+		if x.id > last_pm_read.id:
+			last_pm_read = x
 	p.last_pm_read = last_pm_read
 	p.save()
 	posts = chat_to_html(request, pmx)
@@ -264,53 +251,16 @@ def refresh_chat(request):
 def refresh_chatall(request):
 	data = ''
 	status = ''
-	first_chat_id = request.GET.get('first_chat_id',0)
-	brats = Silenced.objects.filter(user=request.user)
-	brats = list(brats)
-	bl = []
-	pmr = PrivateMessage.objects.filter(user=request.user, id__gt=first_chat_id).exclude(sender__username__in=[s.brat.username for s in brats] + ['note']).exclude(info1='welcome')
-	pms = PrivateMessage.objects.filter(sender=request.user, id__gt=first_chat_id).exclude(info1='welcome')
-	pmx = sorted(itertools.chain(pmr, pms), key=attrgetter('date'), reverse=True)
-	l = list(pmx)
-	bl = bl + l
-	blx = remove_duplicate_senders(request, bl,welcome=False)
-	bl = []
-	for m in blx:
-		go = True
-		for m2 in blx:
-			if m.sender == m2.user and m.user == m2.sender:
-				if m.id < m2.id:
-					go = False
-		if go:
-			bl.append(m)
-	p = get_profile(request.user)
-	last_pm_read = p.last_pm_read
-	for x in pmr:
-		if x.id > last_pm_read:
-			last_pm_read = x.id
-	p.last_pm_read = last_pm_read
-	p.save()
-	messages = chat_to_html(request, bl, 'chatall')
-	status = 'ok'
-	data = {'messages':messages, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def refresh_inbox(request):
-	data = ''
-	status = 'error'
-	first_chat_id = request.GET.get('first_chat_id',0)
-	brats = Silenced.objects.filter(user=request.user)
-	brats = list(brats)
-	pmr = PrivateMessage.objects.filter(user=request.user, id__gt=first_chat_id).exclude(sender__username__in=[s.brat.username for s in brats] + ['note'])
-	p = get_profile(request.user)
-	last_pm_read = p.last_pm_read
-	for x in pmr:
-		if x.id > last_pm_read:
-			last_pm_read = x.id
-	p.last_pm_read = last_pm_read
-	p.save()
-	pmr = remove_duplicate_senders(request, pmr)
-	messages = chat_to_html(request, pmr,'inbox')
+	first_chat_id = request.GET.get('first_chat_id', 0)
+	convs = Conversation.objects.filter(Q(user1=request.user) | Q(user2=request.user), last_message_id__gt=first_chat_id).order_by('-date_modified')[:20]
+	msgs = []
+	for conv in convs:
+		msgs.append(conv.last_message)
+	if len(msgs) > 0:
+		p = get_profile(request.user)
+		p.last_pm_read = msgs[0]
+		p.save()
+	messages = chat_to_html(request, msgs, 'chatall')
 	status = 'ok'
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -442,22 +392,47 @@ def open_post(request, id=None):
 		id = request.GET.get('id',0)
 	post = Post.objects.get(id=id)
 	cname = post.channel.name
-	comments = Comment.objects.filter(post=post).order_by('id')[:20]
+	comments = Comment.objects.filter(post=post).order_by('id')[:50]
 	post = post_to_html(request, post)
 	comments = comments_to_html(request,comments)
 	status = 'ok'
 	data = {'post':post, 'comments':comments, 'status':status, 'cname':cname}
-	return HttpResponse(json.dumps(data), content_type="application/json")	
+	return HttpResponse(json.dumps(data), content_type="application/json")
 
-def get_top_posts(request):
-	return Post.objects.annotate(num_pins=Count("pin")).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=7))).filter(num_pins__gt="10").order_by('-num_pins', '-date')[:10]
+def save_top_posts():
+	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=7))).filter(num_pins__gt='0').order_by('-num_pins', '-date')[:10]
+	s = ''
+	for p in posts:
+		s += str(p.id)
+		s += ','
+	s = s[:-1]
+	info = Info.objects.first()
+	info.top_posts = s
+	info.top_posts_date = datetime.datetime.now()
+	info.save()
+	return posts
+		
+def get_top_posts():
+	info = Info.objects.first()
+	if info == None:
+		info = Info(top_posts='', top_posts_date=datetime.datetime.now())
+		info.save()
+		return save_top_posts()
+	if datetime.datetime.now() - info.top_posts_date > datetime.timedelta(minutes=1):
+		return save_top_posts()
+	else:
+		ids = map(int, info.top_posts.split(','))
+		posts = Post.objects.filter(id__in=ids)
+		post_list = list(posts)
+		post_list.sort(key=lambda x: ids.index(x.id))
+		return post_list
 
 def top_posts(request):
 	posts = ''
 	status = ''
 	try:
-		posts = get_top_posts(request)
-		posts = posts_to_html(request,posts,'new')
+		posts = get_top_posts()
+		posts = posts_to_html(request, posts, 'new')
 		status = 'ok'
 	except:
 		pass
@@ -530,7 +505,7 @@ def load_more_comments(request):
 	id = request.GET.get('id',0)
 	last_id = request.GET.get('last_id',0)
 	post = Post.objects.get(id=id)
-	comments = Comment.objects.filter(post=post, id__gt=last_id).order_by('id')[:20]
+	comments = Comment.objects.filter(post=post, id__gt=last_id).order_by('id')[:50]
 	comments = comments_to_html(request,comments)
 	status = 'ok'
 	data = {'comments':comments, 'status':status}
@@ -650,12 +625,15 @@ def check_new_pms(request):
 	id = ''
 	uname = ''
 	p = get_profile(request.user)
-	last_pm = PrivateMessage.objects.filter(user=request.user).order_by('-id')[0]
-	num = PrivateMessage.objects.filter(user=request.user, id__gt=p.last_pm_read).order_by('-id').count()
-	if last_pm.id > p.last_pm_read:
-		status = 'yes'
-		id = last_pm.id
-		uname = last_pm.sender.username
+	try:
+		last_pm = PrivateMessage.objects.filter(user=request.user).order_by('-id')[0]
+		num = PrivateMessage.objects.filter(user=request.user, id__gt=p.last_pm_read.id).order_by('-id').count()
+		if last_pm.id > p.last_pm_read.id:
+			status = 'yes'
+			id = last_pm.id
+			uname = last_pm.sender.username
+	except:
+		pass
 	data = {'status': status, 'id':id, 'uname':uname, 'num':num}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -665,8 +643,8 @@ def check_new_alerts(request):
 	uname = ''
 	p = get_profile(request.user)
 	last_alert = Alert.objects.filter(user=request.user).order_by('-id')[0]
-	num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read).order_by('-id').count()
-	if last_alert.id > p.last_alert_read:
+	num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read.id).order_by('-id').count()
+	if last_alert.id > p.last_alert_read.id:
 		status = 'yes'
 		id = last_alert.id
 	data = {'status': status, 'id':id, 'num':num}
@@ -745,54 +723,18 @@ def get_private_messages(request):
 	return HttpResponse(messages)
 
 def get_chat_messages(request, last_pm_id=None):
-	ss = Silenced.objects.filter(user=request.user)
-	n = 20
-	bl = []
-	senders = []
-	receivers = []
-	y = 0
-	while True:
-		if last_pm_id:	
-			pmr = PrivateMessage.objects.filter(user=request.user,hidden=False,id__lt=last_pm_id).exclude(sender__username__in=[s.brat.username for s in ss] + senders).order_by('-id')[:n]
-			pms = PrivateMessage.objects.filter(sender=request.user, hidden=False, id__lt=last_pm_id).exclude(user__username__in=receivers).exclude(info1='welcome').order_by('-id')[:n]
-		else:	
-			pmr = PrivateMessage.objects.filter(user=request.user,hidden=False).exclude(sender__username__in=[s.brat.username for s in ss] + senders).order_by('-id')[:n]
-			pms = PrivateMessage.objects.filter(sender=request.user, hidden=False).exclude(user__username__in=receivers).exclude(info1='welcome').order_by('-id')[:n]
-		for ipmr in pmr:
-			if ipmr.sender.username not in senders:
-				senders.append(ipmr.sender.username)
-		for ipms in pms:
-			if ipms.user not in receivers:
-				receivers.append(ipms.user.username)
-		pmx = sorted(itertools.chain(pmr, pms), key=attrgetter('date'), reverse=True)[:n]
-		l = list(pmx)
-		bl = bl + l
-		bl = bl[:n]
-		blx = remove_duplicate_senders(request, bl,welcome=False)
-		last_pm_id = blx[-1].id
-		bl = []
-		for m in blx:
-			go = True
-			for m2 in blx:
-				if m.sender == m2.user and m.user == m2.sender:
-					if m.id < m2.id:
-						go = False
-			if go:
-				bl.append(m)
-		y = y + 1
-		if y > 30:
-			break
-		if len(bl) >= 20 or not pmx:
-			break
-	p = get_profile(request.user)
-	last_pm_read = p.last_pm_read
-	for x in bl:
-		if x.user == request.user:
-			if x.id > last_pm_read:
-				last_pm_read = x.id
-	p.last_pm_read = last_pm_read
-	p.save()
-	return bl
+	if last_pm_id != None:
+		convs = Conversation.objects.filter(Q(user1=request.user) | Q(user2=request.user), last_message_id__lt=last_pm_id).order_by('-date_modified')[:20]
+	else:
+		convs = Conversation.objects.filter(Q(user1=request.user) | Q(user2=request.user)).order_by('-date_modified')[:20]
+	msgs = []
+	for conv in convs:
+		msgs.append(conv.last_message)
+	if len(msgs) > 0:
+		p = get_profile(request.user)
+		p.last_pm_read = msgs[0]
+		p.save()
+	return msgs
 
 def get_sent_messages(request, last_pm_id=None):
 	ss = Silenced.objects.filter(user=request.user)
@@ -818,37 +760,6 @@ def get_sent_messages(request, last_pm_id=None):
 			break
 		if len(bl) >= 20 or not pms:
 			break
-	return bl
-
-def get_inbox_messages(request, last_pm_id=None):
-	ss = Silenced.objects.filter(user=request.user)
-	n = 20
-	bl = []
-	senders = ['note']
-	y = 0
-	while True:
-		if last_pm_id:	
-			pmr = PrivateMessage.objects.filter(user=request.user,hidden=False,id__lt=last_pm_id).exclude(sender__username__in=[s.brat.username for s in ss] + senders).exclude(info1='welcome').order_by('-id')[:n]
-		else:	
-			pmr = PrivateMessage.objects.filter(user=request.user,hidden=False).exclude(sender__username__in=[s.brat.username for s in ss] + senders).exclude(info1='welcome').order_by('-id')[:n]
-		l = list(pmr)
-		bl = bl + l
-		bl = bl[:n]
-		bl = remove_duplicate_senders(request, bl)
-		senders = senders + get_senders_list(request,bl)
-		last_pm_id = bl[-1].id
-		y = y + 1
-		if y > 30:
-			break
-		if len(bl) >= 20 or not pmr:
-			break
-	p = get_profile(request.user)
-	last_pm_read = p.last_pm_read
-	for x in bl:
-		if x.id > last_pm_read:
-			last_pm_read = x.id
-	p.last_pm_read = last_pm_read
-	p.save()
 	return bl
 
 def check_pm_limit(request):
@@ -976,6 +887,20 @@ def send_message(request):
 		username = receiver.username
 		pm = PrivateMessage(user=receiver, sender=request.user, date=datetime.datetime.now(), message=stripper(message))
 		pm.save()
+		if username < request.user.username:
+			user1 = receiver;
+			user2 = request.user
+		else:
+			user1 = request.user
+			user2 = receiver
+		try:
+			conv = Conversation.objects.get(user1=user1, user2=user2)
+			conv.last_message = pm
+			conv.date_modified = datetime.datetime.now()
+			conv.save()
+		except:
+			conv = Conversation(user1=user1, user2=user2, last_message=pm, date_modified=datetime.datetime.now())
+			conv.save()
 	data = {'username':username, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
 	
@@ -1138,7 +1063,7 @@ def show_last_comments(request):
 	id = request.GET.get('id',0)
 	post = Post.objects.get(id=id)
 	cname = post.channel.name
-	comments = Comment.objects.filter(post=post).order_by('-id')[:20]
+	comments = Comment.objects.filter(post=post).order_by('-id')[:50]
 	length = comments.count()
 	comments = reversed(list(comments))
 	c = comments_to_html(request,comments)
@@ -1392,7 +1317,7 @@ def load_more_chatall(request):
 	data = ''
 	messages = ''
 	status = 'error'
-	last_pm_id = request.GET.get('last_pm_id',0)
+	last_pm_id = request.GET.get('last_pm_id', 0)
 	if last_pm_id != 0:
 		messages = get_chat_messages(request, last_pm_id)
 		messages = chat_to_html(request,messages,'chatall')
@@ -1404,7 +1329,7 @@ def load_more_channel(request):
 	data = ''
 	messages = ''
 	status = 'error'
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	post = Post.objects.get(id=id)
 	posts = Post.objects.filter(channel=post.channel, id__lt=id).order_by('-id')[:10]
 	posts = posts_to_html(request,posts)
@@ -1462,18 +1387,6 @@ def load_more_chat(request):
 			peer = pm.user
 		messages = get_chat_history(request, peer, last_pm_id)
 		messages = chat_to_html(request,messages)
-		status = 'ok'
-	data = {'messages':messages, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def load_more_inbox(request):
-	data = ''
-	messages = ''
-	status = 'error'
-	last_pm_id = request.GET.get('last_pm_id',0)
-	if last_pm_id != 0:
-		messages = get_inbox_messages(request, last_pm_id)
-		messages = chat_to_html(request,messages,'inbox')
 		status = 'ok'
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")

@@ -3,19 +3,6 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
-class Profile(models.Model):
-    user = models.ForeignKey(User, unique=True)
-    theme_background = models.CharField(max_length=20, default='0')
-    theme_text = models.CharField(max_length=20, default='0')
-    theme_link = models.CharField(max_length=20, default='0')
-    theme_input_background = models.CharField(max_length=20, default='0')
-    theme_input_text = models.CharField(max_length=20, default='0')
-    theme_input_border = models.CharField(max_length=20, default='0')
-    theme_input_placeholder = models.CharField(max_length=20, default='0')
-    theme_scroll_background = models.CharField(max_length=20, default='0')
-    embed_option = models.CharField(max_length=20, default='embed')
-    last_pm_read = models.IntegerField(default=0)
-    last_alert_read = models.IntegerField(default=0)
 
 class Channel(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -52,6 +39,12 @@ class PrivateMessage(models.Model):
     info1 = models.CharField(max_length=100, default='', null=True)
     info2 = models.CharField(max_length=100, default='', null=True)
 
+class Conversation(models.Model):
+    user1 = models.ForeignKey(User, related_name='user1')
+    user2 = models.ForeignKey(User, related_name='user2')
+    last_message = models.ForeignKey(PrivateMessage)
+    date_modified = models.DateTimeField()
+
 class Silenced(models.Model):
     user = models.ForeignKey(User, related_name='who_wants_silence')
     brat = models.ForeignKey(User, related_name='who_to_be_silenced')
@@ -77,3 +70,21 @@ class Visited(models.Model):
 class Paste(models.Model):
     content = models.TextField(max_length=100000, default=None, null=False) 
     date = models.DateTimeField(default=datetime.datetime.now())
+
+class Info(models.Model):
+    top_posts = models.TextField(max_length=1000)
+    top_posts_date = models.DateTimeField()
+    
+class Profile(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    theme_background = models.CharField(max_length=20, default='0')
+    theme_text = models.CharField(max_length=20, default='0')
+    theme_link = models.CharField(max_length=20, default='0')
+    theme_input_background = models.CharField(max_length=20, default='0')
+    theme_input_text = models.CharField(max_length=20, default='0')
+    theme_input_border = models.CharField(max_length=20, default='0')
+    theme_input_placeholder = models.CharField(max_length=20, default='0')
+    theme_scroll_background = models.CharField(max_length=20, default='0')
+    embed_option = models.CharField(max_length=20, default='embed')
+    last_pm_read = models.ForeignKey(PrivateMessage)
+    last_alert_read = models.ForeignKey(Alert)
