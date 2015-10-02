@@ -400,7 +400,10 @@ def open_post(request, id=None):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def save_top_posts():
-	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=7))).filter(num_pins__gt='0').order_by('-num_pins', '-date')[:10]
+	# days and num_pins__gte should be changed as the site grows in users 
+	# days is how old can a post be to be considered for top
+	# num_pins__gte is the minimum amount of pins (appreciations) to be considered for top
+	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=100))).filter(num_pins__gte='1').order_by('-num_pins', '-date')[:10]
 	s = ''
 	for p in posts:
 		s += str(p.id)
@@ -418,7 +421,7 @@ def get_top_posts():
 		info = Info(top_posts='', top_posts_date=datetime.datetime.now())
 		info.save()
 		return save_top_posts()
-	if datetime.datetime.now() - info.top_posts_date > datetime.timedelta(minutes=1):
+	if datetime.datetime.now() - info.top_posts_date > datetime.timedelta(minutes=5):
 		return save_top_posts()
 	else:
 		ids = map(int, info.top_posts.split(','))
