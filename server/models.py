@@ -86,5 +86,5 @@ class Profile(models.Model):
     theme_input_placeholder = models.CharField(max_length=20, default='0')
     theme_scroll_background = models.CharField(max_length=20, default='0')
     embed_option = models.CharField(max_length=20, default='embed')
-    last_pm_read = models.ForeignKey(PrivateMessage, null=True)
-    last_alert_read = models.ForeignKey(Alert, null=True)
+    last_pm_read = models.IntegerField(default=0)
+    last_alert_read = models.IntegerField(default=0)

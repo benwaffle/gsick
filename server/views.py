@@ -173,7 +173,7 @@ def view_alerts(request):
 		alerts = alerts_to_html(request, xalerts)
 		p = get_profile(request.user)
 		lalerts = list(xalerts)
-		p.last_alert_read = lalerts[0]
+		p.last_alert_read = lalerts[0].id
 		p.save()
 		status = 'ok'
 	data = {'alerts':alerts, 'status':status}
@@ -239,8 +239,8 @@ def refresh_chat(request):
 	p = get_profile(request.user)
 	last_pm_read = p.last_pm_read
 	for x in pmr:
-		if x.id > last_pm_read.id:
-			last_pm_read = x
+		if x.id > last_pm_read:
+			last_pm_read = x.id
 	p.last_pm_read = last_pm_read
 	p.save()
 	posts = chat_to_html(request, pmx)
@@ -258,7 +258,7 @@ def refresh_chatall(request):
 		msgs.append(conv.last_message)
 	if len(msgs) > 0:
 		p = get_profile(request.user)
-		p.last_pm_read = msgs[0]
+		p.last_pm_read = msgs[0].id
 		p.save()
 	messages = chat_to_html(request, msgs, 'chatall')
 	status = 'ok'
@@ -629,13 +629,9 @@ def check_new_pms(request):
 	uname = ''
 	p = get_profile(request.user)
 	try:
-		if p.last_pm_read == None:
-			lpmr = 0
-		else:
-			lpmr = p.last_pm_read.id
 		last_pm = PrivateMessage.objects.filter(user=request.user).order_by('-id')[0]
-		num = PrivateMessage.objects.filter(user=request.user, id__gt=lpmr).order_by('-id').count()
-		if last_pm.id > lpmr:
+		num = PrivateMessage.objects.filter(user=request.user, id__gt=p.last_pm_read).order_by('-id').count()
+		if last_pm.id > p.last_pm_read:
 			status = 'yes'
 			id = last_pm.id
 			uname = last_pm.sender.username
@@ -649,13 +645,9 @@ def check_new_alerts(request):
 	id = ''
 	uname = ''
 	p = get_profile(request.user)
-	if p.last_alert_read == None:
-		lar = 0
-	else:
-		lar = p.last_alert_read.id
 	last_alert = Alert.objects.filter(user=request.user).order_by('-id')[0]
-	num = Alert.objects.filter(user=request.user, id__gt=lar).order_by('-id').count()
-	if last_alert.id > lar:
+	num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read).order_by('-id').count()
+	if last_alert.id > p.last_alert_read:
 		status = 'yes'
 		id = last_alert.id
 	data = {'status': status, 'id':id, 'num':num}
@@ -743,7 +735,7 @@ def get_chat_messages(request, last_pm_id=None):
 		msgs.append(conv.last_message)
 	if len(msgs) > 0:
 		p = get_profile(request.user)
-		p.last_pm_read = msgs[0]
+		p.last_pm_read = msgs[0].id
 		p.save()
 	return msgs
 
