@@ -1551,10 +1551,7 @@ def delete_post(request):
 	post = Post.objects.get(id=post_id)
 	channel = post.channel
 	if request.user.username in admin_list or request.user == post.user:
-		try:
-			Comment.objects.filter(post=post)[0]
-			status = 'commented'
-		except:
+		if request.user.username in admin_list:
 			try:
 				post.delete()
 				if Post.objects.filter(channel=channel).count() <= 0:
@@ -1562,6 +1559,18 @@ def delete_post(request):
 				status = 'ok'
 			except:
 				pass
+		else:	
+			try:
+				Comment.objects.filter(post=post)[0]
+				status = 'commented'
+			except:
+				try:
+					post.delete()
+					if Post.objects.filter(channel=channel).count() <= 0:
+						channel.delete()
+					status = 'ok'
+				except:
+					pass
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
 
@@ -1571,15 +1580,22 @@ def delete_comment(request):
 	comment_id = request.POST['id']
 	comment = Comment.objects.get(id=comment_id)
 	if request.user.username in admin_list or request.user == comment.user:
-		try:
-			Comment.objects.filter(reply=comment)[0]
-			status = 'replied'
-		except:
+		if request.user.username in admin_list:
 			try:
 				comment.delete()
 				status = 'ok'
 			except:
 				pass
+		else:
+			try:
+				Comment.objects.filter(reply=comment)[0]
+				status = 'replied'
+			except:
+				try:
+					comment.delete()
+					status = 'ok'
+				except:
+					pass
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
 
