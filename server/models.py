@@ -12,6 +12,7 @@ class Post(models.Model):
     channel = models.ForeignKey(Channel)
     content = models.TextField(max_length=4000, default=None, null=True)
     date = models.DateTimeField(default=datetime.datetime.now())
+    date_modified = models.DateTimeField(default=datetime.datetime.now())
 
 class Comment(models.Model):
     user = models.ForeignKey(User)

@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('info1', models.CharField(default=b'', max_length=100, null=True)),
                 ('info2', models.CharField(default=b'', max_length=100, null=True)),
                 ('info3', models.CharField(default=b'', max_length=100, null=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 451000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 207000))),
                 ('user', models.ForeignKey(related_name='alerted', to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -37,16 +37,31 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('content', models.TextField(default=None, max_length=4000, null=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 449000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 204000))),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Conversation',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('date_modified', models.DateTimeField()),
             ],
         ),
         migrations.CreateModel(
             name='Follow',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 452000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 207000))),
                 ('followed', models.ForeignKey(related_name='followed', to=settings.AUTH_USER_MODEL)),
                 ('follower', models.ForeignKey(related_name='follower', to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Info',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('top_posts', models.TextField(max_length=1000)),
+                ('top_posts_date', models.DateTimeField()),
             ],
         ),
         migrations.CreateModel(
@@ -54,7 +69,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('content', models.TextField(default=None, max_length=4000, null=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 450000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 205000))),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -63,14 +78,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('content', models.TextField(default=None, max_length=100000)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 452000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 208000))),
             ],
         ),
         migrations.CreateModel(
             name='Pin',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 450000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 205000))),
             ],
         ),
         migrations.CreateModel(
@@ -78,7 +93,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('content', models.TextField(default=None, max_length=4000, null=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 449000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 204000))),
                 ('channel', models.ForeignKey(to='server.Channel')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
@@ -87,7 +102,7 @@ class Migration(migrations.Migration):
             name='PrivateMessage',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 8, 23, 13, 19, 47, 450000))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 10, 4, 9, 20, 22, 205000))),
                 ('message', models.TextField(default=None, max_length=4000, null=True)),
                 ('hidden', models.BooleanField(default=False)),
                 ('info1', models.CharField(default=b'', max_length=100, null=True)),
@@ -140,6 +155,21 @@ class Migration(migrations.Migration):
             model_name='pin',
             name='user',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='conversation',
+            name='last_message',
+            field=models.ForeignKey(to='server.PrivateMessage'),
+        ),
+        migrations.AddField(
+            model_name='conversation',
+            name='user1',
+            field=models.ForeignKey(related_name='user1', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='conversation',
+            name='user2',
+            field=models.ForeignKey(related_name='user2', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='comment',

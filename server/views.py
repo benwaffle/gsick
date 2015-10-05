@@ -362,8 +362,10 @@ def post_comment(request):
 	if status == 'ok':
 		post = Post.objects.get(id=id)
 		cname = post.channel.name
-		comment = Comment(user=request.user,content=content,date=datetime.datetime.now(),post=post)
+		comment = Comment(user=request.user, content=content, date=datetime.datetime.now(), post=post)
 		comment.save()
+		post.date_modified = datetime.datetime.now()
+		post.save()
 		if post.user != request.user:
 			mentions = find_mentions(request, content)
 			for m in mentions:
@@ -480,7 +482,7 @@ def load_more_new(request):
 	posts = ''
 	status = ''
 	try:
-		id = request.GET.get('id',0)
+		id = request.GET.get('id', 0)
 		posts = get_more_new_posts(request,id)
 		posts = posts_to_html(request,posts,'new')
 		status = 'ok'
@@ -493,7 +495,7 @@ def load_more_alerts(request):
 	posts = ''
 	status = ''
 	try:
-		id = request.GET.get('id',0)
+		id = request.GET.get('id', 0)
 		xalerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
 		alerts = alerts_to_html(request,xalerts)
 		status = 'ok'
@@ -505,7 +507,7 @@ def load_more_alerts(request):
 def load_more_comments(request):
 	comments = ''
 	status = ''
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	last_id = request.GET.get('last_id',0)
 	post = Post.objects.get(id=id)
 	comments = Comment.objects.filter(post=post, id__gt=last_id).order_by('id')[:50]
@@ -525,6 +527,8 @@ def reply_to_comment(request):
 		post = comment_replied.post
 		comment = Comment(user=request.user, content=content, post=post, reply=comment_replied, date=datetime.datetime.now())
 		comment.save()
+		post.date_modified = datetime.datetime.now()
+		post.save()
 		if request.user != comment_replied.user:
 			alert = Alert(user=comment_replied.user, type='reply', info1=request.user, info2=post.id, info3=comment.id, date=datetime.datetime.now())
 			alert.save()
@@ -593,7 +597,7 @@ def get_stream(request):
 		followed = []
 		for f in Follow.objects.filter(follower=request.user):
 			followed.append(f.followed)
-		posts = Post.objects.filter(user__in=followed).order_by('-id')[:10]
+		posts = Post.objects.filter(user__in=followed).order_by('-date_modified')[:10]
 		posts = posts_to_html(request, posts, 'stream')
 	if posts == '':
 		posts = '<center>follow people to see their posts here</center>'
@@ -604,11 +608,11 @@ def load_more_stream(request):
 	posts = ''
 	status = ''
 	try:
-		id = request.GET.get('id',0)
+		ids = request.GET.get('ids', 0).split(',')
 		followed = []
 		for f in Follow.objects.filter(follower=request.user):
 			followed.append(f.followed)
-		posts = Post.objects.filter(user__in=followed, id__lt=id).order_by('-id')[:10]
+		posts = Post.objects.filter(user__in=followed).exclude(id__in=ids).order_by('-date_modified')[:10]
 		posts = posts_to_html(request, posts, 'stream')
 		status = 'ok'
 	except:
@@ -787,7 +791,7 @@ def post_to_channel(request):
 			channel = Channel(name=cname)
 			channel.save()
 		content = stripper(request.POST['content']).strip()
-		post = Post(content=content, channel=channel, user=request.user, date=datetime.datetime.now())
+		post = Post(content=content, channel=channel, user=request.user, date=datetime.datetime.now(), date_modified=datetime.datetime.now())
 		post.save()
 		id = post.id
 	data = {'status':status, 'id':id}
@@ -810,7 +814,7 @@ def doggo_post_to_channel(request):
 			channel.save()
 		content = stripper(request.POST['content']).strip()
 		usernames = ['doggo', 'normie', 'atros', 'raphael', 'sytrus', 'dickiev', 'alexis', 'amalek']
-		post = Post(content=content, channel=channel, user=User.objects.get(username=random.choice(usernames)), date=datetime.datetime.now())
+		post = Post(content=content, channel=channel, user=User.objects.get(username=random.choice(usernames)), date=datetime.datetime.now(), date_modified=datetime.datetime.now())
 		post.save()
 		id = post.id
 	data = {'status':status, 'id':id}
@@ -1206,15 +1210,12 @@ def get_channel(request, cname=''):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_channel_posts(request, channel):
-	posts = Post.objects.filter(channel=channel).order_by('-id')[:10]
+	posts = Post.objects.filter(channel=channel).order_by('-date_modified')[:10]
 	return posts_to_html(request, posts)
 
 def get_channel_list(request):
 	status = 'ok'
-	if request.user.is_authenticated():
-		channels = visited_channels_to_html(request);
-	else:
-		channels = random_channels_to_html()
+	channels = channel_list_to_html(request)
 	data = {'status':status, 'channels': channels}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 	
@@ -1332,9 +1333,9 @@ def load_more_channel(request):
 	data = ''
 	messages = ''
 	status = 'error'
-	id = request.GET.get('id', 0)
-	post = Post.objects.get(id=id)
-	posts = Post.objects.filter(channel=post.channel, id__lt=id).order_by('-id')[:10]
+	ids = request.GET.get('ids', 0).split(',')
+	post = Post.objects.get(id=ids[0])
+	posts = Post.objects.filter(channel=post.channel).exclude(id__in=ids).order_by('-date_modified')[:10]
 	posts = posts_to_html(request,posts)
 	if posts != '':
 		status = 'ok'
@@ -1345,7 +1346,7 @@ def load_more_useronchannel(request):
 	data = ''
 	messages = ''
 	status = 'error'
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	post = Post.objects.get(id=id)
 	posts = Post.objects.filter(user=post.user,channel=post.channel, id__lt=post.id).order_by('-id')[:10]
 	posts = posts_to_html(request,posts)
@@ -1358,7 +1359,7 @@ def load_more_user(request):
 	data = ''
 	messages = ''
 	status = 'error'
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	post = Post.objects.get(id=id)
 	posts = Post.objects.filter(user=post.user, id__lt=id).order_by('-id')[:10]
 	posts = posts_to_html(request,posts,'user')
@@ -1369,7 +1370,7 @@ def load_more_user(request):
 
 def load_more_pins(request):
 	status = 'error'
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	pin = Pin.objects.get(id=id)
 	pins = Pin.objects.filter(user=pin.user,id__lt=id).order_by('-id')[:10]
 	pins = pins_to_html(request,pins)
@@ -1828,33 +1829,33 @@ def alerts_to_html(request, alerts):
 			s = s + "<input type='hidden' value='" + str(a.id) + "' class='alert_id'>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':	
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
 				s = s + ' appreciated your '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 			if a.type == 'follow':	
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
 				s = s + ' started following you'
 			if a.type == 'comment':
 				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
 				s = s + ' commented on your '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'		
+				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'		
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'mention':
 				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
 				s = s + ' mentioned you in a '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'reply':
 				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false();" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
 				s = s + ' replied to you in a '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false();" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
 				s = s + "<div class='reply'>"
 				s = s + "------------------------ <span style='font-style:italic;font-size:12px'> you said </span> ------------------------<br>"
@@ -1872,18 +1873,25 @@ def alerts_to_html(request, alerts):
 			continue
 	return ss
 
-def random_channels_to_html():
-	channels = Channel.objects.all().order_by('?')[:50]
+def channel_list_to_html(request):
 	s = ""
+	count = 0
+	visited = False
+	if request.user.is_authenticated():
+		visited = Visited.objects.filter(user=request.user).order_by('-count')[:25]
+		count = visited.count()
+		for v in visited:
+			s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
+	diff = 50 - count
+	if visited:
+		vlist = []
+		for vis in visited:
+			vlist.append(vis.channel)
+		channels = Channel.objects.all().exclude(name__in=vlist).order_by('?')[:diff]
+	else:
+		channels = Channel.objects.all().order_by('?')[:diff]
 	for c in channels:
 		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + c.name + "\");return false;'class='channels_item'>" + c.name + "</a>"
-	return s
-
-def visited_channels_to_html(request):
-	visited = Visited.objects.filter(user=request.user).order_by('-count')[:50]
-	s = ""
-	for v in visited:
-		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
 	return s
 
 @csrf_exempt

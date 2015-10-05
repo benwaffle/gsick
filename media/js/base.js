@@ -1300,11 +1300,11 @@ function load_more_alerts()
 
 function load_more_channel()
 {
-	id = $('.post_id:last').val();
+	ids = get_posts_ids();
 	$.get('/load_more_channel/',
-		{
-			id: id
-		},
+	{
+		ids: ids
+	},
 	function(data) 
 	{
 		if(data['status'] === 'ok')
@@ -1996,9 +1996,9 @@ function change_channel(cname)
 			return false;
 		}
 		$.get('/get_channel/',
-			{
+		{
 			cname: cname
-			},
+		},
 		function(data) 
 		{
 			before_post_load();
@@ -2219,11 +2219,11 @@ function stream_back(h)
 
 function load_more_stream()
 {
-	id = $('.post_id:last').val();
+	var ids = get_posts_ids();
 	$.get('/load_more_stream/',
-		{
-		id: id
-		},
+	{
+		ids: ids
+	},
 	function(data) 
 	{
 		if(data!="")
@@ -2236,6 +2236,24 @@ function load_more_stream()
 	});
 	clear();
 	return false;	
+}
+
+function get_posts_ids()
+{
+	var ids = [];
+
+	$('.post_id').each(function(){
+		ids.push($(this).val());
+	})
+
+	s = '';
+
+	for(var i = 0; i < ids.length; i++)
+	{
+		s += ids[i] + ',';
+	}
+
+	return s.substring(0, s.length - 1);
 }
 
 function top_posts(uname)
@@ -2353,13 +2371,13 @@ function new_posts_back(h)
 	clear()
 }
 
-function load_more_new(uname)
+function load_more_new()
 {
 	id = $('.post_id:last').val();
 	$.get('/load_more_new/',
-		{
+	{
 		id: id
-		},
+	},
 	function(data) 
 	{
 		if(data!="")
