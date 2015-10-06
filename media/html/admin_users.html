@@ -4,13 +4,13 @@
         <link rel="stylesheet" type="text/css" href="/site_media/css/base.css" />
     </head>
     <body>
-        <table width="100%">
+        <table>
             <form action="." method="post" name="form"> {% csrf_token %}
-            <tr><td>{{users.count}}</td><td colspan="2" align="right"><input type="submit" value="delete selected"></td></tr>
-            <br>
+            <tr><td><input type="submit" value="delete selected"></td><td>{{users.count}}</td></tr>
             {% for u in users reversed %}
-            <tr>
-                <td width="25%"><a href="/user/{{u.username}}">{{u.username}}</a></td><td align="right">&nbsp;<input type="checkbox" name="delete_list" value="{{u.username}}">&nbsp;<a href="/delete_user/{{u.username}}">delete</a></td>
+            <tr style="outline: thin solid">
+                <td>&nbsp;<input type="checkbox" name="delete_list" value="{{u.username}}">&nbsp;<a href="/delete_user/{{u.username}}">delete</a></td>
+                <td><a href="/user/{{u.username}}">{{u.username}}</a></td>
             </tr>
             {% endfor %}
             </form>
