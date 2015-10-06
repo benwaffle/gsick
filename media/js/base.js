@@ -37,6 +37,7 @@ var input_border;
 var input_placeholder;
 var scroll_background;
 var csrf_token;
+var playing_yt_video = false;
 
 function silence(uname)
 {
@@ -3133,34 +3134,18 @@ function onYouTubeStateChange(event)
 {
 
 	var id = get_yt_id(event.target);
-	if(event.data == YT.PlayerState.PLAYING)
+	if(event.data == YT.PlayerState.PLAYING || event.data == YT.PlayerState.BUFFERING)
 	{
-		for(var i=0; i<yt_players.length; i++)
+		if(playing_yt_video && get_yt_id(playing_yt_video) !== id)
 		{
-			var pid = get_yt_id(yt_players[i]);
-			if(pid !== id)
-			{
-				var state = get_yt_state(yt_players[i]);
-
-				if(state === 1)
-				{
-					yt_players[i].pauseVideo();
-				}
-			}
+			playing_yt_video.pauseVideo();
 		}
-		stop_sc_players();
-		stop_vimeo_players();
-		stop_audio_players();
-		stop_video_players();
-	}
-	if(event.data == YT.PlayerState.BUFFERING)
-	{
 		for(var i=0; i<yt_players.length; i++)
 		{
 			var pid = get_yt_id(yt_players[i]);
-			if(pid !== id)
+			if(pid === id)
 			{
-				yt_players[i].pauseVideo();
+				playing_yt_video = yt_players[i];
 			}
 		}
 		stop_sc_players();
