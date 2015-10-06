@@ -3134,14 +3134,7 @@ function onYouTubeStateChange(event)
 {
 	if(event.data == YT.PlayerState.PLAYING || event.data == YT.PlayerState.BUFFERING)
 	{
-		var id = get_yt_id(event.target);
-
-		if(playing_yt_video)
-		{
-			yid = get_yt_id(playing_yt_video);
-		}
-
-		if(playing_yt_video && yid !== id)
+		if(playing_yt_video && playing_yt_video !== event.target)
 		{
 			stop_yt_players();
 		}
@@ -3151,20 +3144,14 @@ function onYouTubeStateChange(event)
 		stop_audio_players();
 		stop_video_players();
 
-		for(var i = 0; i < yt_players.length; i++)
-		{
-			var pid = get_yt_id(yt_players[i]);
-			if(pid === id)
-			{
-				playing_yt_video = yt_players[i];
-			}
-		}
+		playing_yt_video = event.target;
 	}
 }
 
 function stop_yt_players()
 {
-	yid = get_yt_id(playing_yt_video);
+	// i use playing_yt_video because there's a bug in the youtube iframe api
+	// that turns the video black if a an unstarted video is paused
 	playing_yt_video.pauseVideo();
 }
 
