@@ -2963,13 +2963,6 @@ function create_yt_players()
 {
 	$("#posts iframe[src^='https://www.youtube.com']").each(function()
 	{
-		var player = new YT.Player($(this).attr('id'), 
-		{
-          events: 
-          {
-            'onStateChange': onYouTubeStateChange
-          }
-        });
         var id = $(this).attr('id');
         var pid = 0;
         var has_it = false;
@@ -2983,6 +2976,13 @@ function create_yt_players()
 		}
 		if(!has_it)
 		{
+			var player = new YT.Player($(this).attr('id'), 
+			{
+	        	events: 
+	        	{
+	        		'onStateChange': onYouTubeStateChange
+	          	}
+	        });
         	yt_players.push(player);
 		}
 	});
@@ -3132,15 +3132,26 @@ function on_vimeo_play(id)
 
 function onYouTubeStateChange(event)
 {
-
-	var id = get_yt_id(event.target);
 	if(event.data == YT.PlayerState.PLAYING || event.data == YT.PlayerState.BUFFERING)
 	{
-		if(playing_yt_video && get_yt_id(playing_yt_video) !== id)
+		var id = get_yt_id(event.target);
+
+		if(playing_yt_video)
 		{
-			playing_yt_video.pauseVideo();
+			yid = get_yt_id(playing_yt_video);
 		}
-		for(var i=0; i<yt_players.length; i++)
+
+		if(playing_yt_video && yid !== id)
+		{
+			stop_yt_players();
+		}
+
+		stop_sc_players();
+		stop_vimeo_players();
+		stop_audio_players();
+		stop_video_players();
+
+		for(var i = 0; i < yt_players.length; i++)
 		{
 			var pid = get_yt_id(yt_players[i]);
 			if(pid === id)
@@ -3148,29 +3159,18 @@ function onYouTubeStateChange(event)
 				playing_yt_video = yt_players[i];
 			}
 		}
-		stop_sc_players();
-		stop_vimeo_players();
-		stop_audio_players();
-		stop_video_players();
 	}
 }
 
 function stop_yt_players()
 {
-	for(var i=0; i<yt_players.length; i++)
-	{
-		var state = get_yt_state(yt_players[i]);
-
-		if(state === 1)
-		{
-			yt_players[i].pauseVideo();
-		}
-	} 
+	yid = get_yt_id(playing_yt_video);
+	playing_yt_video.pauseVideo();
 }
 
 function stop_sc_players()
 {
-	for(var i=0; i<sc_players.length; i++)
+	for(var i = 0; i < sc_players.length; i++)
 	{
 		sc_players[i].pause();
 	} 
@@ -3178,7 +3178,7 @@ function stop_sc_players()
 
 function stop_vimeo_players()
 {
-	for(var i=0; i<vimeo_players.length; i++)
+	for(var i = 0; i < vimeo_players.length; i++)
 	{
 		vimeo_players[i].api('pause');
 	}
@@ -3186,7 +3186,7 @@ function stop_vimeo_players()
 
 function stop_audio_players()
 {
-	for(var i=0; i<audio_players.length; i++)
+	for(var i = 0; i < audio_players.length; i++)
 	{
 		audio_players[i][0].pause();
 	}
@@ -3194,7 +3194,7 @@ function stop_audio_players()
 
 function stop_video_players()
 {
-	for(var i=0; i<video_players.length; i++)
+	for(var i = 0; i < video_players.length; i++)
 	{
 		video_players[i][0].pause();
 	}
