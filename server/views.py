@@ -1531,6 +1531,8 @@ def admin_users(request):
 		return HttpResponseRedirect('/../../../../../../../') 
 
 def delete_user(request, uname):
+	if uname == 'madprops':
+		return HttpResponse('nope')
 	if request.user.username in admin_list:
 		u = User.objects.get(username=uname)
 		u.delete()
@@ -1551,6 +1553,9 @@ def delete_post(request):
 	post_id = request.POST['id']
 	post = Post.objects.get(id=post_id)
 	channel = post.channel
+	if post.user.username == 'madprops' and request.user.username != 'madprops':
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json") 
 	if request.user.username in admin_list or request.user == post.user:
 		if request.user.username in admin_list:
 			try:
@@ -1580,9 +1585,18 @@ def delete_comment(request):
 	status = 'ok'
 	comment_id = request.POST['id']
 	comment = Comment.objects.get(id=comment_id)
+	if comment.user.username == 'madprops' and request.user.username != 'madprops':
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json")
 	if request.user.username in admin_list or request.user == comment.user:
 		if request.user.username in admin_list:
 			try:
+				if comment == Comment.objects.filter(post=comment.post).last():
+					if(len(Comment.objects.filter(post=comment.post)) > 1):
+						comment.post.date_modified = Comment.objects.filter(post=comment.post, id__lt=comment.id).last().date
+					else:
+						comment.post.date_modified = comment.post.date
+					comment.post.save()
 				comment.delete()
 				status = 'ok'
 			except:
@@ -1593,6 +1607,12 @@ def delete_comment(request):
 				status = 'replied'
 			except:
 				try:
+					if comment == Comment.objects.filter(post=comment.post).last():
+						if(len(Comment.objects.filter(post=comment.post)) > 1):
+							comment.post.date_modified = Comment.objects.filter(post=comment.post, id__lt=comment.id).last().date
+						else:
+							comment.post.date_modified = comment.post.date
+						comment.post.save()
 					comment.delete()
 					status = 'ok'
 				except:
