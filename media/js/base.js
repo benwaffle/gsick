@@ -323,7 +323,7 @@ function settings()
 	}
 	else
 	{
-		$.get('/get_themes/',
+		$.get('/get_settings/',
 			{
 	        
 			},
@@ -370,7 +370,7 @@ function settings()
 
 function settings_back()
 {
-	$.get('/get_themes/',
+	$.get('/get_settings/',
 		{
         
 		},

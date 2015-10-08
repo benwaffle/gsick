@@ -124,9 +124,9 @@ def error_register(request):
 	return False
 
 @login_required
-def themes(request):
+def settings(request):
 	html = ''
-	html = theme_to_html(request)
+	html = settings_to_html(request)
 	data = {'html':html}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -1823,7 +1823,7 @@ def silenced_to_html(request, ss):
 	s = s + "</div>"
 	return s
 
-def theme_to_html(request):
+def settings_to_html(request):
 	s = "<center>"
 	s = s + "<select id='embed_select'><option value='embed'>embed links</option><option value='noembed'>don't embed links (faster)</option></select><br><br>"
 	s = s + '<div id="background_picker" class="theme_picker unselectable">background color</div>'
