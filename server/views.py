@@ -371,12 +371,12 @@ def post_comment(request):
 			for m in mentions:
 				try:
 					auser = User.objects.get(username=m)
-					alert = Alert(user=auser, type='mention', info1=request.user.username, info2=post.id, info3=comment.id, date=datetime.datetime.now())
+					alert = Alert(user=auser, type='mention', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
 					alert.save()
 				except:
 					continue
 			if post.user.username not in mentions:
-				alert = Alert(user=post.user, type='comment', info1=request.user.username, info2=post.id, info3=comment.id, date=datetime.datetime.now())
+				alert = Alert(user=post.user, type='comment', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
 				alert.save()
 	data = {'status':status, 'cname':cname}
 	return HttpResponse(json.dumps(data), content_type="application/json")	
@@ -530,7 +530,7 @@ def reply_to_comment(request):
 		post.date_modified = datetime.datetime.now()
 		post.save()
 		if request.user != comment_replied.user:
-			alert = Alert(user=comment_replied.user, type='reply', info1=request.user, info2=post.id, info3=comment.id, date=datetime.datetime.now())
+			alert = Alert(user=comment_replied.user, type='reply', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
 			alert.save()
 		status = 'ok'
 	data = {'status':status}
@@ -583,9 +583,9 @@ def toggle_follow(request):
 			f = Follow(followed=followed, follower=request.user, date=datetime.datetime.now())
 			f.save()
 			try:
-				a = Alert.objects.get(user=followed, type='follow', info1=request.user.username)
+				a = Alert.objects.get(user=followed, type='follow', user2=request.user)
 			except:
-				alert = Alert(user=followed, type='follow', info1=request.user.username, date=datetime.datetime.now())
+				alert = Alert(user=followed, type='follow', user2=request.user, date=datetime.datetime.now())
 				alert.save()
 			status = 'followed'
 	data = {'status':status}
@@ -1106,9 +1106,9 @@ def pin_post(request):
 		pin.save()
 		if post.user != request.user:
 			try:
-				a = Alert.objects.get(user=post.user, type='pin', info1=request.user.username, info2=post.id)
+				a = Alert.objects.get(user=post.user, type='pin', user2=request.user, info1=post.id)
 			except:
-				alert = Alert(user=post.user, type='pin', info1=request.user.username, info2=post.id, date=datetime.datetime.now())
+				alert = Alert(user=post.user, type='pin', user2=request.user, info1=post.id, date=datetime.datetime.now())
 				alert.save()
 	num_pins = Pin.objects.filter(post=post).count()
 	status = 'ok'
@@ -1538,6 +1538,58 @@ def delete_user(request, uname):
 		u.delete()
 	return HttpResponse('ok')
 
+def change_username(request):
+	status = ''
+	cmd = request.POST['cmd'].lower().strip()
+	username = cmd.split('change username to ')[1].strip()
+	uname = '#same'
+	if not clean_username(username):
+		status = 'wrong username format'
+		data = {'status':status, 'uname':uname}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if username.replace(" ", "") == "":
+		status = 'you must type a username'
+		data = {'status':status, 'uname':uname}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if len(username) > 20:
+		status = 'username is too long'
+		data = {'status':status, 'uname':uname}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	try:
+		User.objects.get(username=username)
+		status = 'username already exists'
+		data = {'status':status, 'uname':uname}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	except:
+		pass
+	request.user.username = username
+	request.user.save()
+	uname = username
+	status = 'username changed succesfully'
+	data = {'status':status, 'uname':uname}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def change_password(request):
+	status = ''
+	cmd = request.POST['cmd'].lower().strip()
+	password = cmd.split('change password to ')[1].strip()
+	if password.replace(" ", "") == "":
+		status = 'you must type a password'
+		data = {'status':status, 'csrf_token':'no'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if len(password) > 50:
+		status = 'password is too long'
+		data = {'status':status, 'csrf_token':'no'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	request.user.set_password(password)
+	request.user.save()
+	request.user.backend='django.contrib.auth.backends.ModelBackend'
+	auth_login(request, request.user)
+	csrf_token = unicode(csrf(request)['csrf_token'])
+	status = 'password changed succesfully'
+	data = {'status':status, 'csrf_token':csrf_token}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
 def delete_channel(request):
 	data = ''
 	if request.user.username in admin_list:
@@ -1690,9 +1742,9 @@ def posts_to_html(request, posts, mode="channel"):
 		if mode == "channel":
 			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		elif mode == "new":
-			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='change_channel(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		else:
-			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='change_channel(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.date.isoformat() +"-00:00" +  "' class='timeago date'>"+ str(radtime(p.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.id) + "'>"
 		post = post + 	"<div class='post_container'>"
@@ -1728,7 +1780,7 @@ def pins_to_html(request, posts, mode="channel"):
 				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
-		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='change_channel(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
 		post = post + 	"<div class='post_container'>"
@@ -1835,8 +1887,20 @@ def settings_to_html(request):
 	s = s + '<div id="input_placeholder_picker" class="theme_picker unselectable">textbox placeholder color</div>'
 	s = s + '<div id="input_scroll_background_picker" class="theme_picker unselectable">scrollbar color</div>'
 	s = s + "<br><br> <a href='#' style='font-size:20px' onclick='set_default_theme();return false'> default theme </a>"
+	s = s + "<br><br><br><br> <a href='#' style='font-size:20px' onclick='show_advanced();return false'> advanced </a>"
+	s = s + advanced_to_html()
 	s = s + "<br><br><br><br> <a href='#' style='font-size:20px' onclick='login();return false'> logout </a> <br><br><br><br>"
 	s = s + "</center>"
+	return s
+
+def advanced_to_html():
+	s = ""
+	s = s + "<div id='advanced_instructions'>"
+	s = s + "<br><br><br><br>"
+	s = s + "type these commands in the goto box <br><br>"
+	s = s + "to change your username: change username to newusername <br><br>"
+	s = s + "to change your password: change password to newpassword <br><br>"
+	s = s + "</div>"
 	return s
 	
 def alerts_to_html(request, alerts):
@@ -1849,33 +1913,33 @@ def alerts_to_html(request, alerts):
 			s = s + "<input type='hidden' value='" + str(a.id) + "' class='alert_id'>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':	
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' appreciated your '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 			if a.type == 'follow':	
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
+				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'
 			if a.type == 'comment':
-				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
+				comment = Comment.objects.get(id=int(a.info2))
+				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' commented on your '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'		
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'		
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'mention':
-				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
+				comment = Comment.objects.get(id=int(a.info2))
+				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
 			if a.type == 'reply':
-				comment = Comment.objects.get(id=int(a.info3))
-				s = s + '<a onClick="change_user(\''+ str(a.info1) + '\'); return false;" href="#">' + str(a.info1) + '</a>'
+				comment = Comment.objects.get(id=int(a.info2))
+				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' replied to you in a '
-				s = s + '<a onClick="open_post('+ str(a.info2) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info2)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
 				s = s + "<div class='reply'>"
 				s = s + "------------------------ <span style='font-style:italic;font-size:12px'> you said </span> ------------------------<br>"
@@ -1901,7 +1965,7 @@ def channel_list_to_html(request):
 		visited = Visited.objects.filter(user=request.user).order_by('-count')[:25]
 		count = visited.count()
 		for v in visited:
-			s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
+			s = s + "<a href='#' onclick='hide_overlay();goto(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
 	diff = 50 - count
 	if visited:
 		vlist = []
@@ -1911,7 +1975,7 @@ def channel_list_to_html(request):
 	else:
 		channels = Channel.objects.all().order_by('?')[:diff]
 	for c in channels:
-		s = s + "<a href='#' onclick='hide_overlay();change_channel(\"" + c.name + "\");return false;'class='channels_item'>" + c.name + "</a>"
+		s = s + "<a href='#' onclick='hide_overlay();goto(\"" + c.name + "\");return false;'class='channels_item'>" + c.name + "</a>"
 	return s
 
 @csrf_exempt

@@ -584,6 +584,18 @@ function update_theme()
 	}
 }
 
+function show_advanced()
+{
+	if($('#advanced_instructions').css('display') === 'block')
+	{
+		$('#advanced_instructions').css('display', 'none');
+	}
+	else
+	{
+		$('#advanced_instructions').css('display', 'block');
+	}
+}
+
 function notes()
 {
 	if(loggedin !== 'yes')
@@ -1663,7 +1675,7 @@ function open_post(id)
 			$('#mode').val('post');
 			$('#posts').html(data['post']);
 			$(data['comments']).appendTo('#posts');
-			setHeader('a post on <a onClick="change_channel(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
+			setHeader('a post on <a onClick="goto(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
 			clear();
 			channel = data['cname'];
 			document.title = 'a post on ' + channel;
@@ -1693,7 +1705,7 @@ function random_post()
 			$('#mode').val('post');
 			$('#posts').html(data['post']);
 			$(data['comments']).appendTo('#posts');
-			setHeader('a post on <a onClick="change_channel(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
+			setHeader('a post on <a onClick="goto(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
 			clear();
 			channel = data['cname'];
 			document.title = 'a post on ' + channel;
@@ -1710,7 +1722,7 @@ function open_post_back(h)
 	before_back();
 	$('#mode').val('post');
 	$('#posts').html(h.html);
-	setHeader('a post on <a onClick="change_channel(\'' + h.channel + '\');return false;" href="#">' + h.channel + '</a>');
+	setHeader('a post on <a onClick="goto(\'' + h.channel + '\');return false;" href="#">' + h.channel + '</a>');
 	channel = h.channel;
 	document.title = 'a post on ' + channel;
 	$('#postscroller').scrollTop(h.scrolltop);
@@ -1862,7 +1874,7 @@ function show_last_comments()
 				}
 			} 
 		})
-		setHeader('a post on <a onClick="change_channel(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
+		setHeader('a post on <a onClick="goto(\''+data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
 		channel = data['cname'];
 		document.title = 'a post on ' + channel;
 		after_post_load();
@@ -1910,7 +1922,7 @@ function post_to_channel()
     {
 		if(data['status'] === "ok")
 		{
-			change_channel(document.title);
+			goto(document.title);
 		}
 		else if(data['status'] === 'wait')
 		{
@@ -1933,94 +1945,143 @@ function post_to_channel()
     });
 }
 
-function change_channel(cname)
+function goto(cmd)
 {
 	if(typeof event !== 'undefined' && event.which == 2)
 	{
-		window.open('/' + cname, "_blank");
+		window.open('/' + cmd, "_blank");
 	}
 	else
 	{
-		if(cname === 'stream')
+		if(cmd === 'stream')
 		{
 			stream();
 			return false;
 		}
-		if(cname === 'new')
+		if(cmd === 'new')
 		{
 			new_posts();
 			return false;
 		}
-		if(cname === 'top')
+		if(cmd === 'top')
 		{
 			top_posts();
 			return false;
 		}
-		if(cname === 'random')
+		if(cmd === 'random')
 		{
 			random_post();
 			return false;
 		}
-		if(cname === 'posts')
+		if(cmd === 'posts')
 		{
 			my_history();
 			return false;
 		}
-		if(cname === 'pins')
+		if(cmd === 'pins')
 		{
 			my_pins();
 			return false;
 		}
-		if(cname === 'alerts')
+		if(cmd === 'alerts')
 		{
 			alerts();
 			return false;
 		}
-		if(cname === 'settings')
+		if(cmd === 'settings')
 		{
 			settings();
 			return false;
 		}
-		if(cname === 'chat')
+		if(cmd === 'chat')
 		{
 			chatall();
 			return false;
 		}
-		if(cname === 'logout')
+		if(cmd === 'logout')
 		{
 			login();
 			return false;
 		}
-		if(cname === 'back')
+		if(cmd === 'back')
 		{
 			go_back();
 			return false;
 		}
-		$.get('/get_channel/',
+		if(cmd.indexOf('change username to ') !== -1)
 		{
-			cname: cname
-		},
-		function(data) 
+			change_username(cmd);
+			return false;
+		}
+		if(cmd.indexOf('change password to ') !== -1)
 		{
-			before_post_load();
-			if(data['status'] === 'ok')
-			{
-				$('#mode').val('channel');
-				$('#posts').html(data['posts']);
-				setHeader(data['cname']);
-				$('#postscroller').scrollTop(0);
-				channel = data['cname']
-				document.title = channel;
-				after_post_load();
-				show_input('post to the channel');
-			}
-		});
+			change_password(cmd);
+			return false;
+		}
+		goto_channel(cmd);
 		clear();
 		return false;
 	}
 }
 
-function change_channel_back(h)
+function change_username(cmd)
+{
+	$.post('/change_username/',
+	{
+		cmd: cmd,
+		csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		dialog(data['status']);
+		if(data['uname'] !== '#same')
+		{
+			tehusername = data['uname'];
+		}
+	});
+}
+
+function change_password(cmd)
+{
+	$.post('/change_password/',
+	{
+		cmd: cmd,
+		csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		dialog(data['status']);
+		if(data['csrf_token'] !== 'no')
+		{
+			csrf_token = data['csrf_token'];
+		}
+	});
+}
+
+function goto_channel(cname)
+{
+	$.get('/get_channel/',
+	{
+		cname: cname
+	},
+	function(data) 
+	{
+		before_post_load();
+		if(data['status'] === 'ok')
+		{
+			$('#mode').val('channel');
+			$('#posts').html(data['posts']);
+			setHeader(data['cname']);
+			$('#postscroller').scrollTop(0);
+			channel = data['cname']
+			document.title = channel;
+			after_post_load();
+			show_input('post to the channel');
+		}
+	});
+}
+
+function goto_channel_back(h)
 {
 	before_back();
 	$('#mode').val('channel');
@@ -2735,7 +2796,7 @@ function go_back()
 
 	if(mode === 'channel')
 	{
-		change_channel_back(state);
+		goto_channel_back(state);
 		return false;
 	}
 	if(mode === 'user')
@@ -3200,7 +3261,7 @@ function delete_channel(cname)
 		},
 	function(data) 
 	{
-        change_channel(data);
+        goto(data);
         return false;
 	});
     return false;        
@@ -3315,7 +3376,7 @@ function activate_key_detection()
         		if(val !== '')
         		{
         			hide_overlay();
-        			change_channel(val);
+        			goto(val);
         		}
         	}
         }
@@ -3833,7 +3894,7 @@ function init(mode, info)
     initial_settings();
     if(mode === 'channel')
     {
-    	change_channel(info);
+    	goto(info);
     }
     else if(mode === 'user')
     {

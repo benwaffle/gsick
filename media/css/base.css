@@ -683,3 +683,8 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     font-size: 16px;
     word-wrap: break-word;
 }
+
+#advanced_instructions
+{
+    display: none;
+}

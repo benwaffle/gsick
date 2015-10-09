@@ -51,8 +51,10 @@ class Silenced(models.Model):
     brat = models.ForeignKey(User, related_name='who_to_be_silenced')
 
 class Alert(models.Model):
-    user = models.ForeignKey(User, related_name='alerted')
     type = models.CharField(max_length=100, default='', null=True)
+    user = models.ForeignKey(User, related_name='alerted')
+    user2 = models.ForeignKey(User, related_name='alert_user_2', null=True)
+    user3 = models.ForeignKey(User, related_name='alert_user_3', null=True)
     info1 = models.CharField(max_length=100, default='', null=True)
     info2 = models.CharField(max_length=100, default='', null=True)
     info3 = models.CharField(max_length=100, default='', null=True)
