@@ -631,6 +631,7 @@ def check_new_pms(request):
 	status = 'no'
 	id = ''
 	uname = ''
+	num = 0
 	p = get_profile(request.user)
 	try:
 		last_pm = PrivateMessage.objects.filter(user=request.user).order_by('-id')[0]
@@ -648,12 +649,16 @@ def check_new_alerts(request):
 	status = 'no'
 	id = ''
 	uname = ''
-	p = get_profile(request.user)
-	last_alert = Alert.objects.filter(user=request.user).order_by('-id')[0]
-	num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read).order_by('-id').count()
-	if last_alert.id > p.last_alert_read:
-		status = 'yes'
-		id = last_alert.id
+	num = 0
+	try:
+		p = get_profile(request.user)
+		last_alert = Alert.objects.filter(user=request.user).order_by('-id')[0]
+		num = Alert.objects.filter(user=request.user, id__gt=p.last_alert_read).order_by('-id').count()
+		if last_alert.id > p.last_alert_read:
+			status = 'yes'
+			id = last_alert.id
+	except:
+		pass
 	data = {'status': status, 'id':id, 'num':num}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
