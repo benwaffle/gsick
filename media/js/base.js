@@ -541,7 +541,21 @@ function update_theme()
 	}
 	if(theme_link !== '')
 	{
-		$('a').css('color',theme_link);
+		$('a').each(function()
+		{
+			if($(this).parent().hasClass('reply'))
+			{
+				$(this).css('color', theme_background);
+			}
+			else if($(this).hasClass('channels_item'))
+			{
+
+			}
+			else
+			{
+				$(this).css('color', theme_link);
+			}
+		})
 	}
 	if(theme_text !== '')
 	{
@@ -2198,7 +2212,7 @@ function change_user(uname)
 					{
 						setHeader('posts by ' + data['uname'] 
 						       + ' | <a onClick="chat(\''+data['uname']+'\');return false;" href="#">chat</a>'
-							   + ' | <a id="following_status" onClick="toggle_follow(\''+data['uname']+'\');return false;" href="#">' + data['following'] + '</a>');
+							   + ' | <a id="following_status" onClick="toggle_follow(\'' + data['uname']+'\');return false;" href="#">' + data['following'] + '</a>');
 					}
 					document.title = 'posts by ' + data['uname'];
 				}
@@ -2785,12 +2799,16 @@ function refresh()
 function check_new_pms()
 {
 	$.get('/check_new_pms/',
-		{
-		},
+	{
+	},
 	function(data) 
 	{
 		if(data['status'] === 'yes')
 		{
+			if(!document.hasFocus())
+			{
+				alert_title();
+			}
 			if ($('#mode').val() != 'chatall' && $('#mode').val() != 'chat')
 			{
 				$('#menu_chat').html("(" + data['num'] + ") &nbsp; chat");
@@ -2813,6 +2831,10 @@ function check_new_alerts()
 	{
 		if(data['status'] === 'yes')
 		{
+			if(!document.hasFocus())
+			{
+				alert_title();
+			}
 			mode = $('#mode').val();
 			$('#menu_alerts').html("(" + data['num'] + ") alerts");
 		}
@@ -2822,6 +2844,25 @@ function check_new_alerts()
 		}
 	});
 	return false;
+}
+
+function alert_title()
+{
+	if(document.title.indexOf('(*)') === -1)
+	{
+		document.title = '(*) ' + document.title;
+	}
+}
+
+function activate_window_focus()
+{
+	$(window).focus(function()
+	{
+		if(document.title.indexOf('(*)') !== -1)
+		{
+			document.title = document.title.substring(4);
+		}
+	});
 }
 
 function UrlRecord(mode,info)
