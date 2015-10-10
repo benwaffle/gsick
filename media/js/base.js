@@ -1903,9 +1903,11 @@ function comment()
 function show_older_comments()
 {
 	id = $('.comment_id:first').val();
+	post_visible = $('.pins_status').length
 	$.get('/show_older_comments/',
 	{
-		id:id
+		id:id,
+		post_visible:post_visible
 	},
 	function(data) 
 	{

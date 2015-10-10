@@ -1049,7 +1049,7 @@ def show_top(request):
 	return main(request, mode='top')
 
 def show_last_comments(request):
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	post = Post.objects.get(id=id)
 	cname = post.channel.name
 	comments = Comment.objects.filter(post=post).order_by('-id')[:50]
@@ -1065,13 +1065,14 @@ def show_last_comments(request):
 
 def show_older_comments(request):
 	id = request.GET.get('id', 0)
+	post_visible = int(request.GET['post_visible'])
 	comment = Comment.objects.get(id=id)
 	comments = Comment.objects.filter(post=comment.post, id__lt=id).order_by('-id')[:50]
 	length = comments.count()
 	comments = reversed(list(comments))
 	c = comments_to_html(request, comments)
 	p = "<input type=\"hidden\" value=\"" + str(comment.post.id) + "\" class=\"post_id\">"
-	if length < 50 and length > 0:
+	if length < 50 and post_visible == 0:
 		p = post_to_html(request, comment.post)
 	comments = p + c
 	data = {'comments':comments}
@@ -1079,7 +1080,7 @@ def show_older_comments(request):
 
 def pin_post(request):
 	status = ''
-	id = request.POST.get('id',0)
+	id = request.POST.get('id', 0)
 	post = Post.objects.get(id=id)
 	try:
 		pin = Pin.objects.get(user=request.user,post=post)
