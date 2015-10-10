@@ -1584,7 +1584,7 @@ def use_theme(request):
 	p = get_profile(request.user)
 	p2 = get_profile(user)
 	data = {}
-	if p2.theme_background != '0':
+	if p2.theme_background != '0' and p2.theme_background != '':
 		p.theme_background = p2.theme_background
 		p.theme_text = p2.theme_text
 		p.theme_link = p2.theme_link

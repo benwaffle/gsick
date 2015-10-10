@@ -1806,10 +1806,6 @@ function post_comment(content)
 		{
 			show_last_comments();
 		}
-		if(data['status'] === 'duplicate')
-		{
-			dialog('you posted that already');
-		}
 		clear();
 	});
 	return false;	
@@ -1819,9 +1815,9 @@ function show_last_comments()
 {
 	id = $('.post_id:first').val();
 	$.get('/show_last_comments/',
-		{
+	{
 		id:id
-		},
+	},
 	function(data) 
 	{
 		before_post_load();
@@ -1924,21 +1920,9 @@ function post_to_channel()
 		{
 			goto(document.title);
 		}
-		else if(data['status'] === 'wait')
-		{
-			dialog('you can post in this channel once every 12 hours');
-		}
-		else if(data['status'] === 'channelduplicate')
-		{
-			dialog('that was already posted in this channel');
-		}
 		else if(data['status'] === 'toobig')
 		{
 			dialog('a post cannot exceed 2000 characters');
-		}
-		else if(data['status'] === 'postduplicate')
-		{
-			dialog('you posted that already');
 		}
 		clear();
         return false;
