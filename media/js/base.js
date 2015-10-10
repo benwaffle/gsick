@@ -2068,6 +2068,10 @@ function use_theme(cmd)
 			theme_input_placeholder = data['theme_input_placeholder'];
 			theme_scroll_background = data['theme_scroll_background'];
 			update_theme();
+			if($('#mode').val() === 'settings')
+			{
+				settings();
+			}
 		}
 	});
 }
