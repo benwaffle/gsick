@@ -1164,9 +1164,9 @@ function load_more()
 	{
 		load_more_alerts();
 	}
-	else if(mode === 'useronchannel')
+	else if(mode === 'user_on_channel')
 	{
-		load_more_useronchannel();
+		load_more_user_on_channel();
 	}
 }
 
@@ -1332,9 +1332,9 @@ function load_more_channel()
 	return false;
 }
 
-function load_more_useronchannel()
+function load_more_user_on_channel()
 {
-	$.get('/load_more_useronchannel/',
+	$.get('/load_more_user_on_channel/',
 		{
 			id: $('.post_id:last').val(),
 		},
@@ -2007,6 +2007,11 @@ function goto(cmd)
 			use_theme(cmd);
 			return false;
 		}
+		if(cmd.indexOf(' on ') !== -1 && cmd.split(' ').length === 3)
+		{
+			user_on_channel(cmd);
+			return false;
+		}
 		goto_channel(cmd);
 		clear();
 		return false;
@@ -2345,13 +2350,13 @@ function top_posts(uname)
 	else
 	{
 		$.get('/top_posts/',
-			{
+		{
 			uname: uname
-			},
+		},
 		function(data) 
 		{
 			before_post_load();
-			if(data!="")
+			if(data != '')
 			{
 				setHeader('top');
 				$('#posts').html(data['posts']);
@@ -2380,33 +2385,52 @@ function top_posts_back(h)
 	clear();
 }
 
-function user_on_channel(input)
+function user_on_channel(cmd)
 {
 	$.get('/user_on_channel/',
-		{
-		input: input
-		},
+	{
+		input: cmd
+	},
 	function(data) 
 	{
-		if(data['posts']!="")
+		if(data['status'] === 'ok')
 		{
-			setHeader(data['uname'] + " on " + "<a href='/" + data['cname'] + "'>" + data['cname'] + "</a>");
+			before_post_load();
+			setHeader(data['uname'] + ' on ' + '<a onClick="goto(\'' + data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
 			$('#posts').html(data['posts']);
-			$('#mode').val('useronchannel');
+			$('#mode').val('user_on_channel');
 			document.title = data['uname'] + ' on ' + data['cname'];
 			info1 = data['uname'];
 			info2 = data['cname'];
 			after_post_load();
 			$('#postscroller').scrollTop(0);
+			hide_input();
 		}
 		else
 		{
-			dialog('nothing to see here')
+			dialog('nothing to see here');
 		}
 	});
 	clear();
 	return false;
 }
+
+function user_on_channel_back(h)
+{
+	before_back();
+	$('#posts').html(h.html);
+	$('#mode').val('user_on_channel');
+	info1 = h.info.split(' ')[0];
+	info2 = h.info.split(' ')[2];
+	setHeader(info1 + ' on ' + '<a onClick="goto(\'' + info2 +'\');return false;" href="#">' + info2 + '</a>');
+	document.title = info1 + ' on ' + info2;
+	after_post_load_back();
+	$('#postscroller').scrollTop(h.scrolltop);
+	hide_input();
+	clear()
+}
+
+
 
 function new_posts()
 {
@@ -2867,7 +2891,11 @@ function go_back()
 		alerts_back(state);
 		return false;
 	}
-
+	if(mode === 'user_on_channel')
+	{
+		user_on_channel_back(state);
+		return false;
+	}
 	clear();
 	return false;
 }
@@ -2951,7 +2979,7 @@ function update_url()
 		url = 'pins/' + info1;
 		info = info1;
 	}
-	else if(mode === 'useronchannel')
+	else if(mode === 'user_on_channel')
 	{
 		url = info1 + '/on/' + info2;
 		info = info1 + ' on ' + info2
@@ -3962,7 +3990,7 @@ function init(mode, info)
     {
     	get_pins(info);
     }
-    else if(mode === 'useronchannel')
+    else if(mode === 'user_on_channel')
     {
     	user_on_channel(info);
     }

@@ -93,8 +93,7 @@ def enter(request):
 			else:
 				username = clean_username(request.POST['register_username']).lower()
 				password = request.POST['register_password']
-				email = request.POST['register_email']
-				user = User.objects.create_user(username, email, password)
+				user = User.objects.create_user(username, 'no@email.com', password)
 				p = Profile(user=user)
 				p.save()
 				user.backend='django.contrib.auth.backends.ModelBackend'
@@ -106,8 +105,7 @@ def enter(request):
 
 def error_register(request):
 	username = request.POST['register_username'].lower()
-	password = request.POST['register_password'] 
-	email = request.POST['register_email'] 
+	password = request.POST['register_password']  
 	if not clean_username(username):
 		return True
 	if username.replace(" ", "") == "" or password.replace(" ", "") == "":
@@ -119,8 +117,6 @@ def error_register(request):
 		return True
 	except:
 		pass
-	if '@' not in email:
-		return True
 	return False
 
 @login_required
@@ -463,8 +459,7 @@ def user_on_channel(request):
 		channel = Channel.objects.get(name=cname)
 		posts = get_channel_posts_by_user(request, user, channel)
 		posts = posts_to_html(request,posts)
-		if posts != '':
-			status = 'ok'
+		status = 'ok'
 	except:
 		pass
 	data = {'posts':posts, 'status':status, 'uname':uname, 'cname':cname}
@@ -996,8 +991,8 @@ def random_channel_name():
 def get_post(idPost):
 	return Post.objects.get(id=idPost)
 
-def show_useronchannel(request,uname, cname):
-	return main(request, mode='useronchannel', info=uname +' on ' + cname)
+def show_user_on_channel(request,uname, cname):
+	return main(request, mode='user_on_channel', info=uname +' on ' + cname)
 
 def show_pins(request,uname):
 	return main(request, mode='pins', info=uname)
@@ -1323,7 +1318,7 @@ def load_more_channel(request):
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
-def load_more_useronchannel(request):
+def load_more_user_on_channel(request):
 	data = ''
 	messages = ''
 	status = 'error'
@@ -1919,7 +1914,8 @@ def advanced_to_html():
 	s = s + "type these commands in the goto box <br><br>"
 	s = s + "to change your username: change username to newusername <br><br>"
 	s = s + "to change your password: change password to newpassword <br><br>"
-	s = s + "to use someone elses theme: use theme by username"
+	s = s + "to use someone elses theme: use theme by username <br><br>"
+	s = s + "to see posts by someone made on a specific channel: username on channel"
 	s = s + "</div>"
 	return s
 	
