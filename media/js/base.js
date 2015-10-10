@@ -2018,6 +2018,11 @@ function goto(cmd)
 			change_password(cmd);
 			return false;
 		}
+		if(cmd.indexOf('use theme by ') !== -1)
+		{
+			use_theme(cmd);
+			return false;
+		}
 		goto_channel(cmd);
 		clear();
 		return false;
@@ -2054,6 +2059,31 @@ function change_password(cmd)
 		if(data['csrf_token'] !== 'no')
 		{
 			csrf_token = data['csrf_token'];
+		}
+	});
+}
+
+function use_theme(cmd)
+{
+	$.post('/use_theme/',
+	{
+		cmd: cmd,
+		csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		dialog(data['status']);
+		if(data['status'] === 'theme applied')
+		{
+			theme_background = data['theme_background'];
+			theme_text = data['theme_text'];
+			theme_link = data['theme_link'];
+			theme_input_background = data['theme_input_background'];
+			theme_input_text = data['theme_input_text'];
+			theme_input_border = data['theme_input_border'];
+			theme_input_placeholder = data['theme_input_placeholder'];
+			theme_scroll_background = data['theme_scroll_background'];
+			update_theme();
 		}
 	});
 }

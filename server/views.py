@@ -855,30 +855,6 @@ def error_post(request):
 		return 'empty'
 	if len(content) > 2000:
 		return 'toobig'
-	try:
-		media = get_media_url(content)
-		uposts = Post.objects.filter(user=request.user)
-		for p in uposts:
-			if media:
-				if get_media_url(p.content) == media:
-					return 'postduplicate'
-			else:
-				if p.content == content:
-					return 'postduplicate'
-	except:
-		pass
-	try:
-		media = get_media_url(content)
-		uposts = Post.objects.filter(channel__name=cname)
-		for p in uposts:
-			if media:
-				if get_media_url(p.content) == media:
-					return 'channelduplicate'
-			else:
-				if p.content == content:
-					return 'channelduplicate'
-	except:
-		pass
 	return 'ok'
 
 @login_required
@@ -1595,6 +1571,44 @@ def change_password(request):
 	data = {'status':status, 'csrf_token':csrf_token}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+def use_theme(request):
+	status = ''
+	cmd = request.POST['cmd'].lower().strip()
+	username = cmd.split('use theme by ')[1].strip()
+	try:
+		user = User.objects.get(username=username)
+	except:
+		status = "user doesn't exist"
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	p = get_profile(request.user)
+	p2 = get_profile(user)
+	data = {}
+	if p2.theme_background != '0':
+		p.theme_background = p2.theme_background
+		p.theme_text = p2.theme_text
+		p.theme_link = p2.theme_link
+		p.theme_input_background = p2.theme_input_background
+		p.theme_input_text = p2.theme_input_text
+		p.theme_input_border = p2.theme_input_border
+		p.theme_input_placeholder = p2.theme_input_placeholder
+		p.theme_scroll_background = p2.theme_scroll_background
+		p.save()
+		data['theme_background'] = p.theme_background 
+		data['theme_text'] = p.theme_text 
+		data['theme_link'] = p.theme_link 
+		data['theme_input_background'] = p.theme_input_background 
+		data['theme_input_text'] = p.theme_input_text 
+		data['theme_input_border'] = p.theme_input_border 
+		data['theme_input_placeholder'] = p.theme_input_placeholder 
+		data['theme_scroll_background'] = p.theme_scroll_background 
+		data['status'] = 'theme applied'
+	else:
+		status = "user doesn't have a theme"
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
 def delete_channel(request):
 	data = ''
 	if request.user.username in admin_list:
@@ -1905,6 +1919,7 @@ def advanced_to_html():
 	s = s + "type these commands in the goto box <br><br>"
 	s = s + "to change your username: change username to newusername <br><br>"
 	s = s + "to change your password: change password to newpassword <br><br>"
+	s = s + "to use someone elses theme: use theme by username"
 	s = s + "</div>"
 	return s
 	
