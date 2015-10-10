@@ -546,10 +546,16 @@ def get_user(request):
 	uname = request.GET['uname']
 	post = ''
 	data = ''
+	status = 'ok'
 	if uname == "me" and request.user.is_authenticated():
 		user = request.user
 	else:
-		user = User.objects.get(username=uname)
+		try:
+			user = User.objects.get(username=uname)
+		except:
+			status = 'doesntexist'
+			data = {'status':status, 'uname': '', 'posts':'', 'following': ''}
+			return HttpResponse(json.dumps(data), content_type="application/json")
 	posts = get_user_posts(request, user)
 	posts = posts_to_html(request,posts,'user')
 	following = ''
@@ -559,7 +565,7 @@ def get_user(request):
 			following = 'unfollow'
 		except:
 			following = 'follow'
-	data = {'uname': user.username, 'posts':posts, 'following': following}
+	data = {'status':status, 'uname': user.username, 'posts':posts, 'following': following}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_user_posts(request, user):
@@ -1915,7 +1921,8 @@ def advanced_to_html():
 	s = s + "to change your username: change username to newusername <br><br>"
 	s = s + "to change your password: change password to newpassword <br><br>"
 	s = s + "to use someone elses theme: use theme by username <br><br>"
-	s = s + "to see posts by someone made on a specific channel: username on channel"
+	s = s + "to see posts by someone made on a specific channel: username on channel <br><br>"
+	s = s + "to go to a user profile: user username"
 	s = s + "</div>"
 	return s
 	

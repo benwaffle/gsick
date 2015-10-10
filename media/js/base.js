@@ -1741,11 +1741,11 @@ function start_left_menu()
 {
 	s = ''
 	s = s + "<div class='unselectable' style='padding-top:50px'>"
-	s = s + "<div class='menu_link'><a onClick='stream();return false;' href='#'>stream</a></div>";
-	s = s + "<div class='menu_link'><a onClick='show_goto();return false;' href='#'>goto</a></div>";
-	s = s + "<div class='menu_link'><a onClick='top_posts();return false;' href='#'>top</a></div>";
-	s = s + "<div class='menu_link'><a onClick='new_posts();return false;' href='#'>new</a></div>";
-	s = s + "<div class='menu_link'><a class='menu_link' onClick='window.history.back();return false' href='#'>back</a></div>";
+	s = s + "<div class='menu_link' id='menu_1'><a onClick='stream();return false;' href='#'>stream</a></div>";
+	s = s + "<div class='menu_link' id='menu_2'><a onClick='show_goto();return false;' href='#'>goto</a></div>";
+	s = s + "<div class='menu_link' id='menu_3'><a onClick='top_posts();return false;' href='#'>top</a></div>";
+	s = s + "<div class='menu_link' id='menu_4'><a onClick='new_posts();return false;' href='#'>new</a></div>";
+	s = s + "<div class='menu_link' id='menu_5'><a class='menu_link' onClick='window.history.back();return false' href='#'>back</a></div>";
 	s = s + "</div>"
 	$('#leftcol').html(s);
 }
@@ -1754,11 +1754,11 @@ function start_right_menu()
 {
 	s = ''
 	s = s + "<div class='unselectable' style='text-align:right;padding-top:50px'>"
-	s = s + "<div class='menu_link'><a onClick='my_history();return false;' href='#'>posts</a></div>";
-	s = s + "<div class='menu_link'><a onClick='my_pins();return false;' href='#'>pins</a></div>";
-	s = s + "<div class='menu_link'><a onClick='chatall();return false;' href='#'><div style='display:inline-block' id='menu_chat'>chat</div></a></div>";
-	s = s + "<div class='menu_link'><a onClick='alerts();return false;' href='#'><div style='display:inline-block' id='menu_alerts'>alerts</div></a></div>";
-	s = s + "<div class='menu_link'><a onClick='settings();return false;' href='#'>settings</a></div>";
+	s = s + "<div class='menu_link' id='menu_6'><a onClick='my_history();return false;' href='#'>posts</a></div>";
+	s = s + "<div class='menu_link' id='menu_7'><a onClick='my_pins();return false;' href='#'>pins</a></div>";
+	s = s + "<div class='menu_link' id='menu_8'><a onClick='chatall();return false;' href='#'><div style='display:inline-block' id='menu_chat'>chat</div></a></div>";
+	s = s + "<div class='menu_link' id='menu_9'><a onClick='alerts();return false;' href='#'><div style='display:inline-block' id='menu_alerts'>alerts</div></a></div>";
+	s = s + "<div class='menu_link' id='menu_10'><a onClick='settings();return false;' href='#'>settings</a></div>";
 	s = s + "</div>"
 	$('#rightcol').html(s);
 }
@@ -2012,6 +2012,11 @@ function goto(cmd)
 			user_on_channel(cmd);
 			return false;
 		}
+		if(cmd.indexOf('user ') !== -1 && cmd.split(' ').length === 2)
+		{
+			change_user(cmd.split(' ')[1]);
+			return false;
+		}
 		goto_channel(cmd);
 		clear();
 		return false;
@@ -2174,7 +2179,7 @@ function change_user(uname)
 		function(data) 
 		{
 			before_post_load();
-			if(data!="")
+			if(data['status'] === 'ok')
 			{
 				$('#posts').html(data['posts']);
 				$('#mode').val('user');
@@ -2201,6 +2206,10 @@ function change_user(uname)
 				after_post_load();
 				$('#postscroller').scrollTop(0);
 				hide_input();
+			}
+			else
+			{
+				dialog("user doesn't exist");
 			}
 		});
 		clear();
