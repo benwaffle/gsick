@@ -503,10 +503,10 @@ def load_more_comments(request):
 	comments = ''
 	status = ''
 	id = request.GET.get('id', 0)
-	last_id = request.GET.get('last_id',0)
+	last_id = request.GET.get('last_id', 0)
 	post = Post.objects.get(id=id)
 	comments = Comment.objects.filter(post=post, id__gt=last_id).order_by('id')[:50]
-	comments = comments_to_html(request,comments)
+	comments = comments_to_html(request, comments)
 	status = 'ok'
 	data = {'comments':comments, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -1057,22 +1057,22 @@ def show_last_comments(request):
 	comments = reversed(list(comments))
 	c = comments_to_html(request,comments)
 	p = "<input type=\"hidden\" value=\"" + str(post.id) + "\" class=\"post_id\">"
-	if length < 20:
+	if length < 50:
 		p = post_to_html(request,post)
 	comments = p + c
 	data = {'comments':comments,'cname':cname}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def show_older_comments(request):
-	id = request.GET.get('id',0)
+	id = request.GET.get('id', 0)
 	comment = Comment.objects.get(id=id)
-	comments = Comment.objects.filter(post=comment.post,id__lt=id).order_by('-id')[:20]
+	comments = Comment.objects.filter(post=comment.post, id__lt=id).order_by('-id')[:50]
 	length = comments.count()
 	comments = reversed(list(comments))
-	c = comments_to_html(request,comments)
+	c = comments_to_html(request, comments)
 	p = "<input type=\"hidden\" value=\"" + str(comment.post.id) + "\" class=\"post_id\">"
-	if length < 20 and length > 0:
-		p = post_to_html(request,comment.post)
+	if length < 50 and length > 0:
+		p = post_to_html(request, comment.post)
 	comments = p + c
 	data = {'comments':comments}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -1818,7 +1818,7 @@ def pins_to_html(request, posts, mode="channel"):
 		s = s + post
 	return s
 
-def comments_to_html(request,comments):
+def comments_to_html(request, comments):
 	s = ""
 	for c in comments:
 		s = s + "<div class='post_parent' id='comment_" + str(c.id) + "'>"

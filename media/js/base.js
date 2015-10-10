@@ -1904,9 +1904,9 @@ function show_older_comments()
 {
 	id = $('.comment_id:first').val();
 	$.get('/show_older_comments/',
-		{
+	{
 		id:id
-		},
+	},
 	function(data) 
 	{
 		$(data['comments']).prependTo('#posts');
