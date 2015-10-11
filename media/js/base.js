@@ -1930,7 +1930,13 @@ function post_to_channel()
 		return false;
 	}
 	content = $('#inputcontent').val();
-    $.post('/post_to_channel/', { channel:channel, content:content, csrfmiddlewaretoken:csrf_token }, function(data)
+    $.post('/post_to_channel/', 
+    { 
+    	channel:channel, 
+    	content:content, 
+    	csrfmiddlewaretoken:csrf_token 
+    }, 
+    function(data)
     {
 		if(data['status'] === "ok")
 		{
@@ -1943,6 +1949,33 @@ function post_to_channel()
 		clear();
         return false;
     });
+}
+
+function reply_to_post(content, id)
+{
+	if(loggedin !== 'yes')
+	{
+		show_guest_status();
+		return false;
+	}
+	$.post('/post_comment/',
+	{
+    	id:id,
+    	content: content,
+    	csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			$('.alert_reply_input').each(function()
+			{
+				$(this).val('');
+			})
+			dialog('comment sent');
+		}
+	});
+	return false;
 }
 
 function goto(cmd)

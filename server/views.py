@@ -362,15 +362,15 @@ def post_comment(request):
 		comment.save()
 		post.date_modified = datetime.datetime.now()
 		post.save()
+		mentions = find_mentions(request, content)
+		for m in mentions:
+			try:
+				auser = User.objects.get(username=m)
+				alert = Alert(user=auser, type='mention', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
+				alert.save()
+			except:
+				continue
 		if post.user != request.user:
-			mentions = find_mentions(request, content)
-			for m in mentions:
-				try:
-					auser = User.objects.get(username=m)
-					alert = Alert(user=auser, type='mention', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
-					alert.save()
-				except:
-					continue
 			if post.user.username not in mentions:
 				alert = Alert(user=post.user, type='comment', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
 				alert.save()
@@ -800,6 +800,14 @@ def post_to_channel(request):
 		post = Post(content=content, channel=channel, user=request.user, date=datetime.datetime.now(), date_modified=datetime.datetime.now())
 		post.save()
 		id = post.id
+		mentions = find_mentions(request, content)
+		for m in mentions:
+			try:
+				auser = User.objects.get(username=m)
+				alert = Alert(user=auser, type='mention_post', user2=request.user, info1=post.id, date=datetime.datetime.now())
+				alert.save()
+			except:
+				continue
 	data = {'status':status, 'id':id}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
 
@@ -1959,6 +1967,14 @@ def alerts_to_html(request, alerts):
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
+			if a.type == 'mention_post':
+				post = Post.objects.get(id=int(a.info1))
+				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
+				s = s + ' mentioned you in a '
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content)) + '</div>'
+				s = s + "<div style='padding-top:10px'></div>"
+				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'>"	
 			if a.type == 'reply':
 				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
