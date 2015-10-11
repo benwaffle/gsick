@@ -2066,6 +2066,16 @@ function goto(cmd)
 			change_user(cmd.split(' ')[1]);
 			return false;
 		}
+		if(cmd.startsWith('ban user '))
+		{
+			ban_user(cmd);
+			return false;
+		}
+		if(cmd.startsWith('unban user '))
+		{
+			unban_user(cmd);
+			return false;
+		}
 		goto_channel(cmd);
 		clear();
 		return false;
@@ -2132,6 +2142,32 @@ function use_theme(cmd)
 				settings();
 			}
 		}
+	});
+}
+
+function ban_user(cmd)
+{
+	$.post('/ban_user/',
+	{
+		cmd: cmd,
+		csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		dialog(data['status']);
+	});
+}
+
+function unban_user(cmd)
+{
+	$.post('/unban_user/',
+	{
+		cmd: cmd,
+		csrfmiddlewaretoken: csrf_token
+	},
+	function(data) 
+	{
+		dialog(data['status']);
 	});
 }
 

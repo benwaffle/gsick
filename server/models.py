@@ -26,11 +26,6 @@ class Pin(models.Model):
     post = models.ForeignKey(Post)
     date = models.DateTimeField(default=datetime.datetime.now())
 
-class Note(models.Model):
-    user = models.ForeignKey(User)
-    content = models.TextField(max_length=4000, default=None, null=True)
-    date = models.DateTimeField(default=datetime.datetime.now())
-
 class PrivateMessage(models.Model):
     user = models.ForeignKey(User, related_name='receiver')
     sender = models.ForeignKey(User, related_name='sender')
@@ -77,6 +72,10 @@ class Paste(models.Model):
 class Info(models.Model):
     top_posts = models.TextField(max_length=1000)
     top_posts_date = models.DateTimeField()
+
+class Ban(models.Model):
+    user = models.ForeignKey(User)
+    ip = models.CharField(max_length=50, default=0)
     
 class Profile(models.Model):
     user = models.ForeignKey(User, unique=True)
@@ -91,3 +90,4 @@ class Profile(models.Model):
     embed_option = models.CharField(max_length=20, default='embed')
     last_pm_read = models.IntegerField(default=0)
     last_alert_read = models.IntegerField(default=0)
+    ip = models.CharField(max_length=50, default=0)

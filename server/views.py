@@ -7,6 +7,7 @@ import datetime
 import string
 import json
 import itertools
+from ipware.ip import get_ip
 from unicodedata import normalize
 from operator import attrgetter
 from django.template import RequestContext
@@ -28,6 +29,7 @@ from server.magik import *
 
 admin_list = ('madprops',)
 forbidden_channels = ('top', 'new', 'chat', 'settings', 'alerts', 'posts', 'pins', 'random', 'stream')
+banned_url = 'https://www.youtube.com/watch?v=fXU_YP7dMcM'
 
 def create_c(request):
 	c = {}
@@ -55,9 +57,11 @@ def main(request, mode='start', info=''):
 	c['input_placeholder'] = ''
 	c['scroll_background'] = ''
 	if request.user.is_authenticated():
+		p = get_profile(request.user)
+		if user_is_banned(request):
+			return HttpResponseRedirect(banned_url)
 		c['loggedin'] = 'yes'
 		c['username'] = request.user.username
-		p = get_profile(request.user)
 		c['background'] = p.theme_background
 		c['text'] = p.theme_text
 		c['link'] = p.theme_link
@@ -67,10 +71,14 @@ def main(request, mode='start', info=''):
 		c['input_placeholder'] = p.theme_input_placeholder
 		c['scroll_background'] = p.theme_scroll_background
 		c['embed_option'] = p.embed_option
+		p.ip = get_ip(request)
+		p.save()
 	return render_to_response('base.html', c, context_instance=RequestContext(request))	
 
 def enter(request):
 	auth_logout(request)
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	if request.method == 'POST':
 		if 'btnlogin' in request.POST:
 			username = request.POST['username'].lower()
@@ -79,7 +87,7 @@ def enter(request):
 			if user is not None:
 				if user.is_active:
 					auth_login(request, user)
-					return HttpResponseRedirect('../../')
+					return HttpResponseRedirect('/')
 			else:
 				c = create_c(request)
 				c['repetir'] = True
@@ -351,8 +359,10 @@ def find_mentions(request, input):
 
 @login_required
 def post_comment(request):
-	content = stripper(request.POST.get('content',0).strip())
-	id = request.POST.get('id',0)
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
+	id = request.POST.get('id', 0)
+	content = stripper(request.POST.get('content', 0).strip())
 	status = error_comment(request,content,id)
 	cname = ''
 	if status == 'ok':
@@ -783,6 +793,8 @@ def check_pm_limit(request):
 
 @login_required
 def post_to_channel(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	data = ''
 	post = ''
 	status = ''
@@ -868,6 +880,8 @@ def error_post(request):
 
 @login_required
 def send_message(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	data = ''
 	username = ''
 	status = ''
@@ -1086,7 +1100,10 @@ def show_older_comments(request):
 	data = {'comments':comments}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+@login_required
 def pin_post(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = ''
 	id = request.POST.get('id', 0)
 	post = Post.objects.get(id=id)
@@ -1506,6 +1523,7 @@ def clean_username(username):
 def stripper(value):
 	return value.replace("<", "")
 
+@login_required
 def admin_users(request):
 	if request.user.username in admin_list:
 		if request.method == 'POST':
@@ -1519,8 +1537,9 @@ def admin_users(request):
 			c['users'] = get_users()
 			return render_to_response('admin_users.html', c, context_instance=RequestContext(request))
 	else:
-		return HttpResponseRedirect('/../../../../../../../') 
+		return HttpResponseRedirect('/') 
 
+@login_required
 def delete_user(request, uname):
 	if uname == 'madprops':
 		return HttpResponse('nope')
@@ -1529,7 +1548,70 @@ def delete_user(request, uname):
 		u.delete()
 	return HttpResponse('ok')
 
+def user_is_banned(request):
+	try:
+		if request.user.username == 'madprops':
+			return False
+	except:
+		pass
+	try:
+		Ban.objects.filter(ip=get_ip(request))[0]
+		return True
+	except:
+		return False
+
+@login_required
+def ban_user(request):
+	cmd = request.POST['cmd']
+	username = cmd.split('ban user ')[1].strip()
+	try:
+		user = User.objects.get(username=username)
+	except:
+		status = "user doesn't exist"
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if request.user.username not in admin_list or user.username == 'madprops':
+		data = {'status':'nope'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	p = get_profile(user)
+	try:
+		Ban.objects.filter(user=user, ip=p.ip)[0]
+		status = 'user is already banned'
+	except:
+		ban = Ban(user=user, ip=p.ip)
+		ban.save()
+		status = user.username + ' has been banned'
+	data = {'status':status}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+@login_required
+def unban_user(request):
+	cmd = request.POST['cmd']
+	username = cmd.split('ban user ')[1].strip()
+	try:
+		user = User.objects.get(username=username)
+	except:
+		status = "user doesn't exist"
+		data = {'status':status}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if request.user.username not in admin_list:
+		data = {'status':'nope'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	p = get_profile(user)
+	bans = Ban.objects.filter(user=user)
+	for b in bans:
+		b.delete()
+	bans = Ban.objects.filter(ip=p.ip)
+	for b in bans:
+		b.delete()
+	status = user.username + ' has been unbanned'
+	data = {'status':status}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+@login_required
 def change_username(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = ''
 	cmd = request.POST['cmd'].lower().strip()
 	username = cmd.split('change username to ')[1].strip()
@@ -1560,7 +1642,10 @@ def change_username(request):
 	data = {'status':status, 'uname':uname}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+@login_required
 def change_password(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = ''
 	cmd = request.POST['cmd'].lower().strip()
 	password = cmd[19:]
@@ -1630,6 +1715,8 @@ def delete_channel(request):
 
 @login_required
 def delete_post(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = 'ok'
 	post_id = request.POST['id']
 	post = Post.objects.get(id=post_id)
@@ -1663,6 +1750,8 @@ def delete_post(request):
 
 @login_required
 def delete_comment(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = 'ok'
 	comment_id = request.POST['id']
 	comment = Comment.objects.get(id=comment_id)
