@@ -1563,7 +1563,7 @@ def change_username(request):
 def change_password(request):
 	status = ''
 	cmd = request.POST['cmd'].lower().strip()
-	password = cmd.split('change password to ')[1].strip()
+	password = cmd[19:]
 	if password.replace(" ", "") == "":
 		status = 'you must type a password'
 		data = {'status':status, 'csrf_token':'no'}
