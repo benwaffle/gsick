@@ -2076,6 +2076,11 @@ function goto(cmd)
 			unban_user(cmd);
 			return false;
 		}
+		if(cmd.startsWith('chat with '))
+		{
+			chat(cmd.substring(10));
+			return false;
+		}
 		goto_channel(cmd);
 		clear();
 		return false;

@@ -854,12 +854,6 @@ def error_post(request):
 	content = stripper(request.POST['content'].strip())
 	if cname in forbidden_channels:
 		return 'forbiddenchannel'
-	num_posts = Post.objects.filter(user=request.user, date__gte=(datetime.datetime.now() - datetime.timedelta(days=1))).count()
-	if num_posts > 100:
-		return 'toomuchposts'
-	num_posts = Post.objects.filter(channel__name=cname, user=request.user, date__gte=(datetime.datetime.now() - datetime.timedelta(hours=12))).count()
-	# if num_posts >= 1 and request.user.username != 'madprops':
-	# 	return 'wait'
 	if content == "":
 		return 'empty'
 	if len(content) > 2000:
@@ -2008,7 +2002,8 @@ def advanced_to_html():
 	s = s + "to change your password: change password to newpassword <br><br>"
 	s = s + "to use someone elses theme: use theme by username <br><br>"
 	s = s + "to see posts by someone made on a specific channel: username on channel <br><br>"
-	s = s + "to go to a user profile: user username"
+	s = s + "to go to a user profile: user username <br><br>"
+	s = s + "to chat with a user: chat with username"
 	s = s + "</div>"
 	return s
 	
