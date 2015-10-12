@@ -29,7 +29,7 @@ from server.magik import *
 
 admin_list = ('madprops',)
 forbidden_channels = ('top', 'new', 'chat', 'settings', 'alerts', 'posts', 'pins', 'random', 'stream')
-banned_url = 'https://www.youtube.com/watch?v=fXU_YP7dMcM'
+banned_url = 'http://salmonofcapistrano.com/'
 
 def create_c(request):
 	c = {}
@@ -37,42 +37,30 @@ def create_c(request):
 	return c
 
 def main(request, mode='start', info=''):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
+	if not request.user.is_authenticated():
+		return HttpResponseRedirect('/enter')
+	p = get_profile(request.user)
 	c = create_c(request)
 	if mode == 'start':
-		if request.user.is_authenticated():
-			c['mode'] = 'stream'
-		else:
-			c['mode'] = 'new'
+		c['mode'] = 'stream'
 	else:
 		c['mode'] = mode
 	c['info'] = info
-	c['loggedin'] = 'no'
-	c['username'] = ''
-	c['background'] = ''
-	c['text'] = ''
-	c['link'] = ''
-	c['input_background'] = ''
-	c['input_text'] = ''
-	c['input_border'] = ''
-	c['input_placeholder'] = ''
-	c['scroll_background'] = ''
-	if request.user.is_authenticated():
-		p = get_profile(request.user)
-		if user_is_banned(request):
-			return HttpResponseRedirect(banned_url)
-		c['loggedin'] = 'yes'
-		c['username'] = request.user.username
-		c['background'] = p.theme_background
-		c['text'] = p.theme_text
-		c['link'] = p.theme_link
-		c['input_background'] = p.theme_input_background
-		c['input_text'] = p.theme_input_text
-		c['input_border'] = p.theme_input_border
-		c['input_placeholder'] = p.theme_input_placeholder
-		c['scroll_background'] = p.theme_scroll_background
-		c['embed_option'] = p.embed_option
-		p.ip = get_ip(request)
-		p.save()
+	c['loggedin'] = 'yes'
+	c['username'] = request.user.username
+	c['background'] = p.theme_background
+	c['text'] = p.theme_text
+	c['link'] = p.theme_link
+	c['input_background'] = p.theme_input_background
+	c['input_text'] = p.theme_input_text
+	c['input_border'] = p.theme_input_border
+	c['input_placeholder'] = p.theme_input_placeholder
+	c['scroll_background'] = p.theme_scroll_background
+	c['embed_option'] = p.embed_option
+	p.ip = get_ip(request)
+	p.save()
 	return render_to_response('base.html', c, context_instance=RequestContext(request))	
 
 def enter(request):

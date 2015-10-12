@@ -2210,18 +2210,18 @@ function goto_channel_back(h)
 
 function hide_overlay()
 {
-	$('#overlay').css('display', 'none')
-	$('#goto_dialog').css('display', 'none')
-	$('#goto_input').val('')
-	$('#channel_list').html('')
+	$('#goto_input').val('');
+	$('#channel_list').html('');
+	$('#overlay').css('display', 'none');
+	$('#goto_dialog').css('display', 'none');
 }
 
 
 function show_goto()
 {
-	$('#overlay').css('display', 'block')
-	$('#goto_dialog').css('display', 'block')
-	$('#goto_input').focus()
+	$('#overlay').css('display', 'block');
+	$('#goto_dialog').css('display', 'block');
+	$('#goto_input').focus();
 	$.get('/get_channel_list/',
 		{
 		},
@@ -3540,9 +3540,9 @@ function activate_key_detection()
         	if($('#goto_input').is(':focus'))
         	{
         		var val = $.trim($('#goto_input').val())
+        		hide_overlay();
         		if(val !== '')
         		{
-        			hide_overlay();
         			goto(val);
         		}
         	}
