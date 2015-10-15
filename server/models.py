@@ -64,6 +64,7 @@ class Visited(models.Model):
     user = models.ForeignKey(User, related_name='user_visiting')
     channel = models.CharField(max_length=100, default='')
     count = models.IntegerField(default=0)
+    date = models.DateTimeField(default=datetime.datetime.now())
 
 class Paste(models.Model):
     content = models.TextField(max_length=100000, default=None, null=False) 
@@ -79,6 +80,7 @@ class Ban(models.Model):
     
 class Profile(models.Model):
     user = models.ForeignKey(User, unique=True)
+    date_registered = models.DateTimeField(default=datetime.datetime.now())
     theme_background = models.CharField(max_length=20, default='0')
     theme_text = models.CharField(max_length=20, default='0')
     theme_link = models.CharField(max_length=20, default='0')

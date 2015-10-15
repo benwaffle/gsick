@@ -91,6 +91,7 @@ def enter(request):
 				password = request.POST['register_password']
 				user = User.objects.create_user(username, 'no@email.com', password)
 				p = Profile(user=user)
+				p.date_registered = datetime.datetime.now()
 				p.save()
 				user.backend='django.contrib.auth.backends.ModelBackend'
 				auth_login(request, user)
@@ -1185,9 +1186,10 @@ def get_channel(request, cname=''):
 		try:
 			v = Visited.objects.get(user=request.user, channel=cname)
 			v.count = v.count + 1
+			v.date = datetime.datetime.now()
 			v.save()
 		except:
-			v = Visited(user=request.user, channel=cname, count=1)
+			v = Visited(user=request.user, channel=cname, count=1, date=datetime.datetime.now())
 			v.save()
 	try:
 		channel = Channel.objects.get(name=cname)
@@ -2074,7 +2076,7 @@ def channel_list_to_html(request):
 	count = 0
 	visited = False
 	if request.user.is_authenticated():
-		visited = Visited.objects.filter(user=request.user).order_by('-count')[:25]
+		visited = Visited.objects.filter(user=request.user).order_by('-date').distinct()[:25]
 		count = visited.count()
 		for v in visited:
 			s = s + "<a href='#' onclick='hide_overlay();goto(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
