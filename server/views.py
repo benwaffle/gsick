@@ -1090,6 +1090,9 @@ def pin_post(request):
 	status = ''
 	id = request.POST.get('id', 0)
 	post = Post.objects.get(id=id)
+	if post.user == request.user:
+		data = {'status':'sameuser', 'num_pins':0}
+		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:
 		pin = Pin.objects.get(user=request.user,post=post)
 	except:
