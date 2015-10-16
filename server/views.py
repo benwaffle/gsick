@@ -1185,15 +1185,14 @@ def get_channel(request, cname=''):
 		cname = random_channel_name()
 	posts = ''
 	status = 'ok'
-	if request.user.is_authenticated():
-		try:
-			v = Visited.objects.get(user=request.user, channel=cname)
-			v.count = v.count + 1
-			v.date = datetime.datetime.now()
-			v.save()
-		except:
-			v = Visited(user=request.user, channel=cname, count=1, date=datetime.datetime.now())
-			v.save()
+	try:
+		v = Visited.objects.get(user=request.user, channel=cname)
+		v.count = v.count + 1
+		v.date = datetime.datetime.now()
+		v.save()
+	except:
+		v = Visited(user=request.user, channel=cname, count=1, date=datetime.datetime.now())
+		v.save()
 	try:
 		channel = Channel.objects.get(name=cname)
 		posts = get_channel_posts(request, channel)
@@ -2076,13 +2075,10 @@ def alerts_to_html(request, alerts):
 
 def channel_list_to_html(request):
 	s = ""
-	count = 0
-	visited = False
-	if request.user.is_authenticated():
-		visited = Visited.objects.filter(user=request.user).order_by('-date').distinct()[:25]
-		count = visited.count()
-		for v in visited:
-			s = s + "<a href='#' onclick='hide_overlay();goto(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
+	visited = Visited.objects.filter(user=request.user).order_by('-date').distinct()[:25]
+	count = visited.count()
+	for v in visited:
+		s = s + "<a href='#' onclick='hide_overlay();goto(\"" + v.channel + "\");return false;'class='channels_item'>" + v.channel + "</a>"
 	diff = 50 - count
 	if visited:
 		vlist = []
