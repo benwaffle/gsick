@@ -44,7 +44,7 @@ def main(request, mode='start', info=''):
 	p = get_profile(request.user)
 	c = create_c(request)
 	if mode == 'start':
-		c['mode'] = 'stream'
+		c['mode'] = 'new'
 	else:
 		c['mode'] = mode
 	c['info'] = info
