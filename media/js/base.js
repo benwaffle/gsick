@@ -2425,6 +2425,7 @@ function change_user(uname)
 					document.title = 'posts by ' + data['uname'];
 				}
 				info1 = data['uname'];
+				info2 = data['following'];
 				after_post_load();
 				$('#postscroller').scrollTop(0);
 				hide_input();
@@ -2452,11 +2453,12 @@ function change_user_back(h)
 	else
 	{
 		setHeader('posts by ' + h.info 
-			       + ' | <a onClick="get_pins(\''+h.info+'\');return false;" href="#">pins</a>' 
-			       + ' | <a onClick="chat(\''+h.info+'\');return false;" href="#">chat</a>');
+			       + ' | <a onClick="chat(\''+h.info+'\');return false;" href="#">chat</a>'
+				   + ' | <a id="following_status" onClick="toggle_follow(\'' + h.info+'\');return false;" href="#">' + h.info_ + '</a>');
 		document.title = 'posts by ' + h.info;
 	}
 	info1 = h.info;
+	info2 = h.info_
 	after_post_load_back();
 	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
@@ -3164,6 +3166,7 @@ function update_url()
 	mode = $('#mode').val();
 	var ch = '';
 	var info;
+	var info_;
 	var url;
 
 	if(mode === 'channel')
@@ -3175,6 +3178,7 @@ function update_url()
 	{
 		url = 'user/' + info1;
 		info = info1;
+		info_ = info2;
 	}
 	else if(mode === 'chat')
 	{
@@ -3262,7 +3266,7 @@ function update_url()
 		}
 	}
 
-	window.history.pushState({'channel': ch, 'info': info, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
+	window.history.pushState({'channel': ch, 'info': info, 'info_': info_, 'mode': mode, 'url': url, 'pageTitle': 'title', 'content': 'content'}, '', '/' + url);
 }
 
 function resize_videos()
