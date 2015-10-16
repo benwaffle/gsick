@@ -124,7 +124,7 @@ def settings(request):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def chat(request):
-	data = ''
+	data = {}
 	status = 'ok'
 	username = ''
 	posts = ''
@@ -134,9 +134,24 @@ def chat(request):
 		peer = User.objects.get(username=username)
 		username = peer.username
 		posts = chat_to_html(request, get_chat_history(request, peer))
+		p = get_profile(peer)
+		if p.theme_background != '' and p.theme_background != 0:
+			data['has_theme'] = 'yes'
+			data['background'] = p.theme_background
+			data['text'] = p.theme_text
+			data['link'] = p.theme_link
+			data['input_background'] = p.theme_input_background
+			data['input_text'] = p.theme_input_text
+			data['input_border'] = p.theme_input_border
+			data['input_placeholder'] = p.theme_input_placeholder
+			data['scroll_background'] = p.theme_scroll_background
+		else:
+			data['has_theme'] = 'no'
+		data['posts'] = posts
+		data['username'] = username
+		data['status'] = status
 	except:
-		status = 'error'
-	data = {'posts':posts, 'username':username, 'status':status}
+		data['status'] = 'error'
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def view_chat(request):
@@ -544,9 +559,9 @@ def get_users():
 def get_user(request):
 	uname = request.GET['uname']
 	post = ''
-	data = ''
+	data = {}
 	status = 'ok'
-	if uname == "me" and request.user.is_authenticated():
+	if uname == "me":
 		user = request.user
 	else:
 		try:
@@ -557,14 +572,31 @@ def get_user(request):
 			return HttpResponse(json.dumps(data), content_type="application/json")
 	posts = get_user_posts(request, user)
 	posts = posts_to_html(request,posts,'user')
-	following = ''
-	if request.user.is_authenticated():
-		try:
-			f = Follow.objects.get(followed=User.objects.get(username=uname), follower=request.user)
-			following = 'unfollow'
-		except:
-			following = 'follow'
-	data = {'status':status, 'uname': user.username, 'posts':posts, 'following': following}
+	try:
+		f = Follow.objects.get(followed=User.objects.get(username=uname), follower=request.user)
+		following = 'unfollow'
+	except:
+		following = 'follow'
+	if user != request.user:
+		p = get_profile(user)
+		if p.theme_background != '' and p.theme_background != 0:
+			data['has_theme'] = 'yes'
+			data['background'] = p.theme_background
+			data['text'] = p.theme_text
+			data['link'] = p.theme_link
+			data['input_background'] = p.theme_input_background
+			data['input_text'] = p.theme_input_text
+			data['input_border'] = p.theme_input_border
+			data['input_placeholder'] = p.theme_input_placeholder
+			data['scroll_background'] = p.theme_scroll_background
+		else:
+			data['has_theme'] = 'no'
+	else:
+		data['has_theme'] = 'no'
+	data['status'] = status
+	data['uname'] = user.username
+	data['posts'] = posts
+	data['following'] = following
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_user_posts(request, user):

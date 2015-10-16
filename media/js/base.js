@@ -15,6 +15,14 @@ var theme_input_text = '';
 var theme_input_border = '';
 var theme_input_placeholder = '';
 var theme_scroll_background = '';
+var theme_background_other = '';
+var theme_text_other = '';
+var theme_link_other = '';
+var theme_input_background_other = '';
+var theme_input_text_other = '';
+var theme_input_border_other = '';
+var theme_input_placeholder_other = '';
+var theme_scroll_background_other = '';
 var embed_option;
 var lastY = 0;
 var reply_to_id = 0;
@@ -526,6 +534,14 @@ function set_theme_and_reload()
 
 function update_theme()
 {
+	if(theme_background_other !== '')
+	{
+		var mode = $('#mode').val();
+		if(mode === 'user' || mode === 'chat')
+		{
+			return update_theme_other();
+		}
+	}
 	if(loggedin !== 'yes')
 	{
 		return false;
@@ -595,6 +611,92 @@ function update_theme()
 		$('.quote_username:link').css('color', theme_background);
 		$('.quote_username:visited').css('color', theme_background);
 		$('.quote_username:hover').css('color', theme_background);
+	}
+}
+
+function reset_other_theme()
+{
+	theme_background_other = '';
+	theme_text_other = '';
+	theme_link_other = '';
+	theme_input_background_other = '';
+	theme_input_text_other = '';
+	theme_input_border_other = '';
+	theme_input_placeholder_other = '';
+	theme_scroll_background_other = '';
+}
+
+function update_theme_other()
+{
+	if(loggedin !== 'yes')
+	{
+		return false;
+	}
+	if(theme_background_other !== '')
+	{
+		$('body').css('background-color',theme_background_other);
+		$('html').css('background-color',theme_background_other);
+		$('.threecol').css('background-color',theme_background_other);
+		$('.colmid').css('background-color',theme_background_other);
+		$('.colleft').css('background-color',theme_background_other);
+		$('#centercol').css('background-color',theme_background_other);	
+	}
+	if(theme_link_other !== '')
+	{
+		$('a').each(function()
+		{
+			if($(this).parent().hasClass('reply'))
+			{
+				$(this).css('color', theme_background_other);
+			}
+			else if($(this).hasClass('channels_item'))
+			{
+
+			}
+			else
+			{
+				$(this).css('color', theme_link_other);
+			}
+		})
+	}
+	if(theme_text_other !== '')
+	{
+		$('body').css('color',theme_text_other);
+		$('html').css('color',theme_text_other);
+		$('.cname').css('color',theme_text_other);
+		$('.details').css('color',theme_text_other);
+	}
+	if(theme_input_background_other !== '')
+	{
+		$('#inputcontent').css('background-color', theme_input_background_other)
+		$('.alert_reply_input').css('background-color', theme_input_background_other)
+	}
+	if(theme_input_text !== '')
+	{
+		$('#inputcontent').css('color', theme_input_text_other)
+		$('.alert_reply_input').css('color', theme_input_text_other)
+	}
+	if(theme_input_border !== '')
+	{
+		$('#inputcontent').css('border-color', theme_input_border_other)
+		$('.alert_reply_input').css('border-color', theme_input_border_other)
+	}
+	if(theme_input_placeholder_other !== '')
+	{
+		var styleContent = 'input:-moz-placeholder {color: ' + theme_input_placeholder_other + ';} input::-moz-placeholder {color: ' + theme_input_placeholder_other + ';} input::-webkit-input-placeholder {color: ' + theme_input_placeholder_other + ';} input:-ms-input-placeholder {color: ' + theme_input_placeholder_other + ';}';
+		$('#placeholder-style').text(styleContent);
+	}
+	if(theme_scroll_background_other !== '')
+	{
+		$('.nicescroll-cursors').css('background-color', theme_scroll_background_other)
+	}
+	if(theme_background_other !== '' && theme_text_other !== '')
+	{
+		$('.quote_body').css('background-color', theme_text_other);
+		$('.quote_body').css('color', theme_background_other);
+		$('.quote_username:link').css('color', theme_background_other);
+		$('.quote_username:visited').css('color', theme_background_other);
+		$('.quote_username:hover').css('color', theme_background_other);
 	}
 }
 
@@ -889,6 +991,21 @@ function chat(username)
 			before_post_load();
 			if(data['status'] === 'ok')
 			{
+				if(data['has_theme'] === 'yes')
+				{
+					theme_background_other = data['background'];
+					theme_text_other = data['text'];
+					theme_link_other = data['link'];
+					theme_input_background_other = data['input_background'];
+					theme_input_text_other = data['input_text'];
+					theme_input_border_other = data['input_border'];
+					theme_input_placeholder_other = data['input_placeholder'];
+					theme_scroll_background_other = data['scroll_background'];
+				}
+				else
+				{
+					reset_other_theme();
+				}
 				chattingwith = data['username'];
 				info1 = chattingwith;
 				$('#posts').html(data['posts'])
@@ -2271,6 +2388,21 @@ function change_user(uname)
 			before_post_load();
 			if(data['status'] === 'ok')
 			{
+				if(data['has_theme'] === 'yes')
+				{
+					theme_background_other = data['background'];
+					theme_text_other = data['text'];
+					theme_link_other = data['link'];
+					theme_input_background_other = data['input_background'];
+					theme_input_text_other = data['input_text'];
+					theme_input_border_other = data['input_border'];
+					theme_input_placeholder_other = data['input_placeholder'];
+					theme_scroll_background_other = data['scroll_background'];
+				}
+				else
+				{
+					reset_other_theme();
+				}
 				$('#posts').html(data['posts']);
 				$('#mode').val('user');
 				if(data['uname'] === tehusername)
