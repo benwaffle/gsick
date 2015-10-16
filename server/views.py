@@ -44,7 +44,7 @@ def main(request, mode='start', info=''):
 	p = get_profile(request.user)
 	c = create_c(request)
 	if mode == 'start':
-		c['mode'] = 'new'
+		c['mode'] = 'top'
 	else:
 		c['mode'] = mode
 	c['info'] = info
@@ -95,7 +95,7 @@ def enter(request):
 				p.save()
 				user.backend='django.contrib.auth.backends.ModelBackend'
 				auth_login(request, user)
-				return HttpResponseRedirect('/new')
+				return HttpResponseRedirect('/')
 	else:
 		c = create_c(request)
 		return render_to_response('enter.html', c, context_instance=RequestContext(request))
