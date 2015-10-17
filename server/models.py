@@ -92,4 +92,5 @@ class Profile(models.Model):
     embed_option = models.CharField(max_length=20, default='embed')
     last_pm_read = models.IntegerField(default=0)
     last_alert_read = models.IntegerField(default=0)
+    enabled = models.BooleanField(default=True)
     ip = models.CharField(max_length=50, default=0)

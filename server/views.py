@@ -1577,16 +1577,10 @@ def delete_user(request, uname):
 	return HttpResponse('ok')
 
 def user_is_banned(request):
-	try:
-		if request.user.username == 'madprops':
-			return False
-	except:
-		pass
-	try:
-		Ban.objects.filter(ip=get_ip(request))[0]
+	p = get_profile(request.user)
+	if not p.enabled:
 		return True
-	except:
-		return False
+	return False
 
 @login_required
 def ban_user(request):
@@ -1608,6 +1602,8 @@ def ban_user(request):
 	except:
 		ban = Ban(user=user, ip=p.ip)
 		ban.save()
+		p.enabled = False
+		p.save()
 		status = user.username + ' has been banned'
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -1633,6 +1629,8 @@ def unban_user(request):
 	for b in bans:
 		b.delete()
 	status = user.username + ' has been unbanned'
+	p.enabled = True
+	p.save()
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
