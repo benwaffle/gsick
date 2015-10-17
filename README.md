@@ -13,9 +13,13 @@ you can completely change the color theme.
 playing video or audio stop playing when you play another one.
 you can go back to the same position you were at.
 reponsive design adapts to window resize.
-'goto' populates a list of your most visited channels.
+'goto' populates a list of your most recent visited channels plus some random ones at the bottom.
 receive alerts whenever there has been activity on your posts,
 including follows, appreciations, comments, mentions and replies.
+when someone goes to your profile or chat your color theme will be seen
+you can copy other's color theme with a command.
+commands to change your username or password. 
+commands to go to any place in the site.
 
 
 ![](http://i.imgur.com/c71emms.jpg)
@@ -23,3 +27,5 @@ including follows, appreciations, comments, mentions and replies.
 ![](http://i.imgur.com/hzBXcQW.jpg)
 
 ![](http://i.imgur.com/BM3QEBS.jpg)
+
+![](http://i.imgur.com/A3TqRW9.jpg)
