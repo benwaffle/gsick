@@ -23,6 +23,14 @@ var theme_input_text_other = '';
 var theme_input_border_other = '';
 var theme_input_placeholder_other = '';
 var theme_scroll_background_other = '';
+var theme_background_default;
+var theme_text_default;
+var theme_link_default;
+var theme_input_background_default;
+var theme_input_text_default;
+var theme_input_border_default;
+var theme_input_placeholder_default;
+var theme_scroll_background_default;
 var embed_option;
 var lastY = 0;
 var reply_to_id = 0;
@@ -616,14 +624,14 @@ function update_theme()
 
 function reset_other_theme()
 {
-	theme_background_other = '';
-	theme_text_other = '';
-	theme_link_other = '';
-	theme_input_background_other = '';
-	theme_input_text_other = '';
-	theme_input_border_other = '';
-	theme_input_placeholder_other = '';
-	theme_scroll_background_other = '';
+	theme_background_other = theme_background_default;
+	theme_text_other = theme_text_default;
+	theme_link_other = theme_link_default;
+	theme_input_background_other = theme_input_background_default;
+	theme_input_text_other = theme_input_text_default;
+	theme_input_border_other = theme_input_border_default;
+	theme_input_placeholder_other = theme_input_placeholder_default;
+	theme_scroll_background_other = theme_scroll_background_default;
 }
 
 function update_theme_other()
@@ -4105,30 +4113,25 @@ function hide_input()
 
 function initial_settings()
 {
-	if(loggedin === 'yes')
+	theme_background_default = $('body').css('background-color');
+	theme_text_default = $('body').css('color');
+	theme_link_default = $('a').css('color');
+	theme_input_background_default = $('#inputcontent').css('background-color');
+	theme_input_text_default = $('#inputcontent').css('color');
+	theme_input_border_default = $('#inputcontent').css('border-top-color');
+	theme_input_placeholder_default = "#bbbbbb";
+	theme_scroll_background_default = "#bababa";
+
+	if(theme_background === '' || theme_background === "0")
 	{
-		if(theme_background === '' || theme_background === "0")
-		{
-			theme_background = $('body').css('background-color');
-			theme_text = $('body').css('color');
-			theme_link = $('a').css('color');
-			theme_input_background = $('#inputcontent').css('background-color');
-			theme_input_text = $('#inputcontent').css('color');
-			theme_input_border = $('#inputcontent').css('border-top-color');
-			theme_input_placeholder = "#bbbbbb";
-			theme_scroll_background = "#bababa";
-		}
-	}
-	else
-	{
-		theme_background = '';
-		theme_text = '';
-		theme_link = '';
-		theme_input_background = '';
-		theme_input_text = '';
-		theme_input_border = '';
-		theme_input_placeholder = '';
-		theme_scroll_background = '';
+		theme_background = theme_background_default;
+		theme_text = theme_text_default;
+		theme_link = theme_link_default;
+		theme_input_background = theme_input_background_default;
+		theme_input_text = theme_input_text_default;
+		theme_input_border = theme_input_border_default;
+		theme_input_placeholder = theme_input_placeholder_default;
+		theme_scroll_background = theme_scroll_background_default;
 	}
 }
 

@@ -577,20 +577,17 @@ def get_user(request):
 		following = 'unfollow'
 	except:
 		following = 'follow'
-	if user != request.user:
-		p = get_profile(user)
-		if p.theme_background != '' and p.theme_background != 0:
-			data['has_theme'] = 'yes'
-			data['background'] = p.theme_background
-			data['text'] = p.theme_text
-			data['link'] = p.theme_link
-			data['input_background'] = p.theme_input_background
-			data['input_text'] = p.theme_input_text
-			data['input_border'] = p.theme_input_border
-			data['input_placeholder'] = p.theme_input_placeholder
-			data['scroll_background'] = p.theme_scroll_background
-		else:
-			data['has_theme'] = 'no'
+	p = get_profile(user)
+	if p.theme_background != '' and p.theme_background != 0:
+		data['has_theme'] = 'yes'
+		data['background'] = p.theme_background
+		data['text'] = p.theme_text
+		data['link'] = p.theme_link
+		data['input_background'] = p.theme_input_background
+		data['input_text'] = p.theme_input_text
+		data['input_border'] = p.theme_input_border
+		data['input_placeholder'] = p.theme_input_placeholder
+		data['scroll_background'] = p.theme_scroll_background
 	else:
 		data['has_theme'] = 'no'
 	data['status'] = status
