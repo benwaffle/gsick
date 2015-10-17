@@ -16,10 +16,11 @@ reponsive design adapts to window resize.
 'goto' populates a list of your most recent visited channels plus some random ones at the bottom.
 receive alerts whenever there has been activity on your posts,
 including follows, appreciations, comments, mentions and replies.
-when someone goes to your profile or chat your color theme will be seen
+when someone goes to your profile or chat your color theme will be seen.
 you can copy other's color theme with a command.
 commands to change your username or password. 
 commands to go to any place in the site.
+you can see posts from a user made on a certain channel.
 
 
 ![](http://i.imgur.com/c71emms.jpg)
