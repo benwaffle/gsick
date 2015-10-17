@@ -459,11 +459,7 @@ def get_channel_posts_by_user(request, user, channel):
 	return posts
 
 def user_on_channel(request):
-	data = ''
-	uname = ''
-	cname = ''
-	posts = ''
-	status = 'error'
+	data = {}
 	try:
 		input = request.GET['input']
 		words = input.split()
@@ -474,9 +470,26 @@ def user_on_channel(request):
 		posts = get_channel_posts_by_user(request, user, channel)
 		posts = posts_to_html(request,posts)
 		status = 'ok'
+		p = get_profile(user)
+		if p.theme_background != '' and p.theme_background != 0:
+			data['has_theme'] = 'yes'
+			data['background'] = p.theme_background
+			data['text'] = p.theme_text
+			data['link'] = p.theme_link
+			data['input_background'] = p.theme_input_background
+			data['input_text'] = p.theme_input_text
+			data['input_border'] = p.theme_input_border
+			data['input_placeholder'] = p.theme_input_placeholder
+			data['scroll_background'] = p.theme_scroll_background
+		else:
+			data['has_theme'] = 'no'
+		data['posts'] = posts
+		data['status'] = status
+		data['uname'] = uname
+		data['cname'] = cname
 	except:
+		data['status'] = 'error';
 		pass
-	data = {'posts':posts, 'status':status, 'uname':uname, 'cname':cname}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def new_posts(request):

@@ -545,7 +545,7 @@ function update_theme()
 	if(theme_background_other !== '')
 	{
 		var mode = $('#mode').val();
-		if(mode === 'user' || mode === 'chat')
+		if(mode === 'user' || mode === 'chat' || mode === 'user_on_channel')
 		{
 			return update_theme_other();
 		}
@@ -2636,6 +2636,21 @@ function user_on_channel(cmd)
 	{
 		if(data['status'] === 'ok')
 		{
+			if(data['has_theme'] === 'yes')
+			{
+				theme_background_other = data['background'];
+				theme_text_other = data['text'];
+				theme_link_other = data['link'];
+				theme_input_background_other = data['input_background'];
+				theme_input_text_other = data['input_text'];
+				theme_input_border_other = data['input_border'];
+				theme_input_placeholder_other = data['input_placeholder'];
+				theme_scroll_background_other = data['scroll_background'];
+			}
+			else
+			{
+				reset_other_theme();
+			}
 			before_post_load();
 			setHeader(data['uname'] + ' on ' + '<a onClick="goto(\'' + data['cname']+'\');return false;" href="#">' + data['cname'] + '</a>');
 			$('#posts').html(data['posts']);
