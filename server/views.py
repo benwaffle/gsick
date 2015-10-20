@@ -414,7 +414,7 @@ def open_post(request, id=None):
 def save_top_posts():
 	# days and num_pins__gte should be changed as the site grows in users 
 	# days is how old can a post be to be considered for top
-	# num_pins__gte is the minimum amount of pins (appreciations) to be considered for top
+	# num_pins__gte is the minimum amount of likes (pins) to be considered for top
 	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=100))).filter(num_pins__gte='1').order_by('-num_pins', '-date')[:10]
 	s = ''
 	for p in posts:
@@ -1844,11 +1844,11 @@ def post_to_html(request, post):
 	num_pins = Pin.objects.filter(post=post).count()
 	if request.user.is_authenticated():
 		if Pin.objects.filter(post=post, user=request.user).count() > 0:
-			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	else:
-		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	if request.user.username in admin_list or request.user == post.user:
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_post_" + str(post.id) + "' onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	else:
@@ -1875,11 +1875,11 @@ def posts_to_html(request, posts, mode="channel"):
 		num_pins = Pin.objects.filter(post=p).count()
 		if request.user.is_authenticated():
 			if Pin.objects.filter(post=p, user=request.user).count() > 0:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 			else:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		if mode == "channel":
 			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		elif mode == "new":
@@ -1916,11 +1916,11 @@ def pins_to_html(request, posts, mode="channel"):
 		num_pins = Pin.objects.filter(post=p.post).count()
 		if request.user.is_authenticated():
 			if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciated (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 			else:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>appreciate (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
@@ -2059,7 +2059,7 @@ def alerts_to_html(request, alerts):
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
-				s = s + ' appreciated your '
+				s = s + ' liked your '
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'

@@ -3,9 +3,9 @@ every post goes in a single channel.
 you can follow users.
 posts by people you follow appear in 'stream'.
 new posts by everyone appear in 'new'.
-posts with most appreciations appear in 'top'.
+posts with most likes appear in 'top'.
 posts you've made appear in 'posts'.
-posts you've appreciated appear in 'pins'.
+posts you've liked appear in 'pins'.
 you can go to channels.
 you can see posts made by a user.
 you can message a user.
@@ -15,7 +15,7 @@ you can go back to the same position you were at.
 reponsive design adapts to window resize.
 'goto' populates a list of your most recent visited channels plus some random ones at the bottom.
 receive alerts whenever there has been activity on your posts,
-including follows, appreciations, comments, mentions and replies.
+including follows, likes, comments, mentions and replies.
 when someone goes to your profile or chat your color theme will be seen.
 you can copy other's color theme with a command.
 commands to change your username or password. 
