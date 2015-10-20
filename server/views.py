@@ -135,7 +135,7 @@ def chat(request):
 		username = peer.username
 		posts = chat_to_html(request, get_chat_history(request, peer))
 		p = get_profile(peer)
-		if p.theme_background != '' and p.theme_background != 0:
+		if p.theme_background != '' and p.theme_background != 0 and p.theme_background != '0':
 			data['has_theme'] = 'yes'
 			data['background'] = p.theme_background
 			data['text'] = p.theme_text
@@ -471,7 +471,7 @@ def user_on_channel(request):
 		posts = posts_to_html(request,posts)
 		status = 'ok'
 		p = get_profile(user)
-		if p.theme_background != '' and p.theme_background != 0:
+		if p.theme_background != '' and p.theme_background != 0 and p.theme_background != '0':
 			data['has_theme'] = 'yes'
 			data['background'] = p.theme_background
 			data['text'] = p.theme_text
@@ -591,7 +591,7 @@ def get_user(request):
 	except:
 		following = 'follow'
 	p = get_profile(user)
-	if p.theme_background != '' and p.theme_background != 0:
+	if p.theme_background != '' and p.theme_background != 0 and p.theme_background != '0':
 		data['has_theme'] = 'yes'
 		data['background'] = p.theme_background
 		data['text'] = p.theme_text

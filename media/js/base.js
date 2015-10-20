@@ -3000,14 +3000,6 @@ function refresh_user()
 function refresh()
 {
 	mode = $('#mode').val();
-	if(mode === 'channel')
-	{
-		//refresh_channel();
-	}
-	if(mode === 'user')
-	{
-		//refresh_user();
-	}
 	if(mode === 'chat')
 	{
 		refresh_chat();
