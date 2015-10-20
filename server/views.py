@@ -1136,16 +1136,12 @@ def pin_post(request):
 		data = {'status':'sameuser', 'num_pins':0}
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:
-		pin = Pin.objects.get(user=request.user,post=post)
+		pin = Pin.objects.get(user=request.user, post=post)
 	except:
-		pin = Pin(user=request.user,post=post,date=datetime.datetime.now())
+		pin = Pin(user=request.user,post=post, date=datetime.datetime.now())
 		pin.save()
-		if post.user != request.user:
-			try:
-				a = Alert.objects.get(user=post.user, type='pin', user2=request.user, info1=post.id)
-			except:
-				alert = Alert(user=post.user, type='pin', user2=request.user, info1=post.id, date=datetime.datetime.now())
-				alert.save()
+		alert = Alert(user=post.user, type='pin', user2=request.user, info1=post.id, date=datetime.datetime.now())
+		alert.save()
 	num_pins = Pin.objects.filter(post=post).count()
 	status = 'ok'
 	data = {'status':status, 'num_pins':num_pins}
@@ -1167,6 +1163,24 @@ def get_pins(request):
 		except:
 			following = 'follow'
 	data = {'status':status, 'pins':pins, 'uname':uname, 'following':following}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def like_comment(request):
+	id = request.POST['id']
+	comment = Comment.objects.get(id=id)
+	if comment.user == request.user:
+		data = {'status':'sameuser'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	try:
+		CommentLike.objects.get(comment=comment, user=request.user)
+	except:	
+		cl = CommentLike(comment=comment, user=request.user, date=datetime.datetime.now())
+		cl.save()
+		alert = Alert(user=comment.user, type='comment_like', user2=request.user, info1=comment.id, date=datetime.datetime.now())
+		alert.save()
+	num_comments = CommentLike.objects.filter(comment=comment).count()
+	status = 'ok'
+	data = {'status':status, 'num_comments':num_comments}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def open_new_post(request):
@@ -1914,13 +1928,12 @@ def pins_to_html(request, posts, mode="channel"):
 		else:
 			delete = ""
 		num_pins = Pin.objects.filter(post=p.post).count()
-		if request.user.is_authenticated():
-			if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
-			else:
-				pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+
+		if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+
 		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
@@ -1945,10 +1958,18 @@ def comments_to_html(request, comments):
 		s = s + "<div class='post_parent' id='comment_" + str(c.id) + "'>"
 		s = s +  "<div class='container'>"
 		s = s +   "<input type=\"hidden\" value=\"" + str(c.id) + "\" class=\"comment_id\">"
-		if request.user.username in admin_list or request.user == c.user:
-			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_comment_" + str(c.id) + "' onClick='delete_comment(\""+str(c.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;<a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
+
+		num_cms = CommentLike.objects.filter(comment=c).count()
+
+		if CommentLike.objects.filter(comment=c, user=request.user).count() > 0:
+			cms = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>liked (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
+			cms = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>like (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
+
+		if request.user.username in admin_list or request.user == c.user:
+			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_comment_" + str(c.id) + "' onClick='delete_comment(\""+str(c.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + cms + "<a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
+		else:
+			s = s +   "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + c.user.username + "\");return false;' href=\"#\">" + c.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + cms + "<a onClick='reply_to("+str(c.id)+");return false;'href='#'>reply</a></div></div>"
 		s = s +   "<time datetime='" + c.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(c.date)) +"</time>"
 		if c.reply:
 			s = s + "<div class='quote_body'>"
@@ -2061,6 +2082,12 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your '
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
+			if a.type == 'comment_like':	
+				comment = Comment.objects.get(id=a.info1)
+				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
+				s = s + ' liked your comment on a '
+				s = s + '<a onClick="open_post('+ str(comment.post.id) + '); return false;" href="#">post on ' + comment.post.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'

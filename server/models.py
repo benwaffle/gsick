@@ -77,6 +77,11 @@ class Info(models.Model):
 class Ban(models.Model):
     user = models.ForeignKey(User)
     ip = models.CharField(max_length=50, default=0)
+
+class CommentLike(models.Model):
+    user = models.ForeignKey(User)
+    comment = models.ForeignKey(Comment)
+    date = models.DateTimeField(default=datetime.datetime.now())
     
 class Profile(models.Model):
     user = models.ForeignKey(User, unique=True)

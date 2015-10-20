@@ -1339,6 +1339,30 @@ function pin(id)
 	return false;	
 }
 
+
+function like_comment(id)
+{
+	if(loggedin !== 'yes')
+	{
+		show_guest_status();
+		clear();
+		return false;
+	}
+	$.post('/like_comment/',
+		{
+			id: id,
+			csrfmiddlewaretoken: csrf_token
+		},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			$('#comment_' + id).find('.comment_like_status').html('liked (' + data['num_comments'] + ')')
+		}
+	});
+	return false;	
+}
+
 function my_pins()
 {
 	get_pins(tehusername);
