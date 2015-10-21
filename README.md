@@ -29,6 +29,4 @@ you can see posts from a user made on a certain channel.
 
 ![](http://i.imgur.com/hzBXcQW.jpg)
 
-![](http://i.imgur.com/BM3QEBS.jpg)
-
 ![](http://i.imgur.com/inuu6rF.jpg)
