@@ -24,9 +24,4 @@ commands to change your username or password.
 commands to go to any place in the site.
 you can see posts from a user made on a certain channel.
 
-
-![](http://i.imgur.com/c71emms.jpg)
-
-![](http://i.imgur.com/hzBXcQW.jpg)
-
 ![](http://i.imgur.com/inuu6rF.jpg)
