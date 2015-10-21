@@ -1363,6 +1363,126 @@ function like_comment(id)
 	return false;	
 }
 
+function edit_comment(id)
+{
+	if($('.edit_comment_area').is(':visible'))
+	{
+		return false;
+	}
+	$content = $('#comment_' + id).find('.text2');
+	original_comment = $content.html();
+	var s = '<textarea rows=3 class="edit_comment_area">' + original_comment + '</textarea>';
+	s += '<div onclick="submit_comment_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_comment_edit(' + id + ')" class="edit_cancel"> cancel </div>'
+	$content.html(s)
+	$('#comment_' + id).find('.edit_ok').css('color', theme_link);
+	$('#comment_' + id).find('.edit_cancel').css('color', theme_link);
+	$('#comment_' + id).find('textarea').focus();
+}
+
+function submit_comment_edit(id)
+{
+	$content = $('#comment_' + id).find('.text2');
+	var cont = $content.find('textarea').val();
+	$.post('/edit_comment/',
+		{
+			id: id,
+			content: cont,
+			csrfmiddlewaretoken: csrf_token
+		},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			$content.html(cont);
+		}
+		else if(data['status'] === 'replied')
+		{
+			dialog("can't edit a comment that has replies");
+			$content.html(original_comment);
+		}
+		else if(data['status'] === 'empty')
+		{
+			dialog("comment is empty");
+			$content.html(original_comment);
+		}
+		else if(data['status'] === 'toolong')
+		{
+			dialog("comment is too long");
+			$content.html(original_comment);
+		}
+		$('#comment_' + id).find('.edit_ok').remove();
+		$('#comment_' + id).find('.edit_cancel').remove();
+	});
+
+}
+
+function cancel_comment_edit(id)
+{
+	$('#comment_' + id).find('.text2').html(original_comment);
+	$('#comment_' + id).find('.edit_ok').remove();
+	$('#comment_' + id).find('.edit_cancel').remove();
+}
+
+function edit_post(id)
+{
+	if($('.edit_post_area').is(':visible'))
+	{
+		return false;
+	}
+	$content = $('#post_' + id).find('.text1');
+	original_post = $content.html();
+	var s = '<textarea rows=3 class="edit_post_area">' + original_post + '</textarea>';
+	s += '<div onclick="submit_post_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_post_edit(' + id + ')" class="edit_cancel"> cancel </div>'
+	$content.html(s)
+	$('#post_' + id).find('.edit_ok').css('color', theme_link);
+	$('#post_' + id).find('.edit_cancel').css('color', theme_link);
+	$('#post_' + id).find('textarea').focus();
+}
+
+function submit_post_edit(id)
+{
+	$content = $('#post_' + id).find('.text1');
+	var cont = $content.find('textarea').val();
+	$.post('/edit_post/',
+		{
+			id: id,
+			content: cont,
+			csrfmiddlewaretoken: csrf_token
+		},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			$content.html(cont);
+		}
+		else if(data['status'] === 'commented')
+		{
+			dialog("can't edit a post that has comments");
+			$content.html(original_post);
+		}
+		else if(data['status'] === 'empty')
+		{
+			dialog("post is empty");
+			$content.html(original_post);
+		}
+		else if(data['status'] === 'toolong')
+		{
+			dialog("post is too long");
+			$content.html(original_post);
+		}
+		$('#post_' + id).find('.edit_ok').remove();
+		$('#post_' + id).find('.edit_cancel').remove();
+	});
+
+}
+
+function cancel_post_edit(id)
+{
+	$('#post_' + id).find('.text1').html(original_comment);
+	$('#post_' + id).find('.edit_ok').remove();
+	$('#post_' + id).find('.edit_cancel').remove();
+}
+
 function my_pins()
 {
 	get_pins(tehusername);
@@ -3731,6 +3851,14 @@ function activate_key_detection()
 	 $(document).keydown(function(e)
 	 {
 	 	if($('#overlay').is(':visible'))
+	 	{
+	 		return true;
+	 	}
+	 	if($('.edit_comment_area').is(':focus'))
+	 	{
+	 		return true;
+	 	}
+	 	if($('.edit_post_area').is(':focus'))
 	 	{
 	 		return true;
 	 	}

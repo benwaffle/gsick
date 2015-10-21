@@ -688,3 +688,35 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
 {
     display: none;
 }
+
+.edit_comment_area
+{
+    font-size: 16px;
+    word-wrap: break-word;
+    width: 97%;
+    resize: none;
+}
+
+.edit_post_area
+{
+    font-size: 20px;
+    word-wrap: break-word;
+    width: 97%;
+    resize: none;
+}
+
+.edit_ok
+{
+    font-size: 18px;
+    padding-right: 20px;
+    padding-top: 5px;
+    float: left;
+    cursor: pointer;
+}
+
+.edit_cancel
+{
+    font-size: 18px;
+    padding-top: 5px;
+    cursor: pointer;
+}
