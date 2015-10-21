@@ -433,8 +433,20 @@ def edit_post(request):
 		else:
 			post.content = content
 			post.save()
+			eo = get_embed_option(request.user)
+			if eo == 'embed':
+				content = linebreaks(ultralize(post.content))
+			else:
+				content = linebreaks(urlize(post.content))
 			status = 'ok'
-	data = {'status':status}
+	data = {'status':status, 'content':content}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def get_post_content(request):
+	id = request.GET['id']
+	post = Post.objects.get(id=id)
+	status = 'ok'
+	data = {'status':status, 'content':post.content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def open_post(request, id=None):
@@ -1894,14 +1906,18 @@ def post_to_html(request, post):
 	s = s + 	"<div class='container'>"
 	s = s + 	    "<input type=\"hidden\" value=\"" + str(post.id) + "\" class=\"post_id\">"
 	num_pins = Pin.objects.filter(post=post).count()
-
 	if Pin.objects.filter(post=post, user=request.user).count() > 0:
 		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	else:
 		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+	
+	if post.user == request.user:
+		edit = "<a class='edit_post' onClick='edit_post(\""+str(post.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
+	else:
+		edit = ''
 
 	if request.user.username in admin_list or request.user == post.user:
-		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'><a id='delete_post_" + str(post.id) + "' onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
+		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + edit + "<a id='delete_post_" + str(post.id) + "' onClick='delete_post(\""+str(post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	else:
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	s = s + 	    "<time datetime='" + post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(post.date)) +"</time>"
@@ -1930,12 +1946,17 @@ def posts_to_html(request, posts, mode="channel"):
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
-		if mode == "channel":
-			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
-		elif mode == "new":
-			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		if p.user == request.user:
+			edit = "<a class='edit_post' onClick='edit_post(\""+str(p.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+			edit = ''
+
+		if mode == "channel":
+			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + edit + delete + pins + "<a onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		elif mode == "new":
+			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + edit + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		else:
+			nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.user.username + "\");return false;' href=\"#\">" + p.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.channel.name + "\");return false;' href=\"#\">" + p.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + edit + delete + pins + "<a class='commentslink' id='cl_" + str(p.id) + "' onClick='open_post(\""+str(p.id)+"\");return false' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.date.isoformat() +"-00:00" +  "' class='timeago date'>"+ str(radtime(p.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.id) + "'>"
 		post = post + 	"<div class='post_container'>"
@@ -1970,7 +1991,12 @@ def pins_to_html(request, posts, mode="channel"):
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
-		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		if p.user == request.user:
+			edit = "<a class='edit_post' onClick='edit_post(\""+str(p.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
+		else:
+			edit = ''
+
+		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + edit + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
 		post = post + 	"<div class='post_container'>"

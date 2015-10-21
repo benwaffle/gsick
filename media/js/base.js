@@ -1429,14 +1429,25 @@ function edit_post(id)
 	{
 		return false;
 	}
-	$content = $('#post_' + id).find('.text1');
-	original_post = $content.html();
-	var s = '<textarea rows=3 class="edit_post_area">' + original_post + '</textarea>';
-	s += '<div onclick="submit_post_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_post_edit(' + id + ')" class="edit_cancel"> cancel </div>'
-	$content.html(s)
-	$('#post_' + id).find('.edit_ok').css('color', theme_link);
-	$('#post_' + id).find('.edit_cancel').css('color', theme_link);
-	$('#post_' + id).find('textarea').focus();
+
+	original_post = $('#post_' + id).find('.text1').html();
+
+	$.get('/get_post_content/',
+		{
+			id: id,
+		},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			var s = '<textarea rows=3 class="edit_post_area">' + data['content'] + '</textarea>';
+			s += '<div onclick="submit_post_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_post_edit(' + id + ')" class="edit_cancel"> cancel </div>'
+			$('#post_' + id).find('.text1').html(s)
+			$('#post_' + id).find('.edit_ok').css('color', theme_link);
+			$('#post_' + id).find('.edit_cancel').css('color', theme_link);
+			$('#post_' + id).find('textarea').focus();
+		}
+	});
 }
 
 function submit_post_edit(id)
@@ -1453,7 +1464,7 @@ function submit_post_edit(id)
 	{
 		if(data['status'] === 'ok')
 		{
-			$content.html(cont);
+			$content.html(data['content']);
 		}
 		else if(data['status'] === 'commented')
 		{
@@ -1472,13 +1483,14 @@ function submit_post_edit(id)
 		}
 		$('#post_' + id).find('.edit_ok').remove();
 		$('#post_' + id).find('.edit_cancel').remove();
+		after_post_load();
 	});
 
 }
 
 function cancel_post_edit(id)
 {
-	$('#post_' + id).find('.text1').html(original_comment);
+	$('#post_' + id).find('.text1').html(original_post);
 	$('#post_' + id).find('.edit_ok').remove();
 	$('#post_' + id).find('.edit_cancel').remove();
 }
