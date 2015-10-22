@@ -2175,16 +2175,18 @@ def alerts_to_html(request, alerts):
 			s = s + '<div class="alert">'
 			s = s + "<input type='hidden' value='" + str(a.id) + "' class='alert_id'>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
-			if a.type == 'pin':	
+			if a.type == 'pin':
+				post = Post.objects.get(id=int(a.info1))	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content[:150])) + '</div>'
 			if a.type == 'comment_like':	
 				comment = Comment.objects.get(id=a.info1)
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your comment on a '
 				s = s + '<a onClick="open_post('+ str(comment.post.id) + '); return false;" href="#">post on ' + comment.post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content[:150])) + '</div>'	
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'
