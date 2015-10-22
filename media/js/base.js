@@ -3859,6 +3859,7 @@ function activate_key_detection()
 				defocus();
 				hide_overlay();
 		 	}
+		 	return false;
 		}
 		if(code == 13)
         {
@@ -3888,6 +3889,10 @@ function activate_key_detection()
 	 		return true;
 	 	}
         code = (e.keyCode ? e.keyCode : e.which);
+		  if (code == 27)
+		  {
+		 	 return false;
+		 }
          //up
 		 if(code == 38)
 		 {
@@ -4198,6 +4203,21 @@ function activate_key_detection()
 	});
 }
 
+function activate_input_focus()
+{
+	$('#inputcontent').focus(function()
+	{
+		$('#inputcontent').attr('rows', 3);
+		resize_page();
+	});
+
+	$('#inputcontent').blur(function()
+	{
+		$('#inputcontent').attr('rows', 1);
+		resize_page();
+	})
+}
+
 function activate_scroller()
 {
 	$('#postscroller').niceScroll(
@@ -4460,6 +4480,7 @@ function init(mode, info)
     	new_posts();
     }
 	activate_key_detection();
+	activate_input_focus();
     activate_timeago();
     bottomdown = false;
     activate_refresh();
