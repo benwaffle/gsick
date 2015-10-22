@@ -4484,14 +4484,14 @@ var mouseHandle = function (evt) {
         if (isTouchPad) {
             newTime = new Date().getTime();
 
-            if (!scrolling && newTime-oldTime > 20 ) {
+            if (!scrolling && newTime-oldTime > 30 ) {
                 scrolling = true;
                 if (direction < 0) {
                     $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
                 } else {
                     $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
                 }
-                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 20);
+                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 30);
             }
         } else {
             if (direction < 0) {
