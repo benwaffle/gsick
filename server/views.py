@@ -2180,13 +2180,13 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your '
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content[:150])) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(post.content[:150]) + '</div>'
 			if a.type == 'comment_like':	
 				comment = Comment.objects.get(id=a.info1)
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your comment on a '
 				s = s + '<a onClick="open_post('+ str(comment.post.id) + '); return false;" href="#">post on ' + comment.post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content[:150])) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(comment.content[:150]) + '</div>'	
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'
