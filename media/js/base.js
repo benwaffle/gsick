@@ -1399,6 +1399,21 @@ function show_comment_likes(id)
 	});
 }
 
+function show_welcome()
+{
+	$.get('/get_welcome/',
+	{
+
+	},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			show_information(data['welcome']);
+		}
+	});
+}
+
 function edit_comment(id)
 {
 	if($('.edit_comment_area').is(':visible'))
@@ -1416,7 +1431,6 @@ function edit_comment(id)
 	{
 		if(data['status'] === 'ok')
 		{
-			console.log(1);
 			var s = '<textarea rows=3 class="edit_comment_area">' + data['content'] + '</textarea>';
 			s += '<div onclick="submit_comment_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_comment_edit(' + id + ')" class="edit_cancel"> cancel </div>'
 			$('#comment_' + id).find('.text2').html(s)
@@ -2575,6 +2589,7 @@ function activate_information_scroll()
 		autohidemode:'auto',
 		enablemousewheel:true,
 		horizrailenabled:false,
+		railoffset: {top:0,left:15},
 		cursorwidth: 5,
 		cursorcolor: "#bababa",
 		cursorborder: "0px solid #fff",
@@ -3411,7 +3426,6 @@ function go_back()
 
 function update_url()
 {
-	console.log(111);
 	bottomdown = false;
 	mode = $('#mode').val();
 	var ch = '';
@@ -4569,4 +4583,8 @@ function init(mode, info)
     check_new_pms();
     check_new_alerts();
     activate_history_listener();
+    if(first_time === 'yes')
+    {
+    	show_welcome();
+    }
 }

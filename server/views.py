@@ -47,6 +47,7 @@ def main(request, mode='start', info=''):
 		c['mode'] = 'new'
 	else:
 		c['mode'] = mode
+	c['first_time'] = request.GET.get('first_time', 'no')
 	c['info'] = info
 	c['loggedin'] = 'yes'
 	c['username'] = request.user.username
@@ -95,7 +96,7 @@ def enter(request):
 				p.save()
 				user.backend='django.contrib.auth.backends.ModelBackend'
 				auth_login(request, user)
-				return HttpResponseRedirect('/')
+				return HttpResponseRedirect('/?first_time=yes')
 	else:
 		c = create_c(request)
 		return render_to_response('enter.html', c, context_instance=RequestContext(request))
@@ -1259,6 +1260,11 @@ def get_comment_likes(request):
 	data = {'status':status, 'likes':likes}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+def get_welcome(request):
+	welcome = welcome_to_html()
+	data = {'status':'ok', 'welcome':welcome}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
 def open_new_post(request):
 	status = ''
 	post = ''
@@ -2259,6 +2265,24 @@ def likes_to_html(likes):
 	s += "<div class='show_likes_header'> these people liked this </div>"
 	for like in likes:
 		s += "<a class='show_likes_link' onClick='hide_overlay(); change_user(\"" + like.user.username + "\");return false;' href=\"#\">" + like.user.username + "</a>"
+	return s
+
+def welcome_to_html():
+	s = ""
+	s = """welcome to gsick. as you can see there is a menu at the left and a menu at the right. the left menu is for public functions, 
+	the right one is for more personal functions. in the left, stream shows posts by people who you are following, goto lets you go to
+	a channel or issue commands, top shows the posts with more likes over a time period, new shows the newest posts, back lets you go
+	to where you were before. on the right, posts shows the posts you have made, pins shows posts you have liked, chat holds open personal
+	conversations you have with other people, alerts shows activity regarding you, including likes, comments, replies, follows, mentions, 
+	settings allows you to costumize the site, you can completely change the color theme, people will see your theme when they go
+	to your posts or chat with you, you can copy someone elses theme with a command, see all the available commands in settings -> advanced.
+	in gsick all posts go inside a channel, to go to a channel you can click goto or press escape and type the name of the channel,
+	or click it if it's already in the list below, once in the channel you can see all other posts people have posted in it, you can
+	also post something by writing some text or a link or both in the textbox, you cannot upload file. when other people go to the
+	channel they will see your post, or they can see it in their stream if they're following you, or they can see it if new if it
+	was just published, or if it gets many likes, they will see it in top. people can like your post and leave a comment. 
+	start playing with it to get comfortable, try making your own theme, make some posts, discover new things, get some followers,
+	chat, do what you want."""
 	return s
 
 @csrf_exempt
