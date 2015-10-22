@@ -4444,32 +4444,63 @@ function activate_refresh()
 
 function activate_mousewheel()
 {
-	$(document).bind('touchmove', function (e)
-	{
-		var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-		var currentY = touch.clientY;
-		if(currentY > lastY)
-		{
-			$('#postscroller').scrollTop($('#postscroller').scrollTop() - 30);
-		}
-		else
-		{
-			$('#postscroller').scrollTop($('#postscroller').scrollTop() + 30);
-		}
-		e.preventDefault();
-		lastY = currentY;
-	});
-	$(document).bind('mousewheel', function(event, delta, deltaX, deltaY) 
-	{
-		if(delta < 0)
-		{
-			$('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
-		}
-		else
-		{
-			$('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
-		}
-	});
+	document.addEventListener("mousewheel", mouseHandle, false);
+	document.addEventListener("DOMMouseScroll", mouseHandle, false);
+}
+
+var scrolling = false;
+var oldTime = 0;
+var newTime = 0;
+var isTouchPad;
+var eventCount = 0;
+var eventCountStart;
+
+var mouseHandle = function (evt) {
+    var isTouchPadDefined = isTouchPad || typeof isTouchPad !== "undefined";
+    if (!isTouchPadDefined) {
+        if (eventCount === 0) {
+            eventCountStart = new Date().getTime();
+        }
+
+        eventCount++;
+
+        if (new Date().getTime() - eventCountStart > 50) {
+                if (eventCount > 5) {
+                    isTouchPad = true;
+                } else {
+                    isTouchPad = false;
+                }
+            isTouchPadDefined = true;
+        }
+    }
+
+    if (isTouchPadDefined) {
+        // here you can do what you want
+        // i just wanted the direction, for swiping, so i have to prevent
+        // the multiple event calls to trigger multiple unwanted actions (trackpad)
+        if (!evt) evt = event;
+        var direction = (evt.detail<0 || evt.wheelDelta>0) ? 1 : -1;
+
+        if (isTouchPad) {
+            newTime = new Date().getTime();
+
+            if (!scrolling && newTime-oldTime > 20 ) {
+                scrolling = true;
+                if (direction < 0) {
+                    $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
+                } else {
+                    $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
+                }
+                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 20);
+            }
+        } else {
+            if (direction < 0) {
+                $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
+            } else {
+                $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
+            }
+        }
+    }
 }
 
 function add_placeholder_style()
