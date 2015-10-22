@@ -533,6 +533,7 @@ a:hover
     margin-top:0px;
     resize:none;
     color: #000000;
+    overflow-x: hidden;
 }
 
 /* ******************************************* */
@@ -588,6 +589,21 @@ a:hover
     font-size: 20px;
 }
 
+#information_popup
+{
+    padding: 20px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin-top: -140px;
+    margin-left: -200px;
+    width: 400px;
+    height: 280px;
+    z-index: 999999;
+    display: none;
+    background-color: white;
+}
+
 .channels_item
 {
     font-size: 20px;
@@ -612,6 +628,8 @@ a:hover
 {
     font-size: 18px;
     width: 98%;
+    overflow-x: hidden;
+    resize: none;
 }
 
 ::-webkit-input-placeholder {
@@ -719,4 +737,17 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     font-size: 18px;
     padding-top: 5px;
     cursor: pointer;
+}
+
+.show_likes_header
+{
+    font-size: 20px;
+    padding-bottom: 10px;
+}
+
+.show_likes_link
+{
+    font-size: 18px;
+    padding-bottom: 15px;
+    display: block;
 }

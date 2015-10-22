@@ -44,7 +44,7 @@ def main(request, mode='start', info=''):
 	p = get_profile(request.user)
 	c = create_c(request)
 	if mode == 'start':
-		c['mode'] = 'top'
+		c['mode'] = 'new'
 	else:
 		c['mode'] = mode
 	c['info'] = info
@@ -1241,6 +1241,24 @@ def like_comment(request):
 	data = {'status':status, 'num_comments':num_comments}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+def get_post_likes(request):
+	id = request.GET['id']
+	post = Post.objects.get(id=id)
+	likes = Pin.objects.filter(post=post).order_by('date')
+	likes = likes_to_html(likes)
+	status = 'ok'
+	data = {'status':status, 'likes':likes}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def get_comment_likes(request):
+	id = request.GET['id']
+	comment = Comment.objects.get(id=id)
+	likes = CommentLike.objects.filter(comment=comment).order_by('date')
+	likes = likes_to_html(likes)
+	status = 'ok'
+	data = {'status':status, 'likes':likes}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
 def open_new_post(request):
 	status = ''
 	post = ''
@@ -1913,11 +1931,13 @@ def post_to_html(request, post):
 	s = s + "<div class='post_parent' id='post_" + str(post.id) + "'>"
 	s = s + 	"<div class='container'>"
 	s = s + 	    "<input type=\"hidden\" value=\"" + str(post.id) + "\" class=\"post_id\">"
+
 	num_pins = Pin.objects.filter(post=post).count()
+
 	if Pin.objects.filter(post=post, user=request.user).count() > 0:
-		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	else:
-		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 	
 	if post.user == request.user:
 		edit = "<a class='edit_post' onClick='edit_post(\""+str(post.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
@@ -1947,12 +1967,13 @@ def posts_to_html(request, posts, mode="channel"):
 			delete = "<a id='delete_post_" + str(p.id) + "' onClick='delete_post(\""+str(p.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
+
 		num_pins = Pin.objects.filter(post=p).count()
 
 		if Pin.objects.filter(post=p, user=request.user).count() > 0:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
 		if p.user == request.user:
 			edit = "<a class='edit_post' onClick='edit_post(\""+str(p.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
@@ -1992,12 +2013,13 @@ def pins_to_html(request, posts, mode="channel"):
 			delete = "<a id='delete_post_" + str(p.post.id) + "' onClick='delete_post(\""+str(p.post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
+
 		num_pins = Pin.objects.filter(post=p.post).count()
 
 		if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
+			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
 		if p.user == request.user:
 			edit = "<a class='edit_post' onClick='edit_post(\""+str(p.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
@@ -2032,9 +2054,9 @@ def comments_to_html(request, comments):
 		num_cms = CommentLike.objects.filter(comment=c).count()
 
 		if CommentLike.objects.filter(comment=c, user=request.user).count() > 0:
-			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>liked (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
+			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>like (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
+			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
 
 		if c.user == request.user:
 			edit = "<a class='edit_comment' onClick='edit_comment(\""+str(c.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
@@ -2173,7 +2195,7 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'		
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
+				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
 			if a.type == 'mention':
 				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2181,7 +2203,7 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
+				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
 			if a.type == 'mention_post':
 				post = Post.objects.get(id=int(a.info1))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2189,7 +2211,7 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'>"	
+				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'></textarea>>"	
 			if a.type == 'reply':
 				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2204,7 +2226,7 @@ def alerts_to_html(request, alerts):
 				s = s + "<div style='padding-bottom:4px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<input placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'>"	
+				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
 			s = s + '</div>'
 			s = s + '</div>'
 			ss = ss + s
@@ -2228,6 +2250,13 @@ def channel_list_to_html(request):
 		channels = Channel.objects.all().order_by('?')[:diff]
 	for c in channels:
 		s = s + "<a href='#' onclick='hide_overlay();goto(\"" + c.name + "\");return false;'class='channels_item'>" + c.name + "</a>"
+	return s
+
+def likes_to_html(likes):
+	s = ""
+	s += "<div class='show_likes_header'> these people liked this </div>"
+	for like in likes:
+		s += "<a class='show_likes_link' onClick='hide_overlay(); change_user(\"" + like.user.username + "\");return false;' href=\"#\">" + like.user.username + "</a>"
 	return s
 
 @csrf_exempt
