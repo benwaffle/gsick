@@ -414,8 +414,9 @@ def edit_comment(request):
 		else:
 			comment.content = content
 			comment.save()
+			content = linebreaks(urlize(comment.content))
 			status = 'ok'
-	data = {'status':status}
+	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def edit_post(request):
@@ -447,6 +448,13 @@ def get_post_content(request):
 	post = Post.objects.get(id=id)
 	status = 'ok'
 	data = {'status':status, 'content':post.content}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def get_comment_content(request):
+	id = request.GET['id']
+	comment = Comment.objects.get(id=id)
+	status = 'ok'
+	data = {'status':status, 'content':comment.content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def open_post(request, id=None):

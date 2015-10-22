@@ -1369,14 +1369,26 @@ function edit_comment(id)
 	{
 		return false;
 	}
-	$content = $('#comment_' + id).find('.text2');
-	original_comment = $content.html();
-	var s = '<textarea rows=3 class="edit_comment_area">' + original_comment + '</textarea>';
-	s += '<div onclick="submit_comment_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_comment_edit(' + id + ')" class="edit_cancel"> cancel </div>'
-	$content.html(s)
-	$('#comment_' + id).find('.edit_ok').css('color', theme_link);
-	$('#comment_' + id).find('.edit_cancel').css('color', theme_link);
-	$('#comment_' + id).find('textarea').focus();
+
+	original_comment = $('#comment_' + id).find('.text2').html();
+
+	$.get('/get_comment_content/',
+	{
+		id: id,
+	},
+	function(data) 
+	{
+		if(data['status'] === 'ok')
+		{
+			console.log(1);
+			var s = '<textarea rows=3 class="edit_comment_area">' + data['content'] + '</textarea>';
+			s += '<div onclick="submit_comment_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_comment_edit(' + id + ')" class="edit_cancel"> cancel </div>'
+			$('#comment_' + id).find('.text2').html(s)
+			$('#comment_' + id).find('.edit_ok').css('color', theme_link);
+			$('#comment_' + id).find('.edit_cancel').css('color', theme_link);
+			$('#comment_' + id).find('textarea').focus();
+		}
+	});
 }
 
 function submit_comment_edit(id)
@@ -1384,16 +1396,16 @@ function submit_comment_edit(id)
 	$content = $('#comment_' + id).find('.text2');
 	var cont = $content.find('textarea').val();
 	$.post('/edit_comment/',
-		{
-			id: id,
-			content: cont,
-			csrfmiddlewaretoken: csrf_token
-		},
+	{
+		id: id,
+		content: cont,
+		csrfmiddlewaretoken: csrf_token
+	},
 	function(data) 
 	{
 		if(data['status'] === 'ok')
 		{
-			$content.html(cont);
+			$content.html(data['content']);
 		}
 		else if(data['status'] === 'replied')
 		{
@@ -1412,6 +1424,7 @@ function submit_comment_edit(id)
 		}
 		$('#comment_' + id).find('.edit_ok').remove();
 		$('#comment_' + id).find('.edit_cancel').remove();
+		after_post_load();
 	});
 
 }
@@ -1433,9 +1446,9 @@ function edit_post(id)
 	original_post = $('#post_' + id).find('.text1').html();
 
 	$.get('/get_post_content/',
-		{
-			id: id,
-		},
+	{
+		id: id,
+	},
 	function(data) 
 	{
 		if(data['status'] === 'ok')
@@ -1455,11 +1468,11 @@ function submit_post_edit(id)
 	$content = $('#post_' + id).find('.text1');
 	var cont = $content.find('textarea').val();
 	$.post('/edit_post/',
-		{
-			id: id,
-			content: cont,
-			csrfmiddlewaretoken: csrf_token
-		},
+	{
+		id: id,
+		content: cont,
+		csrfmiddlewaretoken: csrf_token
+	},
 	function(data) 
 	{
 		if(data['status'] === 'ok')
