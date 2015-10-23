@@ -2262,7 +2262,7 @@ def channel_list_to_html(request):
 
 def likes_to_html(likes):
 	s = ""
-	s += "<div class='show_likes_header'> these people liked this </div>"
+	s += "<div class='show_likes_header'> people who liked this </div>"
 	for like in likes:
 		s += "<a class='show_likes_link' onClick='hide_overlay(); change_user(\"" + like.user.username + "\");return false;' href=\"#\">" + like.user.username + "</a>"
 	return s
