@@ -2201,7 +2201,13 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'		
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				ph = 'reply'
+				try:
+					Comment.objects.filter(reply=comment, user=request.user)[0]
+					ph = 'you already replied to this'
+				except:
+					pass
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
 					CommentLike.objects.get(user=request.user, comment=comment)
@@ -2216,7 +2222,13 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				ph = 'reply'
+				try:
+					Comment.objects.filter(reply=comment, user=request.user)[0]
+					ph = 'you already replied to this'
+				except:
+					pass
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
 					CommentLike.objects.get(user=request.user, comment=comment)
@@ -2231,7 +2243,13 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'></textarea>"	
+				ph = 'comment'
+				try:
+					Comment.objects.filter(post=post, user=request.user)[0]
+					ph = 'you already commented on this'
+				except:
+					pass
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);$(this).attr(\"placeholder\", \"you already commented on this\")}'></textarea>"	
 				like = 'like'
 				try:
 					Pin.objects.get(user=request.user, post=post)
@@ -2253,7 +2271,13 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + "<div style='padding-bottom:4px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				ph = 'reply'
+				try:
+					Comment.objects.filter(reply=comment, user=request.user)[0]
+					ph = 'you already replied to this'
+				except:
+					pass
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
 					CommentLike.objects.get(user=request.user, comment=comment)

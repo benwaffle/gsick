@@ -2289,7 +2289,7 @@ function post_to_channel()
     {
 		if(data['status'] === "ok")
 		{
-			goto(document.title);
+			open_post(data['id'])
 		}
 		else if(data['status'] === 'toobig')
 		{
