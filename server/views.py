@@ -578,7 +578,8 @@ def load_more_alerts(request):
 	try:
 		id = request.GET.get('id', 0)
 		xalerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
-		alerts = alerts_to_html(request,xalerts)
+		p = get_profile(request.user)
+		alerts = alerts_to_html(request, xalerts, p.last_alert_read)
 		status = 'ok'
 	except:
 		pass
