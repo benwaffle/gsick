@@ -575,6 +575,10 @@ function update_theme()
 			{
 
 			}
+			else if($(this).hasClass('show_likes_link'))
+			{
+
+			}
 			else
 			{
 				$(this).css('color', theme_link);
