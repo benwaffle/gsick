@@ -751,3 +751,10 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     padding-bottom: 15px;
     display: block;
 }
+
+.alert_like
+{
+    display: block;
+    padding-top:5px;
+    font-size: 16px;
+}

@@ -179,8 +179,8 @@ def view_alerts(request):
 	alerts = ''
 	xalerts = get_alerts(request)
 	if len(xalerts) > 0:
-		alerts = alerts_to_html(request, xalerts)
 		p = get_profile(request.user)
+		alerts = alerts_to_html(request, xalerts, p.last_alert_read)
 		lalerts = list(xalerts)
 		p.last_alert_read = lalerts[0].id
 		p.save()
@@ -2027,12 +2027,7 @@ def pins_to_html(request, posts, mode="channel"):
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
-		if p.user == request.user:
-			edit = "<a class='edit_post' onClick='edit_post(\""+str(p.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"
-		else:
-			edit = ''
-
-		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + edit + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
 		post = post + 	"<div class='post_container'>"
@@ -2172,7 +2167,7 @@ def advanced_to_html():
 	s = s + "</div>"
 	return s
 	
-def alerts_to_html(request, alerts):
+def alerts_to_html(request, alerts, last=None):
 	ss = ''
 	for a in alerts:
 		s = ''
@@ -2180,6 +2175,9 @@ def alerts_to_html(request, alerts):
 			s = s + "<div class='post_parent'>"
 			s = s + '<div class="alert">'
 			s = s + "<input type='hidden' value='" + str(a.id) + "' class='alert_id'>"
+			if last != None:
+				if a.id > last:
+					s = s + "<div class='alertdate' style='padding-bottom:4px'> new </div>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':
 				post = Post.objects.get(id=int(a.info1))	
@@ -2204,6 +2202,13 @@ def alerts_to_html(request, alerts):
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				like = 'like'
+				try:
+					CommentLike.objects.get(user=request.user, comment=comment)
+					like = 'liked'
+				except:
+					pass
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention':
 				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2212,6 +2217,13 @@ def alerts_to_html(request, alerts):
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				like = 'like'
+				try:
+					CommentLike.objects.get(user=request.user, comment=comment)
+					like = 'liked'
+				except:
+					pass
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention_post':
 				post = Post.objects.get(id=int(a.info1))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2219,7 +2231,14 @@ def alerts_to_html(request, alerts):
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
 				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'></textarea>>"	
+				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);}'></textarea>"	
+				like = 'like'
+				try:
+					Pin.objects.get(user=request.user, post=post)
+					like = 'liked'
+				except:
+					pass
+				s = s + "<a class='alert_like' onclick='pin(" + str(post.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'reply':
 				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2235,6 +2254,13 @@ def alerts_to_html(request, alerts):
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<textarea rows=1 placeholder='reply' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);}'></textarea>"	
+				like = 'like'
+				try:
+					CommentLike.objects.get(user=request.user, comment=comment)
+					like = 'liked'
+				except:
+					pass
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			s = s + '</div>'
 			s = s + '</div>'
 			ss = ss + s
