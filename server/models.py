@@ -75,7 +75,7 @@ class Info(models.Model):
     top_posts_date = models.DateTimeField()
 
 class Ban(models.Model):
-    user = models.ForeignKey(User)
+    username = models.CharField(max_length=30)
     ip = models.CharField(max_length=50, default=0)
 
 class CommentLike(models.Model):

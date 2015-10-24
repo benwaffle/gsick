@@ -1698,10 +1698,10 @@ def ban_user(request):
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	p = get_profile(user)
 	try:
-		Ban.objects.filter(user=user, ip=p.ip)[0]
+		Ban.objects.filter(username=user.username, ip=p.ip)[0]
 		status = 'user is already banned'
 	except:
-		ban = Ban(user=user, ip=p.ip)
+		ban = Ban(username=user.username, ip=p.ip)
 		ban.save()
 		status = user.username + ' has been banned'
 	data = {'status':status}
@@ -1711,23 +1711,13 @@ def ban_user(request):
 def unban_user(request):
 	cmd = request.POST['cmd']
 	username = cmd.split('ban user ')[1].strip()
-	try:
-		user = User.objects.get(username=username)
-	except:
-		status = "user doesn't exist"
-		data = {'status':status}
-		return HttpResponse(json.dumps(data), content_type="application/json")
 	if request.user.username not in admin_list:
 		data = {'status':'nope'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
-	p = get_profile(user)
-	bans = Ban.objects.filter(user=user)
+	bans = Ban.objects.filter(username=username)
 	for b in bans:
 		b.delete()
-	bans = Ban.objects.filter(ip=p.ip)
-	for b in bans:
-		b.delete()
-	status = user.username + ' has been unbanned'
+	status = username + ' has been unbanned'
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
