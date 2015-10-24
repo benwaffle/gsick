@@ -1333,16 +1333,8 @@ function pin(id)
 	{
 		if(data['status'] === 'ok')
 		{
-			if($('#mode').val() === 'post')
-			{
-				$('#posts').find('.pins_status').html('liked');
-				$('#posts').find('.num_likes').html(' ('+ data['num_pins'] + ')');
-			}
-			else
-			{
-				$('#post_' + id).find('.pins_status').html('liked ');
-				$('#post_' + id).find('.num_likes').html(' ('+ data['num_pins'] + ')');
-			}
+			$('#post_' + id).find('.pins_status').html('liked');
+			$('#post_' + id).find('.num_likes').html(' ('+ data['num_pins'] + ')');
 		}
 	});
 	return false;	
