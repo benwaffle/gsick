@@ -161,7 +161,8 @@ def view_chat(request):
 	posts = ''
 	s = ''
 	try:
-		posts = chat_to_html(request, get_chat_messages(request), 'chatall')
+		last = get_profile(request.user).last_pm_read
+		posts = chat_to_html(request, get_chat_messages(request), 'chatall', last)
 		status = 'ok'
 	except:
 		posts = ''
@@ -1457,7 +1458,9 @@ def load_more_chatall(request):
 	last_pm_id = request.GET.get('last_pm_id', 0)
 	if last_pm_id != 0:
 		messages = get_chat_messages(request, last_pm_id)
-		messages = chat_to_html(request,messages,'chatall')
+		p = get_profile(request.user)
+		last = p.last_pm_read
+		messages = chat_to_html(request, messages, 'chatall', last)
 		status = 'ok'
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -2081,7 +2084,7 @@ def comments_to_html(request, comments):
 		s = s + "</div>"
 	return s
 
-def chat_to_html(request, posts, mode='default'):
+def chat_to_html(request, posts, mode='default', last=None):
 	s = ""
 	eo = get_embed_option(request.user)
 	for p in posts:
@@ -2097,6 +2100,9 @@ def chat_to_html(request, posts, mode='default'):
 			elif mode=='inbox':
 				s = s + "<a onClick='chat(\"" + p.sender.username + "\");"
 			elif mode=='chatall':
+				if last != None:
+					if p.id > last:
+						s = s + "<div class='new_label'> new </div>"
 				if p.sender == request.user:
 					s = s + "<a onClick='chat(\"" + p.user.username + "\");"
 				else:

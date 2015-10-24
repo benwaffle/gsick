@@ -394,7 +394,6 @@ input[type=text], input[type=password], textarea, select, .vTextField {
     font-size:11px;
     margin-bottom: -10px;
     display: block;
-
 }
 
 a
@@ -757,4 +756,11 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     display: block;
     padding-top:5px;
     font-size: 16px;
+}
+
+.new_label
+{
+    font-size:11px;
+    display: block;
+    padding-bottom: 4px;
 }
