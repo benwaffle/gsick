@@ -2264,11 +2264,10 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + ' replied to you in a '
 				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
-				s = s + "<div class='reply'>"
-				s = s + "------------------------ <span style='font-style:italic;font-size:12px'> you said </span> ------------------------<br>"
-				s = s + linebreaks(urlize(comment.reply.content))
-				s = s + "<br> ---------------------------------------------------------"
+				s = s + "<div class='quote_body'>"
+				s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
 				s = s + "</div>"
+				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div style='padding-bottom:4px'></div>"
 				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
