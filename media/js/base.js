@@ -3303,6 +3303,7 @@ function check_new_pms()
 		else
 		{
 			$('#menu_chat').html('chat');
+			remove_alert_title();
 		}
 	});
 	return false;
