@@ -1095,10 +1095,13 @@ function refresh_chat()
 	{
 		if(data['status'] === "ok")
 		{
-            $(data['posts']).hide().prependTo('#posts').fadeIn('slow').ready(function()
-        	{
-			after_post_load();
-        	});
+			if($('#mode').val() === 'chat')
+			{
+	            $(data['posts']).hide().prependTo('#posts').fadeIn('slow').ready(function()
+	        	{
+					after_post_load();
+	        	});
+			}
 		}
 		return false;
 	});
@@ -3251,10 +3254,6 @@ function refresh()
 	if(mode === 'chat')
 	{
 		refresh_chat();
-	}
-	if(mode === 'inbox')
-	{
-		refresh_inbox();
 	}
 	if(mode === 'chatall')
 	{
