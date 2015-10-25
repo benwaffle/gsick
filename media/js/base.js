@@ -1123,11 +1123,14 @@ function refresh_chatall()
 	{
 		if(data['status'] === "ok")
 		{
-            $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
-        	{
-        		remove_duplicate_chatall();
-        	});
-			after_post_load();
+			if($('#mode').val() === 'chatall')
+			{
+	            $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
+	        	{
+	        		remove_duplicate_chatall();
+	        	});
+				after_post_load();
+			}
 		}
 		return false;
 	});
@@ -3256,10 +3259,6 @@ function refresh()
 	if(mode === 'chatall')
 	{
 		refresh_chatall();
-	}
-	if(mode === 'sent')
-	{
-		refresh_sent();
 	}
 	check_new_pms();
 	check_new_alerts();

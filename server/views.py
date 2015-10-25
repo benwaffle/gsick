@@ -2090,12 +2090,12 @@ def chat_to_html(request, posts, mode='default', last=None):
 			elif mode=='inbox':
 				s = s + "<a onClick='chat(\"" + p.sender.username + "\");"
 			elif mode=='chatall':
-				if last != None:
-					if p.id > last:
-						s = s + "<div class='new_label'> new </div>"
 				if p.sender == request.user:
 					s = s + "<a onClick='chat(\"" + p.user.username + "\");"
 				else:
+					if last != None:
+						if p.id > last:
+							s = s + "<div class='new_label'> new </div>"
 					s = s + "<a onClick='chat(\"" + p.sender.username + "\");"
 			else:
 				s = s + "<a onClick='change_user(\"" + p.sender.username + "\");"
