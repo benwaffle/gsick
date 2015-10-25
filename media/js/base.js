@@ -1083,7 +1083,8 @@ function refresh_chat()
 	{
 
 	}
-	else{
+	else
+	{
 		id = 0;
 	}
 	$.get('/refresh_chat/',
@@ -1115,12 +1116,15 @@ function refresh_chatall()
 	{
 
 	}
-	else{
+	else
+	{
 		id = 0;
 	}
+	var original_last_chatall_id = $('.original_last_chatall_id:last').val();
 	$.get('/refresh_chatall/',
 	 {
 	 	first_chat_id:id,
+	 	original_last_chatall_id:original_last_chatall_id
 	 },
 	function(data)
 	{
@@ -1653,9 +1657,11 @@ function get_pins_back(h)
 function load_more_alerts()
 {
 	id = $('.alert_id:last').val();
+	var original_last_alerts_id = $('.original_last_alerts_id:last').val();
 	$.get('/load_more_alerts/',
 		{
-			id: id
+			id: id,
+			original_last_alerts_id
 		},
 	function(data) 
 	{
@@ -1777,9 +1783,11 @@ function load_more_user()
 function load_more_chatall()
 {
 	last_pm_id = $('.id:last').val();
+	var original_last_chatall_id = $('.original_last_chatall_id:last').val()
 	$.get('/load_more_chatall/',
 		{
-			last_pm_id: last_pm_id
+			last_pm_id: last_pm_id,
+			original_last_chatall_id: original_last_chatall_id
 		},
 	function(data) 
 	{
@@ -3197,7 +3205,7 @@ function remove_duplicate_chatall()
 			{
 				if(id > pid)
 				{
-					$(this).closest('.chat_container').remove();
+					$(this).closest('.post_parent').remove();
 				}
 			}
 		});
@@ -3322,14 +3330,19 @@ function alert_title()
 	}
 }
 
+function remove_alert_title()
+{
+	if(document.title.indexOf('(*)') !== -1)
+	{
+		document.title = document.title.substring(4);
+	}
+}
+
 function activate_window_focus()
 {
 	$(window).focus(function()
 	{
-		if(document.title.indexOf('(*)') !== -1)
-		{
-			document.title = document.title.substring(4);
-		}
+		remove_alert_title();
 	});
 }
 
@@ -4480,19 +4493,25 @@ var mouseHandle = function (evt) {
 
             if (!scrolling && newTime-oldTime > 30 ) {
                 scrolling = true;
-                if (direction < 0) {
-                    $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
-                } else {
-                    $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
+                if(! $('textarea').is(':focus'))
+                {
+	                if (direction < 0) {
+	                    $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
+	                } else {
+	                    $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
+	                }
+	                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 30);
                 }
-                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 30);
             }
         } else {
-            if (direction < 0) {
-                $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
-            } else {
-                $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
-            }
+        	if(! $('textarea').is(':focus'))
+        	{
+	            if (direction < 0) {
+	                $('#postscroller').scrollTop($('#postscroller').scrollTop() + 60);
+	            } else {
+	                $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
+	            }
+        	}
         }
     }
 }
@@ -4608,6 +4627,7 @@ function init(mode, info)
     check_new_pms();
     check_new_alerts();
     activate_history_listener();
+    activate_window_focus();
     if(first_time === 'yes')
     {
     	show_welcome();

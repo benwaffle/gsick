@@ -262,6 +262,7 @@ def refresh_chatall(request):
 	data = ''
 	status = ''
 	first_chat_id = request.GET.get('first_chat_id', 0)
+	original_last_chatall_id = request.GET['original_last_chatall_id']
 	convs = Conversation.objects.filter(Q(user1=request.user) | Q(user2=request.user), last_message_id__gt=first_chat_id).order_by('-date_modified')[:20]
 	msgs = []
 	for conv in convs:
@@ -270,7 +271,7 @@ def refresh_chatall(request):
 		p = get_profile(request.user)
 		p.last_pm_read = msgs[0].id
 		p.save()
-	messages = chat_to_html(request, msgs, 'chatall')
+	messages = chat_to_html(request, msgs, 'chatall', original_last_chatall_id)
 	status = 'ok'
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -561,29 +562,19 @@ def new_posts(request):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def load_more_new(request):
-	posts = ''
-	status = ''
-	try:
-		id = request.GET.get('id', 0)
-		posts = get_more_new_posts(request,id)
-		posts = posts_to_html(request,posts,'new')
-		status = 'ok'
-	except:
-		pass
+	id = request.GET.get('id', 0)
+	posts = get_more_new_posts(request,id)
+	posts = posts_to_html(request,posts,'new')
+	status = 'ok'
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def load_more_alerts(request):
-	posts = ''
-	status = ''
-	try:
-		id = request.GET.get('id', 0)
-		xalerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
-		p = get_profile(request.user)
-		alerts = alerts_to_html(request, xalerts, p.last_alert_read)
-		status = 'ok'
-	except:
-		pass
+	id = request.GET.get('id', 0)
+	original_last_alerts_id = request.GET['original_last_alerts_id']
+	xalerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
+	alerts = alerts_to_html(request, xalerts, original_last_alerts_id)
+	status = 'ok'
 	data = {'alerts':alerts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -1456,11 +1447,10 @@ def load_more_chatall(request):
 	messages = ''
 	status = 'error'
 	last_pm_id = request.GET.get('last_pm_id', 0)
+	original_last_chatall_id = request.GET['original_last_chatall_id'];
 	if last_pm_id != 0:
 		messages = get_chat_messages(request, last_pm_id)
-		p = get_profile(request.user)
-		last = p.last_pm_read
-		messages = chat_to_html(request, messages, 'chatall', last)
+		messages = chat_to_html(request, messages, 'chatall', original_last_chatall_id)
 		status = 'ok'
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -2077,6 +2067,9 @@ def comments_to_html(request, comments):
 def chat_to_html(request, posts, mode='default', last=None):
 	s = ""
 	eo = get_embed_option(request.user)
+	if last != None:
+		if mode == 'chatall':
+			s = s + "<input class='original_last_chatall_id' type='hidden' value=" + str(last) + ">"
 	for p in posts:
 		s = s + "<div class='post_parent'>"
 		s = s + "<div class='chat_container'>"
@@ -2094,7 +2087,7 @@ def chat_to_html(request, posts, mode='default', last=None):
 					s = s + "<a onClick='chat(\"" + p.user.username + "\");"
 				else:
 					if last != None:
-						if p.id > last:
+						if p.id > int(last):
 							s = s + "<div class='new_label'> new </div>"
 					s = s + "<a onClick='chat(\"" + p.sender.username + "\");"
 			else:
@@ -2166,6 +2159,8 @@ def advanced_to_html():
 	
 def alerts_to_html(request, alerts, last=None):
 	ss = ''
+	if last != None:
+		ss = ss + "<input class='original_last_alerts_id' type='hidden' value=" + str(last) + ">"
 	for a in alerts:
 		s = ''
 		try:
@@ -2173,8 +2168,8 @@ def alerts_to_html(request, alerts, last=None):
 			s = s + '<div class="alert">'
 			s = s + "<input type='hidden' value='" + str(a.id) + "' class='alert_id'>"
 			if last != None:
-				if a.id > last:
-					s = s + "<div class='alertdate' style='padding-bottom:4px'> new </div>"
+				if a.id > int(last):
+					s = s + "<div class='new_label' style='margin-bottom: -4px'> new </div>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
 			if a.type == 'pin':
 				post = Post.objects.get(id=int(a.info1))	
