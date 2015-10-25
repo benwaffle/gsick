@@ -3303,7 +3303,10 @@ function check_new_pms()
 		else
 		{
 			$('#menu_chat').html('chat');
-			remove_alert_title();
+			if($('#menu_alerts').html().indexOf('(') === -1)
+			{
+				remove_alert_title();
+			}
 		}
 	});
 	return false;
@@ -3328,6 +3331,10 @@ function check_new_alerts()
 		else
 		{
 			$('#menu_alerts').html('alerts');
+			if($('#menu_chat').html().indexOf('(') === -1)
+			{
+				remove_alert_title();
+			}
 		}
 	});
 	return false;
