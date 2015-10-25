@@ -49,10 +49,12 @@ class Alert(models.Model):
     type = models.CharField(max_length=100, default='', null=True)
     user = models.ForeignKey(User, related_name='alerted')
     user2 = models.ForeignKey(User, related_name='alert_user_2', null=True)
-    user3 = models.ForeignKey(User, related_name='alert_user_3', null=True)
+    post1 = models.ForeignKey(Post, related_name='post_1', null=True)
+    post2 = models.ForeignKey(Post, related_name='post_2', null=True)
+    comment1 = models.ForeignKey(Comment, related_name='comment_1', null=True)
+    comment2 = models.ForeignKey(Comment, related_name='comment_2', null=True)
     info1 = models.CharField(max_length=100, default='', null=True)
     info2 = models.CharField(max_length=100, default='', null=True)
-    info3 = models.CharField(max_length=100, default='', null=True)
     date = models.DateTimeField(default=datetime.datetime.now())
 
 class Follow(models.Model):

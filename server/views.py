@@ -383,13 +383,13 @@ def post_comment(request):
 		for m in mentions:
 			try:
 				auser = User.objects.get(username=m)
-				alert = Alert(user=auser, type='mention', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
+				alert = Alert(user=auser, type='mention', user2=request.user, post1=post, comment1=comment, date=datetime.datetime.now())
 				alert.save()
 			except:
 				continue
 		if post.user != request.user:
 			if post.user.username not in mentions:
-				alert = Alert(user=post.user, type='comment', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
+				alert = Alert(user=post.user, type='comment', user2=request.user, post1=post, comment1=comment, date=datetime.datetime.now())
 				alert.save()
 	data = {'status':status, 'cname':cname}
 	return HttpResponse(json.dumps(data), content_type="application/json")	
@@ -407,18 +407,28 @@ def edit_comment(request):
 	content = request.POST['content']
 	comment = Comment.objects.get(id=id)
 	try:
+		CommentLike.objects.filter(comment=comment)[0]
+		status = 'liked'
+		data = {'status':status, 'content':content}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	except:
+		pass
+	try:
 		Comment.objects.filter(reply=comment)[0]
 		status = 'replied'
+		data = {'status':status, 'content':content}
+		return HttpResponse(json.dumps(data), content_type="application/json")
 	except:
-		if len(content) < 1:
-			status = 'empty'
-		elif len(content) > 2000:
-			status = 'toolong'
-		else:
-			comment.content = content
-			comment.save()
-			content = linebreaks(urlize(comment.content))
-			status = 'ok'
+		pass
+	if len(content) < 1:
+		status = 'empty'
+	elif len(content) > 2000:
+		status = 'toolong'
+	else:
+		comment.content = content
+		comment.save()
+		content = linebreaks(urlize(comment.content))
+		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -427,22 +437,32 @@ def edit_post(request):
 	content = request.POST['content']
 	post = Post.objects.get(id=id)
 	try:
+		Pin.objects.filter(post=post)[0]
+		status = 'liked'
+		data = {'status':status, 'content':content}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	except:
+		pass
+	try:
 		Comment.objects.filter(post=post)[0]
 		status = 'commented'
+		data = {'status':status, 'content':content}
+		return HttpResponse(json.dumps(data), content_type="application/json")
 	except:
-		if len(content) < 1:
-			status = 'empty'
-		elif len(content) > 1000:
-			status = 'toolong'
+		pass
+	if len(content) < 1:
+		status = 'empty'
+	elif len(content) > 1000:
+		status = 'toolong'
+	else:
+		post.content = content
+		post.save()
+		eo = get_embed_option(request.user)
+		if eo == 'embed':
+			content = linebreaks(ultralize(post.content))
 		else:
-			post.content = content
-			post.save()
-			eo = get_embed_option(request.user)
-			if eo == 'embed':
-				content = linebreaks(ultralize(post.content))
-			else:
-				content = linebreaks(urlize(post.content))
-			status = 'ok'
+			content = linebreaks(urlize(post.content))
+		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -604,7 +624,7 @@ def reply_to_comment(request):
 		post.date_modified = datetime.datetime.now()
 		post.save()
 		if request.user != comment_replied.user:
-			alert = Alert(user=comment_replied.user, type='reply', user2=request.user, info1=post.id, info2=comment.id, date=datetime.datetime.now())
+			alert = Alert(user=comment_replied.user, type='reply', user2=request.user, post1=post, comment1=comment, date=datetime.datetime.now())
 			alert.save()
 		status = 'ok'
 	data = {'status':status}
@@ -899,7 +919,7 @@ def post_to_channel(request):
 		for m in mentions:
 			try:
 				auser = User.objects.get(username=m)
-				alert = Alert(user=auser, type='mention_post', user2=request.user, info1=post.id, date=datetime.datetime.now())
+				alert = Alert(user=auser, type='mention_post', user2=request.user, post1=post, date=datetime.datetime.now())
 				alert.save()
 			except:
 				continue
@@ -1190,9 +1210,9 @@ def pin_post(request):
 	try:
 		pin = Pin.objects.get(user=request.user, post=post)
 	except:
-		pin = Pin(user=request.user,post=post, date=datetime.datetime.now())
+		pin = Pin(user=request.user, post=post, date=datetime.datetime.now())
 		pin.save()
-		alert = Alert(user=post.user, type='pin', user2=request.user, info1=post.id, date=datetime.datetime.now())
+		alert = Alert(user=post.user, type='pin', user2=request.user, post1=post, date=datetime.datetime.now())
 		alert.save()
 	num_pins = Pin.objects.filter(post=post).count()
 	status = 'ok'
@@ -1228,7 +1248,7 @@ def like_comment(request):
 	except:	
 		cl = CommentLike(comment=comment, user=request.user, date=datetime.datetime.now())
 		cl.save()
-		alert = Alert(user=comment.user, type='comment_like', user2=request.user, info1=comment.id, date=datetime.datetime.now())
+		alert = Alert(user=comment.user, type='comment_like', user2=request.user, comment1=comment, date=datetime.datetime.now())
 		alert.save()
 	num_comments = CommentLike.objects.filter(comment=comment).count()
 	status = 'ok'
@@ -2171,27 +2191,24 @@ def alerts_to_html(request, alerts, last=None):
 				if a.id > int(last):
 					s = s + "<div class='new_label' style='margin-bottom: -4px'> new </div>"
 			s = s + "<time style='padding-bottom:6px' datetime='" + a.date.isoformat()+"-00:00" + "' class='timeago alertdate'>"+ str(radtime(a.date)) +"</time>"
-			if a.type == 'pin':
-				post = Post.objects.get(id=int(a.info1))	
+			if a.type == 'pin':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(post.content[:150]) + '</div>'
+				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(a.post1.content[:150]) + '</div>'
 			if a.type == 'comment_like':	
-				comment = Comment.objects.get(id=a.info1)
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your comment on a '
-				s = s + '<a onClick="open_post('+ str(comment.post.id) + '); return false;" href="#">post on ' + comment.post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(comment.content[:150]) + '</div>'	
+				s = s + '<a onClick="open_post('+ str(a.comment1.post.id) + '); return false;" href="#">post on ' + a.comment1.post.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(a.comment1.content[:150]) + '</div>'	
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'
 			if a.type == 'comment':
-				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' commented on your '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'		
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'	
+				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'		
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.comment1.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2199,83 +2216,80 @@ def alerts_to_html(request, alerts, last=None):
 					ph = 'you already replied to this'
 				except:
 					pass
-				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(a.comment1.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
-					CommentLike.objects.get(user=request.user, comment=comment)
+					CommentLike.objects.get(user=request.user, comment=a.comment1)
 					like = 'liked'
 				except:
 					pass
-				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention':
-				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(comment.content)) + '</div>'
+				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.comment1.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
-					Comment.objects.filter(reply=comment, user=request.user)[0]
+					Comment.objects.filter(reply=a.comment1, user=request.user)[0]
 					ph = 'you already replied to this'
 				except:
 					pass
-				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(a.comment1.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
-					CommentLike.objects.get(user=request.user, comment=comment)
+					CommentLike.objects.get(user=request.user, comment=a.comment1)
 					like = 'liked'
 				except:
 					pass
-				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention_post':
-				post = Post.objects.get(id=int(a.info1))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(post.content)) + '</div>'
+				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.post1.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'comment'
 				try:
-					Comment.objects.filter(post=post, user=request.user)[0]
+					Comment.objects.filter(post=a.post1, user=request.user)[0]
 					ph = 'you already commented on this'
 				except:
 					pass
-				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(post.id) + ",false);$(this).attr(\"placeholder\", \"you already commented on this\")}'></textarea>"	
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_post(this.value, " + str(a.post1.id) + ",false);$(this).attr(\"placeholder\", \"you already commented on this\")}'></textarea>"	
 				like = 'like'
 				try:
-					Pin.objects.get(user=request.user, post=post)
+					Pin.objects.get(user=request.user, post=a.post1)
 					like = 'liked'
 				except:
 					pass
-				s = s + "<a class='alert_like' onclick='pin(" + str(post.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
+				s = s + "<a class='alert_like' onclick='pin(" + str(a.post1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'reply':
-				comment = Comment.objects.get(id=int(a.info2))
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' replied to you in a '
-				s = s + '<a onClick="open_post('+ str(a.info1) + '); return false;" href="#">post on ' + Post.objects.get(id=int(a.info1)).channel.name + '</a>'
+				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
 				s = s + "<div class='quote_body'>"
-				s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(comment.reply.content)) + "</div>"
+				s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(a.comment1.reply.content)) + "</div>"
 				s = s + "</div>"
 				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div style='padding-bottom:4px'></div>"
-				s = s + "<div class='text2' style=''>" + linebreaks(urlize(comment.content)) + "</div>"
+				s = s + "<div class='text2' style=''>" + linebreaks(urlize(a.comment1.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
-					Comment.objects.filter(reply=comment, user=request.user)[0]
+					Comment.objects.filter(reply=a.comment1, user=request.user)[0]
 					ph = 'you already replied to this'
 				except:
 					pass
-				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(comment.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
+				s = s + "<textarea rows=1 placeholder='" + ph + "' type='text' class='alert_reply_input' onkeydown='if(event.keyCode == 13){reply_to_comment(this.value, " + str(a.comment1.id) + ",false);$(this).attr(\"placeholder\", \"you already replied to this\")}'></textarea>"	
 				like = 'like'
 				try:
-					CommentLike.objects.get(user=request.user, comment=comment)
+					CommentLike.objects.get(user=request.user, comment=a.comment1)
 					like = 'liked'
 				except:
 					pass
-				s = s + "<a class='alert_like' onclick='like_comment(" + str(comment.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			s = s + '</div>'
 			s = s + '</div>'
 			ss = ss + s

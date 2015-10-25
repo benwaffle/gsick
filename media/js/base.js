@@ -1463,6 +1463,11 @@ function submit_comment_edit(id)
 		{
 			$content.html(data['content']);
 		}
+		else if(data['status'] === 'liked')
+		{
+			dialog("can't edit a comment that has likes");
+			$content.html(original_comment);
+		}
 		else if(data['status'] === 'replied')
 		{
 			dialog("can't edit a comment that has replies");
@@ -1534,6 +1539,11 @@ function submit_post_edit(id)
 		if(data['status'] === 'ok')
 		{
 			$content.html(data['content']);
+		}
+		else if(data['status'] === 'liked')
+		{
+			dialog("can't edit a post that has likes");
+			$content.html(original_post);
 		}
 		else if(data['status'] === 'commented')
 		{
