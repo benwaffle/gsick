@@ -4569,8 +4569,8 @@ var mouseHandle = function (evt) {
 	                } else {
 	                    $('#postscroller').scrollTop($('#postscroller').scrollTop() - 60);
 	                }
-	                setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 30);
                 }
+	            setTimeout(function() {oldTime = new Date().getTime();scrolling = false}, 30);
             }
         } else {
         	if(! $('textarea').is(':focus'))
