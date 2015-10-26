@@ -75,6 +75,11 @@ def enter(request):
 			user = authenticate(username=username, password=password)
 			if user is not None:
 				if user.is_active:
+					try:
+						Ban.objects.filter(username=username)[0]
+						return HttpResponseRedirect(banned_url)
+					except:
+						pass
 					auth_login(request, user)
 					return HttpResponseRedirect('/')
 			else:
