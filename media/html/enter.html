@@ -1,15 +1,10 @@
 <html>
 <head>
-    <title> login </title>
+    <title> enter </title>
     <link rel="stylesheet" type="text/css" href="/site_media/css/enter.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/site_media/img/favicon.ico" type="image/x-icon"> 
     <script src="/site_media/js/jquery.js"></script>
-    <script type="text/javascript">
-    $(function(){
-        setTimeout(function(){$("#denegado").fadeOut("slow")}, 1000);
-        });
-    </script>
 </head>
  
 <body OnLoad="document.formy.username.focus();">
@@ -63,8 +58,13 @@
     </table>
     </form>
  
-    <br>
-    {% if repetir %} <div align="center" id="denegado" style="color:red">:D</div> {% endif %}
+    <br><br>
+
+    {% if repetir1 %} <div align="center" id="denegado" style="color:red"> wrong username or password </div> {% endif %}
+
+    {% if repetir2 %} <div align="center" id="denegado" style="color:red"> username already exists or you used more than letters and numbers <br> for the username </div> {% endif %}
+
+    <br><br>
  
 </body>
  

@@ -79,13 +79,13 @@ def enter(request):
 					return HttpResponseRedirect('/')
 			else:
 				c = create_c(request)
-				c['repetir'] = True
+				c['repetir1'] = True
 				return render_to_response('enter.html', c, context_instance=RequestContext(request))
 		if 'btnregister' in request.POST:
 			if error_register(request):
 				c = {}
 				c.update(csrf(request))
-				c['repetir'] = True
+				c['repetir2'] = True
 				return render_to_response('enter.html', c, context_instance=RequestContext(request))
 			else:
 				username = clean_username(request.POST['register_username']).lower()
@@ -2345,7 +2345,7 @@ def welcome_to_html():
 	to your posts or chat with you, you can copy someone elses theme with a command, see all the available commands in settings -> advanced.
 	in gsick all posts go inside a channel, to go to a channel you can click goto or press escape and type the name of the channel,
 	or click it if it's already in the list below, once in the channel you can see all other posts people have posted in it, you can
-	also post something by writing some text or a link or both in the textbox, you cannot upload a file. when other people go to the
+	also post something by writing some text or a link or both in the textbox. when other people go to the
 	channel they will see your post, or they can see it in their stream if they're following you, or they can see it in new if it
 	was just published, or if it gets many likes, they will see it in top. people can like your post and leave a comment. 
 	start playing with it to get comfortable, try making some posts, make your own theme, discover new things, get some followers,
