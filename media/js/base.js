@@ -1100,6 +1100,7 @@ function refresh_chat()
 			{
 	            $(data['posts']).hide().prependTo('#posts').fadeIn('slow').ready(function()
 	        	{
+	        		remove_duplicate_chat();
 					after_post_load();
 	        	});
 			}
@@ -1346,6 +1347,14 @@ function pin(id)
 			$('#post_' + id).find('.pins_status').html('liked');
 			$('#post_' + id).find('.num_likes').html(' ('+ data['num_pins'] + ')');
 		}
+		else if(data['status'] === 'sameuser')
+		{
+			dialog("you can't like your own post");
+		}
+		else if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
+		}
 	});
 	return false;	
 }
@@ -1370,6 +1379,14 @@ function like_comment(id)
 		{
 			$('#comment_' + id).find('.comment_like_status').html('liked');
 			$('#comment_' + id).find('.num_likes').html(' (' + data['num_comments'] + ')');
+		}
+		else if(data['status'] === 'sameuser')
+		{
+			dialog("you can't like your own comment");
+		}
+		else if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that  too much");
 		}
 	});
 	return false;	
@@ -2184,8 +2201,18 @@ function post_comment(content)
 		if(data['status'] === 'ok')
 		{
 			show_last_comments();
+			clear();
 		}
-		clear();
+		if(data['status'] === 'toobig')
+		{
+			dialog('comment is too long');
+			$('#inputcontent').val(content);
+		}
+		if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
+			$('#inputcontent').val(content);
+		}
 	});
 	return false;	
 }
@@ -2306,12 +2333,18 @@ function post_to_channel()
 		if(data['status'] === "ok")
 		{
 			open_post(data['id'])
+			clear();
 		}
 		else if(data['status'] === 'toobig')
 		{
-			dialog('a post cannot exceed 2000 characters');
+			dialog('post is too long');
+			$('#inputcontent').val(content);
 		}
-		clear();
+		else if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
+			$('#inputcontent').val(content);
+		}
         return false;
     });
 }
@@ -3124,15 +3157,7 @@ function send_message()
 			if(mode === 'chat' && chattingwith === data['username'])
 			{
 				refresh_chat();
-			}
-			else if(mode === 'sent')
-			{
-				refresh_sent();
-			}
-			else
-			{
-				msg = "message sent to <a onClick='chat(\"" + data['username'] + "\");return false;' href=\"#\">" + data['username'] + "</a>";
-				dialog(msg);
+				clear();	
 			}
 		}
 		else if(data['status'] === 'noreceiver')
@@ -3147,13 +3172,22 @@ function send_message()
 		{
 			dialog('you can\'t send messages to this user');
 		}
+		else if(data['status'] === 'toobig')
+		{
+			dialog('chat message is too long');
+			$('#inputcontent').val(content);
+		}
+		else if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
+			$('#inputcontent').val(input);
+		}
 		else if(data['status'] === 'nologin')
 		{
 			show_guest_status();
 		}
 		return false;
 	});
-	clear();
 	return false;
 }
 
@@ -3219,6 +3253,23 @@ function remove_duplicate_chatall()
 				}
 			}
 		});
+	});
+}
+
+function remove_duplicate_chat()
+{
+	var seen = []
+	$('.chat_container').each(function()
+	{
+		var id = $(this).children('.id').val();
+		if(seen.indexOf(id) === -1)
+		{
+			seen.push(id);
+		}
+		else
+		{
+			$(this).closest('.post_parent').remove();
+		}
 	});
 }
 

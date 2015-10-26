@@ -400,6 +400,8 @@ def error_comment(request, content, id):
 		return 'empty'
 	if len(content) > 2000:
 		return 'toobig'
+	if Comment.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
+		return 'toomuch'
 	return 'ok'
 
 def edit_comment(request):
@@ -973,6 +975,8 @@ def error_post(request):
 		return 'empty'
 	if len(content) > 1000:
 		return 'toobig'
+	if Post.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 5:
+		return 'toomuch'
 	return 'ok'
 
 @login_required
@@ -1034,6 +1038,8 @@ def error_message(request, content, receiver, message):
 		return 'sameuser'
 	if receiver in not_allowed:
 		return 'notallowed'
+	if PrivateMessage.objects.filter(sender=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
+		return 'toomuch'
 	return 'ok'
 
 def check_inbox_limit(request):
@@ -1205,7 +1211,10 @@ def pin_post(request):
 	id = request.POST.get('id', 0)
 	post = Post.objects.get(id=id)
 	if post.user == request.user:
-		data = {'status':'sameuser', 'num_pins':0}
+		data = {'status':'sameuser'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if Pin.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 50:
+		data = {'status':'toomuch'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:
 		pin = Pin.objects.get(user=request.user, post=post)
@@ -1242,6 +1251,9 @@ def like_comment(request):
 	comment = Comment.objects.get(id=id)
 	if comment.user == request.user:
 		data = {'status':'sameuser'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	if CommentLike.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 50:
+		data = {'status':'toomuch'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:
 		CommentLike.objects.get(comment=comment, user=request.user)
