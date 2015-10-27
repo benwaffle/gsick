@@ -701,6 +701,9 @@ def toggle_follow(request):
 			f.delete()
 			status = 'unfollowed'
 		except:
+			if Follow.objects.filter(follower=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 10:
+				data = {'status':'toomuch'}
+				return HttpResponse(json.dumps(data), content_type="application/json")
 			f = Follow(followed=followed, follower=request.user, date=datetime.datetime.now())
 			f.save()
 			try:
@@ -1218,7 +1221,7 @@ def pin_post(request):
 	if post.user == request.user:
 		data = {'status':'sameuser'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
-	if Pin.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 50:
+	if Pin.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
 		data = {'status':'toomuch'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:
@@ -1257,7 +1260,7 @@ def like_comment(request):
 	if comment.user == request.user:
 		data = {'status':'sameuser'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
-	if CommentLike.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 50:
+	if CommentLike.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
 		data = {'status':'toomuch'}
 		return HttpResponse(json.dumps(data), content_type="application/json")
 	try:

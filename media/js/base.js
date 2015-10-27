@@ -2786,11 +2786,15 @@ function toggle_follow(uname)
 	{
 		if(data['status'] === 'followed')
 		{
-			$('#following_status').html('unfollow')
+			$('#following_status').html('unfollow');
 		}
 		else if(data['status'] === 'unfollowed')
 		{
-			$('#following_status').html('follow')
+			$('#following_status').html('follow');
+		}
+		else if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
 		}
 	});
 }
