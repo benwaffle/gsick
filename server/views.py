@@ -2243,6 +2243,7 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
+				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention':
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2263,6 +2264,7 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
+				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'mention_post':
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2283,6 +2285,7 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
+				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<a class='alert_like' onclick='pin(" + str(a.post1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'reply':
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
@@ -2309,6 +2312,7 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
+				s = s + "<div style='padding-top:10px'></div>"
 				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			s = s + '</div>'
 			s = s + '</div>'

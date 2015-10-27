@@ -816,6 +816,7 @@ function alerts_back(h)
 	document.title = 'alerts';
 	after_post_load_back();
 	hide_input();
+	activate_alert_input_focus();
 	clear();
 }
 
