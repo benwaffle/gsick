@@ -21,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.core import serializers
 from django.core.mail import send_mail
-from django.utils.html import linebreaks
 from django.utils.encoding import smart_str, smart_unicode
 from django.db.models import Avg, Max, Min, Count, Q
 from server.models import *
@@ -434,7 +433,7 @@ def edit_comment(request):
 	else:
 		comment.content = content
 		comment.save()
-		content = linebreaks(urlize(comment.content))
+		content = urlize(comment.content)
 		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -466,9 +465,9 @@ def edit_post(request):
 		post.save()
 		eo = get_embed_option(request.user)
 		if eo == 'embed':
-			content = linebreaks(ultralize(post.content))
+			content = ultralize(post.content)
 		else:
-			content = linebreaks(urlize(post.content))
+			content = urlize(post.content)
 		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -503,7 +502,7 @@ def save_top_posts():
 	# days and num_pins__gte should be changed as the site grows in users 
 	# days is how old can a post be to be considered for top
 	# num_pins__gte is the minimum amount of likes (pins) to be considered for top
-	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=100))).filter(num_pins__gte='1').order_by('-num_pins', '-date')[:10]
+	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=5))).filter(num_pins__gte='1').order_by('-num_pins', '-date')[:10]
 	s = ''
 	for p in posts:
 		s += str(p.id)
@@ -1983,9 +1982,9 @@ def post_to_html(request, post):
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	s = s + 	    "<time datetime='" + post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(post.date)) +"</time>"
 	if eo == 'embed':
-		s = s + 		"<div class='post_content text1'>" + linebreaks(ultralize(post.content)) + "</div>"
+		s = s + 		"<div class='post_content text1'>" + ultralize(post.content) + "</div>"
 	else:
-		s = s + 		"<div class='post_content text1'>" + linebreaks(urlize(post.content)) + "</div>"
+		s = s + 		"<div class='post_content text1'>" + urlize(post.content) + "</div>"
 	s = s + 	"</div>"
 	s = s + "</div>"
 	return s
@@ -2028,9 +2027,9 @@ def posts_to_html(request, posts, mode="channel"):
 		post = post + 		  "<input type='hidden' value='" + p.user.username + "' class='username'>"
 		post = post + 		  "</div>"
 		if eo == 'embed':
-			post = post + 		  "<div class='post_content text1'>" + linebreaks(ultralize(p.content)) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + ultralize(p.content) + "</div>"
 		else:
-			post = post + 		  "<div class='post_content text1'>" + linebreaks(urlize(p.content)) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + urlize(p.content) + "</div>"
 		post = post + 	"</div>"
 		post = post + "</div>"
 		s = s + post
@@ -2064,9 +2063,9 @@ def pins_to_html(request, posts, mode="channel"):
 		post = post + 		  "<input type='hidden' value='" + p.post.user.username + "' class='username'>"
 		post = post + 		  "</div>"
 		if eo == 'embed':
-			post = post + 		  "<div class='post_content text1'>" + linebreaks(ultralize(p.post.content)) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + ultralize(p.post.content) + "</div>"
 		else:
-			post = post + 		  "<div class='post_content text1'>" + linebreaks(urlize(p.post.content)) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + urlize(p.post.content) + "</div>"
 		post = post + 	"</div>"
 		post = post + "</div>"
 		s = s + post
@@ -2099,10 +2098,10 @@ def comments_to_html(request, comments):
 		if c.reply:
 			s = s + "<div class='quote_body'>"
 			s = s + "<span> quote by </span>" + "<a class='quote_username' onClick='change_user(\"" + c.reply.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>"
-			s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(c.reply.content)) + "</div>"
+			s = s + "<div style='width:100%' class='comment_content reply'>" + urlize(c.reply.content) + "</div>"
 			s = s + "</div>"
 			s = s + "<div style='padding-bottom:8px'></div>"
-		s = s +   "<div class='comment_content text2'>" + linebreaks(urlize(c.content)) + "</div>"
+		s = s +   "<div class='comment_content text2'>" + urlize(c.content) + "</div>"
 		s = s +  "</div>"
 		s = s + "</div>"
 	return s
@@ -2146,9 +2145,9 @@ def chat_to_html(request, posts, mode='default', last=None):
 		s = s + "</a></div>"
 		s = s + "<time datetime='" + p.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.date)) +"</time>"
 		if eo == 'embed':
-			s = s + "<div class='text1'>" + linebreaks(ultralize(p.message)) + "</div>"
+			s = s + "<div class='text1'>" + ultralize(p.message) + "</div>"
 		else:
-			s = s + "<div class='text1'>" + linebreaks(urlize(p.message)) + "</div>"
+			s = s + "<div class='text1'>" + urlize(p.message) + "</div>"
 		s = s + "<input type='hidden' value='" + str(p.id) + "' id='chat_post' class='id'>"
 		s = s + "<input type='hidden' value='" + p.sender.username + "' class='username'>"
 		s = s + "<input type='hidden' value='" + p.user.username + "' class='receiver'>"
@@ -2218,12 +2217,12 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(a.post1.content[:150]) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + a.post1.content[:150] + '</div>'
 			if a.type == 'comment_like':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' liked your comment on a '
 				s = s + '<a onClick="open_post('+ str(a.comment1.post.id) + '); return false;" href="#">post on ' + a.comment1.post.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(a.comment1.content[:150]) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + a.comment1.content[:150] + '</div>'	
 			if a.type == 'follow':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' started following you'
@@ -2231,7 +2230,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' commented on your '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'		
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.comment1.content)) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.comment1.content) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2252,7 +2251,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.comment1.content)) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.comment1.content) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2273,7 +2272,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + linebreaks(urlize(a.post1.content)) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.post1.content) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'comment'
 				try:
@@ -2296,11 +2295,11 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
 				s = s + "<div class='quote_body'>"
-				s = s + "<div style='width:100%' class='comment_content reply'>" + linebreaks(urlize(a.comment1.reply.content)) + "</div>"
+				s = s + "<div style='width:100%' class='comment_content reply'>" + urlize(a.comment1.reply.content) + "</div>"
 				s = s + "</div>"
 				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div style='padding-bottom:4px'></div>"
-				s = s + "<div class='text2' style=''>" + linebreaks(urlize(a.comment1.content)) + "</div>"
+				s = s + "<div class='text2' style=''>" + urlize(a.comment1.content) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2352,20 +2351,20 @@ def likes_to_html(likes):
 
 def welcome_to_html():
 	s = ""
-	s = """welcome to gsick. as you can see there is a menu at the left and a menu at the right. the left menu is for public functions, 
-	the right one is for more personal functions. in the left, stream shows posts by people who you are following, goto lets you go to
-	a channel or issue commands, top shows the posts with more likes over a time period, new shows the newest posts, back lets you go
-	to where you were before. on the right, posts shows the posts you have made, pins shows posts you have liked, chat holds open personal
-	conversations you have with other people, alerts shows activity regarding you, including likes, comments, replies, follows, mentions, 
-	settings allows you to costumize the site, you can completely change the color theme, people will see your theme when they go
-	to your posts or chat with you, you can copy someone elses theme with a command, see all the available commands in settings -> advanced.
-	in gsick all posts go inside a channel, to go to a channel you can click goto or press escape and type the name of the channel,
-	or click it if it's already in the list below, once in the channel you can see all other posts people have posted in it, you can
+	s = """welcome to gsick. as you can see there is a menu at the left and a menu at the right. the left menu is for public functions. 
+	the right one is for more personal functions. in the left: stream shows posts by people who you are following. goto lets you go to
+	a channel or issue commands. top shows the posts with more likes over a time period. new shows the newest posts. back lets you go
+	to where you were before. on the right: posts show the posts you have made. pins shows posts you have liked. chat holds open personal
+	conversations you have with other people. alerts shows activity regarding you. including likes. comments. replies. follows. mentions. 
+	settings allows you to costumize the site. you can completely change the color theme. people will see your theme when they go
+	to your posts or chat with you. you can copy someone elses theme with a command. see all the available commands in settings -> advanced.
+	in gsick all posts go inside a channel. to go to a channel you can click goto or press escape and type the name of the channel.
+	or click it if it's already in the list below. once in the channel you can see all other posts people have posted in it. you can
 	also post something by writing some text or a link or both in the textbox. when other people go to the
-	channel they will see your post, or they can see it in their stream if they're following you, or they can see it in new if it
-	was just published, or if it gets many likes, they will see it in top. people can like your post and leave a comment. 
-	start playing with it to get comfortable, try making some posts, make your own theme, discover new things, get some followers,
-	chat, do what you want."""
+	channel they will see your post. or they can see it in their stream if they're following you. or they can see it in new if it
+	was just published. or if it gets many likes. they will see it in top. people can like your post and leave a comment. 
+	start playing with it to get comfortable. try making some posts. make your own theme. discover new things. get some followers.
+	chat. do what you want."""
 	return s
 
 @csrf_exempt
