@@ -1687,10 +1687,10 @@ function load_more_alerts()
 	id = $('.alert_id:last').val();
 	var original_last_alerts_id = $('.original_last_alerts_id:last').val();
 	$.get('/load_more_alerts/',
-		{
-			id: id,
-			original_last_alerts_id
-		},
+	{
+		id: id,
+		original_last_alerts_id: original_last_alerts_id
+	},
 	function(data) 
 	{
 		if(data['status'] === 'ok')
