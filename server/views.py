@@ -2051,7 +2051,7 @@ def pins_to_html(request, posts, mode="channel"):
 		else:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
 
-		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\")' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
+		nav_link = "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + p.post.user.username + "\");return false;' href=\"#\">" + p.post.user.username + "</a> &nbsp;on&nbsp; <a onClick='goto(\"" + p.post.channel.name + "\");return false;' href=\"#\">" + p.post.channel.name + "</a></div><div style='text-align:right;display:table-cell'>" + delete + pins + "<a onClick='open_post(\""+str(p.post.id)+"\"); return false;' href='#'>comments (" + str(num_comments) + ")</a></div></div>"
 		date = "<time datetime='" + p.post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.post.date)) +"</time>"
 		post = post + "<div class='post_parent' id='post_" + str(p.post.id) + "'>"
 		post = post + 	"<div class='post_container'>"
