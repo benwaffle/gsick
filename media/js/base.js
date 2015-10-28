@@ -1945,11 +1945,9 @@ function whoami()
     return false;
 }
 
-function calculator(operation, result)
+function calculator(operation)
 {
-    var msg = "";
-    dialog(result);
-    clear();
+    dialog(eval(operation));
     return false;
 }
 
@@ -2479,6 +2477,11 @@ function goto(cmd)
 		if(cmd.startsWith('chat with '))
 		{
 			chat(cmd.substring(10));
+			return false;
+		}
+		if(cmd.startsWith('calc '))
+		{
+			calculator(cmd.substring(5));
 			return false;
 		}
 		goto_channel(cmd);
@@ -4057,28 +4060,34 @@ function activate_key_detection()
          //up
 		 if(code == 38)
 		 {
-		 	if(e.ctrlKey && $('#mode').val() === 'post')
+		 	if(!$('textarea').is(':focus'))
 		 	{
-		 		open_post($('.post_id:first').val());
-		 		e.preventDefault();
-		 		return false;
+			 	if(e.ctrlKey && $('#mode').val() === 'post')
+			 	{
+			 		open_post($('.post_id:first').val());
+			 		e.preventDefault();
+			 		return false;
+			 	}
+			 	$('#postscroller').scrollTop($('#postscroller').scrollTop() - 100);
+	            e.preventDefault();
+	            return false;
 		 	}
-		 	$('#postscroller').scrollTop($('#postscroller').scrollTop() - 100);
-            e.preventDefault();
-            return false;
 		 }
 		 //down
 		 if(code == 40)
 		 {
-		 	if(e.ctrlKey && $('#mode').val() === 'post')
+		 	if(!$('textarea').is(':focus'))
 		 	{
-		 		show_last_comments();
-		 		e.preventDefault();
-		 		return false;
+			 	if(e.ctrlKey && $('#mode').val() === 'post')
+			 	{
+			 		show_last_comments();
+			 		e.preventDefault();
+			 		return false;
+			 	}
+			 	$('#postscroller').scrollTop($('#postscroller').scrollTop() + 100);
+	            e.preventDefault();
+	            return false;
 		 	}
-		 	$('#postscroller').scrollTop($('#postscroller').scrollTop() + 100);
-            e.preventDefault();
-            return false;
 		 }
         if($('#inputcontent').is(':focus'))
         {

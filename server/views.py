@@ -1832,6 +1832,9 @@ def use_theme(request):
 		p.theme_input_placeholder = p2.theme_input_placeholder
 		p.theme_scroll_background = p2.theme_scroll_background
 		p.save()
+		if not Alert.objects.filter(user=user, type='theme', user2=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(hours=1)).count() >= 1:
+			alert = Alert(user=user, type='theme', user2=request.user, date=datetime.datetime.now())
+			alert.save()
 		data['theme_background'] = p.theme_background 
 		data['theme_text'] = p.theme_text 
 		data['theme_link'] = p.theme_link 
@@ -2312,8 +2315,9 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
-				s = s + "<div style='padding-top:10px'></div>"
-				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
+			if a.type == 'theme':	
+				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
+				s = s + ' is using your theme'
 			s = s + '</div>'
 			s = s + '</div>'
 			ss = ss + s
