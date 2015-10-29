@@ -2139,7 +2139,7 @@ def chat_to_html(request, posts, mode='default', last=None):
 			if p.sender.username == request.user.username:
 				s = s + 'sent to ' + p.user.username
 			else:
-				s = s + p.sender.username
+				s = s + 'chat with ' + p.sender.username
 		else:
 			s = s + p.sender.username 
 		s = s + "</a></div>"
@@ -2190,12 +2190,13 @@ def advanced_to_html():
 	s = s + "<div id='advanced_instructions'>"
 	s = s + "<br><br><br><br>"
 	s = s + "type these commands in the goto box <br><br>"
-	s = s + "to change your username: change username to newusername <br><br>"
-	s = s + "to change your password: change password to newpassword <br><br>"
-	s = s + "to use someone elses theme: use theme by username <br><br>"
-	s = s + "to see posts by someone made on a specific channel: username on channel <br><br>"
-	s = s + "to go to a user profile: user username <br><br>"
-	s = s + "to chat with a user: chat with username"
+	s = s + "to change your username: change username to [newusername] <br><br>"
+	s = s + "to change your password: change password to [newpassword] <br><br>"
+	s = s + "to use someone elses theme: use theme by [username] <br><br>"
+	s = s + "to see posts by someone made on a specific channel: [username] on [channel] <br><br>"
+	s = s + "to go to a user profile: user [username] <br><br>"
+	s = s + "to chat with a user: chat with [username] <br><br>"
+	s = s + "to do a math calculation: calc [operation]"
 	s = s + "</div>"
 	return s
 	

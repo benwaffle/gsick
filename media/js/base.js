@@ -1689,7 +1689,7 @@ function load_more_alerts()
 	$.get('/load_more_alerts/',
 	{
 		id: id,
-		original_last_alerts_id: original_last_alerts_id
+		original_last_alerts_id: kkoriginal_last_alerts_id
 	},
 	function(data) 
 	{
