@@ -2315,6 +2315,8 @@ def alerts_to_html(request, alerts, last=None):
 					like = 'liked'
 				except:
 					pass
+				s = s + "<div style='padding-top:10px'></div>"
+				s = s + "<a class='alert_like' onclick='like_comment(" + str(a.comment1.id) + ");$(this).html(\"liked\"); return false' href='#'>" + like + "</a>"
 			if a.type == 'theme':	
 				s = s + '<a onClick="change_user(\''+ str(a.user2.username) + '\'); return false;" href="#">' + str(a.user2.username) + '</a>'
 				s = s + ' is using your theme'
