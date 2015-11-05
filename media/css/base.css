@@ -771,11 +771,17 @@ a.alerts_filter:link, a.alerts_filter:hover, a.alerts_filter:visited
 
 .alerts_filters_container
 {
-    padding-bottom: 30px;
+    padding-top: 10px;
     display: block;
 }
 
 .selected
 {
     text-decoration: underline !important;
+}
+
+#topmenu
+{
+    margin: 0;
+    padding: 0;
 }

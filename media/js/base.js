@@ -125,9 +125,11 @@ function before_post_load()
 	{
 		var state = window.history.state;
 		state.html = $('#posts').html();
+		state.topmenu = $('#topmenu').html();
 		state.scrolltop = $('#postscroller').scrollTop();
 		window.history.replaceState(state, document.title);
 	}
+	$('#topmenu').html('')
 }
 
 function after_post_load()
@@ -849,8 +851,8 @@ function alerts(amode)
 				s += "<a href='#' class='alerts_filter' onclick=\"alerts('themes');return false\">themes</a>"
 			}
 			s += "</div>"
-			$('#posts').html(s);
-			$('#posts').append(data['alerts']).ready(function()
+			$('#topmenu').html(s);
+			$('#posts').html(data['alerts']).ready(function()
 			{
 			});
 			setHeader('alerts');
@@ -871,6 +873,7 @@ function alerts_back(h)
 {
 	before_back();
 	$('#mode').val('alerts');
+	$('#topmenu').html(h.topmenu);
 	$('#posts').html(h.html).ready(function()
 	{
 	});
