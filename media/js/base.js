@@ -129,7 +129,8 @@ function before_post_load()
 		state.scrolltop = $('#postscroller').scrollTop();
 		window.history.replaceState(state, document.title);
 	}
-	$('#topmenu').html('')
+	$('#topmenu').html('');
+	resize_page();
 }
 
 function after_post_load()
@@ -852,6 +853,7 @@ function alerts(amode)
 			}
 			s += "</div>"
 			$('#topmenu').html(s);
+			resize_page();
 			$('#posts').html(data['alerts']).ready(function()
 			{
 			});
@@ -874,6 +876,7 @@ function alerts_back(h)
 	before_back();
 	$('#mode').val('alerts');
 	$('#topmenu').html(h.topmenu);
+	resize_page();
 	$('#posts').html(h.html).ready(function()
 	{
 	});
@@ -4334,6 +4337,7 @@ function resize_page()
 {
 	var window_height = $(window).height();
 	var header_height = $('#header').outerHeight();
+	var topmenu_height = $('#topmenu').outerHeight();
 	var posts_padding = 25;
 	var input_height = 0;
 	var input_border = 0;
@@ -4342,7 +4346,7 @@ function resize_page()
 		input_height = $('#inputcontent').outerHeight();
 		input_border = 2;
 	}
-	var height = window_height - header_height - input_height - posts_padding - input_border;
+	var height = window_height - header_height - input_height - topmenu_height - posts_padding - input_border;
 	$('#colmask').css('height', window_height);
 	$('#postscroller').css('height', height);
 }
