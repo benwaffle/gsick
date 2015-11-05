@@ -116,6 +116,8 @@ function reset_players()
 function before_back()
 {
 	reset_players();
+	$('#topmenu').html('');
+	resize_page();
 }
 
 function before_post_load()
@@ -159,6 +161,8 @@ function after_post_load()
 			var state = window.history.state;
 			state.html = $('#posts').html();
 			state.scrolltop = $('#postscroller').scrollTop();
+			state.topmenu = $('#topmenu').html();
+
 			window.history.replaceState(state, document.title);
 		}
 	}
