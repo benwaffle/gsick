@@ -763,3 +763,19 @@ a.quote_username:link, a.quote_username:visited, a.quote_username:hover
     display: block;
     padding-bottom: 4px;
 }
+
+a.alerts_filter:link, a.alerts_filter:hover, a.alerts_filter:visited
+{
+    padding-right: 20px;
+}
+
+.alerts_filters_container
+{
+    padding-bottom: 30px;
+    display: block;
+}
+
+.selected
+{
+    text-decoration: underline !important;
+}

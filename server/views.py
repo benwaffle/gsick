@@ -174,7 +174,40 @@ def view_chat(request):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_alerts(request):
-	alerts = Alert.objects.filter(user=request.user).order_by('-id')[:20]
+	mode = request.GET['mode']
+	if mode == 'all':
+		alerts = Alert.objects.filter(user=request.user).order_by('-id')[:20]
+	if mode == 'comments':
+		alerts = Alert.objects.filter(user=request.user, type='comment').order_by('-id')[:20]
+	if mode == 'replies':
+		alerts = Alert.objects.filter(user=request.user, type='reply').order_by('-id')[:20]
+	if mode == 'likes':
+		alerts = Alert.objects.filter(Q(type='pin') | Q(type='comment_like'), user=request.user).order_by('-id')[:20]
+	if mode == 'follows':
+		alerts = Alert.objects.filter(user=request.user, type='follow').order_by('-id')[:20]
+	if mode == 'mentions':
+		alerts = Alert.objects.filter(Q(type='mention') | Q(type='mention_post'), user=request.user).order_by('-id')[:20]
+	if mode == 'themes':
+		alerts = Alert.objects.filter(user=request.user, type='theme').order_by('-id')[:20]
+	return alerts
+
+def get_more_alerts(request):
+	id = request.GET['id']
+	mode = request.GET['mode']
+	if mode == 'all':
+		alerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
+	if mode == 'comments':
+		alerts = Alert.objects.filter(user=request.user, type='comment', id__lt=id).order_by('-id')[:20]
+	if mode == 'replies':
+		alerts = Alert.objects.filter(user=request.user, type='reply', id__lt=id).order_by('-id')[:20]
+	if mode == 'likes':
+		alerts = Alert.objects.filter(Q(type='pin') | Q(type='comment_like'), user=request.user, id__lt=id).order_by('-id')[:20]
+	if mode == 'follows':
+		alerts = Alert.objects.filter(user=request.user, type='follow', id__lt=id).order_by('-id')[:20]
+	if mode == 'mentions':
+		alerts = Alert.objects.filter(Q(type='mention') | Q(type='mention_post'), user=request.user, id__lt=id).order_by('-id')[:20]
+	if mode == 'themes':
+		alerts = Alert.objects.filter(user=request.user, type='theme', id__lt=id).order_by('-id')[:20]
 	return alerts
 
 @login_required
@@ -187,8 +220,9 @@ def view_alerts(request):
 		p = get_profile(request.user)
 		alerts = alerts_to_html(request, xalerts, p.last_alert_read)
 		lalerts = list(xalerts)
-		p.last_alert_read = lalerts[0].id
-		p.save()
+		if request.GET['mode'] == 'all':
+			p.last_alert_read = lalerts[0].id
+			p.save()
 		status = 'ok'
 	data = {'alerts':alerts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -596,9 +630,8 @@ def load_more_new(request):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def load_more_alerts(request):
-	id = request.GET.get('id', 0)
 	original_last_alerts_id = request.GET['original_last_alerts_id']
-	xalerts = Alert.objects.filter(user=request.user, id__lt=id).order_by('-id')[:20]
+	xalerts = get_more_alerts(request)
 	alerts = alerts_to_html(request, xalerts, original_last_alerts_id)
 	status = 'ok'
 	data = {'alerts':alerts, 'status':status}

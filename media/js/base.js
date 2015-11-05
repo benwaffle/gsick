@@ -54,6 +54,7 @@ var input_placeholder;
 var scroll_background;
 var csrf_token;
 var playing_yt_video = false;
+var alerts_mode;
 
 function silence(uname)
 {
@@ -766,7 +767,7 @@ function new_note()
 	$('#inputcontent').focus().val('note: ');
 }
 
-function alerts()
+function alerts(amode)
 {
 	if(loggedin !== 'yes')
 	{
@@ -781,14 +782,75 @@ function alerts()
 	else
 	{
 		$.get('/view_alerts/',
-			{
-	        
-			},
+		{
+	        mode: amode
+		},
 		function(data) 
 		{
 			before_post_load();
 			$('#mode').val('alerts');
-			$('#posts').html(data['alerts']).ready(function()
+			var s = "";
+			s += "<div class='alerts_filters_container'>"
+			if(amode === 'all')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('all');return false\">all</a>";
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('all');return false\">all</a>";
+			}
+			if(amode === 'comments')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('comments');return false\">comments</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('comments');return false\">comments</a>"
+
+			}
+			if(amode === 'replies')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('replies');return false\">replies</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('replies');return false\">replies</a>"
+			}
+			if(amode === 'mentions')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('mentions');return false\">mentions</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('mentions');return false\">mentions</a>"
+			}
+			if(amode === 'likes')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('likes');return false\">likes</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('likes');return false\">likes</a>"
+			}
+			if(amode === 'follows')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('follows');return false\">follows</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('follows');return false\">follows</a>"
+			}
+			if(amode === 'themes')
+			{
+				s += "<a href='#' class='alerts_filter selected' onclick=\"alerts('themes');return false\">themes</a>"
+			}
+			else
+			{
+				s += "<a href='#' class='alerts_filter' onclick=\"alerts('themes');return false\">themes</a>"
+			}
+			s += "</div>"
+			$('#posts').html(s);
+			$('#posts').append(data['alerts']).ready(function()
 			{
 			});
 			setHeader('alerts');
@@ -798,6 +860,7 @@ function alerts()
 			$('#menu_alerts').html('alerts');
 			hide_input();
 			activate_alert_input_focus();
+			alerts_mode = amode;
 		});
 		clear();
 	    return false;	
@@ -1689,7 +1752,8 @@ function load_more_alerts()
 	$.get('/load_more_alerts/',
 	{
 		id: id,
-		original_last_alerts_id: original_last_alerts_id
+		original_last_alerts_id: original_last_alerts_id,
+		mode: alerts_mode
 	},
 	function(data) 
 	{
@@ -2152,7 +2216,7 @@ function start_right_menu()
 	s = s + "<div class='menu_link' id='menu_6'><a onClick='my_history();return false;' href='#'>posts</a></div>";
 	s = s + "<div class='menu_link' id='menu_7'><a onClick='my_pins();return false;' href='#'>pins</a></div>";
 	s = s + "<div class='menu_link' id='menu_8'><a onClick='chatall();return false;' href='#'><div style='display:inline-block' id='menu_chat'>chat</div></a></div>";
-	s = s + "<div class='menu_link' id='menu_9'><a onClick='alerts();return false;' href='#'><div style='display:inline-block' id='menu_alerts'>alerts</div></a></div>";
+	s = s + "<div class='menu_link' id='menu_9'><a onClick='alerts(\"all\");return false;' href='#'><div style='display:inline-block' id='menu_alerts'>alerts</div></a></div>";
 	s = s + "<div class='menu_link' id='menu_10'><a onClick='settings();return false;' href='#'>settings</a></div>";
 	s = s + "</div>"
 	$('#rightcol').html(s);
@@ -2416,7 +2480,7 @@ function goto(cmd)
 		}
 		if(cmd === 'alerts')
 		{
-			alerts();
+			alerts('all');
 			return false;
 		}
 		if(cmd === 'settings')
@@ -4096,187 +4160,9 @@ function activate_key_detection()
 				if (code == 13)
 				{
 					var value = $('#inputcontent').val();
-					if(value.substring(0,7) === 'global:')
-					{
-                        if($.trim(value.substring(7)) === '')
-                        {
-                            clear();
-                            return false;
-                        }
-						send_global_pm();
-					}
-					else if(value === 'whoami')
-					{
-						whoami();
-					}
-					else if(value.substring(0,5) === 'seen ')
-					{
-						var username = $.trim($('#inputcontent').val().substring(5));
-                        if(username === '')
-                        {
-                            clear();
-                            return false;
-                        }
-                        seen(username);
-					}
-					else if(value.substring(0,7) === 'notes ')
-					{
-                        if($.trim(value.substring(7)) === '')
-                        {
-                            notes();
-                            return false;
-                        }
-                        note(value.substring(7));
-					}
-					else if(value.substring(0,9) === '!silence ')
-					{
-                        if($.trim(value.substring(9)) === '')
-                        {
-                            return false;
-                        }
-                        silence(value.substring(9));
-					}
-					else if(value.substring(0,11) === 'unsilence ')
-					{
-                        if($.trim(value.substring(11)) === "")
-                        {
-                            return false;
-                        }
-                        unsilence(value.substring(11));
-					}
-					else if(value.substring(0,6) === '!note ')
-					{
-                        note(value.substring(6));
-					}
-					else if(value.substring(0,6) === '!calc ')
-					{
-                        if($.trim(value.substring(6)) === '')
-                        {
-                            clear();
-                            return false;
-                        }
-                        var num = 'nope';
-                        try{
-                            num = eval(value.substring(6));
-                        }
-                        catch(err)
-                        {
-                        }
-                        if(num!='nope')
-                        {
-                            calculator(value.substring(6),num);
-                            return false;
-                        }
-                        else{
-                            clear();
-                            return false;
-                        }
-					}
-					else if(value.toLowerCase() === 'delchannel')
-					{
-                        delete_channel(document.title);
-					}
-					else if(value.toLowerCase() === 'delpost' && $('#mode').val() === 'post')
-					{
-                        delete_post();
-                        clear();
-					}
-					else if(value.toLowerCase() === '!url')
-					{
-						show_url();
-					}
-					else if(value.toLowerCase() === '!silenced')
-					{
-						silenced();
-					}
-					else if(value.substring(0,6) === 'reply:')
+					if(value.substring(0,6) === 'reply:')
 					{
 						reply_to_comment(value.substring(6), reply_to_id, true);
-					}
-					else if(value.toLowerCase() === '!tab')
-					{
-						open_tab();
-					}
-					else if(value.toLowerCase() === '!close')
-					{
-						close_tab();
-					}
-					else if(value.toLowerCase() === '!login')
-					{
-						login();
-					}
-					else if(value.toLowerCase() === '!logout')
-					{
-						login();
-					}
-					else if(value.toLowerCase() === '!notes')
-					{
-						notes();
-					}
-					else if(value.toLowerCase() === '!note')
-					{
-						notes();
-					}
-					else if(value.toLowerCase() === '!settings')
-					{
-						settings();
-					}
-					else if(value.toLowerCase() === '!chat')
-					{
-						chatall();
-					}
-					else if(value.toLowerCase() === '!inbox')
-					{
-						inbox();
-					}
-					else if(value.toLowerCase() === '!sent')
-					{
-						sent();
-					}
-					else if(value.toLowerCase() === '!back')
-					{
-						go_back();
-					}
-					else if(value.toLowerCase() === '!refresh')
-					{
-						refresh();
-						clear();
-					}
-					else if(value.toLowerCase() === '!posts')
-					{
-						my_history();
-						clear();
-					}
-					else if(value.toLowerCase() === '!new')
-					{
-						new_posts();
-						clear();
-					}
-					else if(value.toLowerCase() === '!top')
-					{
-						top_posts();
-						clear();
-					}
-					else if(value.toLowerCase() === '!alerts')
-					{
-						alerts();
-						clear();
-					}
-					else if(value.toLowerCase() === '!pin')
-					{
-						if($('#mode').val() === 'post')
-						{
-							id = $('.post_id').val();
-							pin(id);
-							clear();
-						}
-						clear();
-						return false;
-					}
-					else if(value.toLowerCase() === '!pins')
-					{
-						get_pins(tehusername);
-						clear();
 					}							
 					else if($('#mode').val() === 'channel')
 					{
@@ -4289,10 +4175,6 @@ function activate_key_detection()
 					else if($('#mode').val() === 'chat')
 					{
 						send_message();
-					}
-					else if($('#mode').val() === 'notes')
-					{
-						note(value);
 					}
 					clear();
 					e.preventDefault();
@@ -4687,7 +4569,7 @@ function init(mode, info)
     }
     else if(mode === 'alerts')
     {
-    	alerts();
+    	alerts('all');
     }
     else if(mode === 'random')
     {
