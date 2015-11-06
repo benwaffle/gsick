@@ -468,6 +468,21 @@ def edit_comment(request):
 		comment.content = content
 		comment.save()
 		content = urlize(comment.content)
+		mentions = find_mentions(request, comment.content)
+		mentioned = Alert.objects.filter(type='mention', user2=request.user, post1=comment.post, comment1=comment)
+		for a in mentioned:
+			if a.user not in mentions:
+				a.delete()
+		for m in mentions:
+			try:
+				auser = User.objects.get(username=m)
+				try:
+					Alert.objects.get(user=auser, type='mention', user2=request.user, post1=comment.post, comment1=comment)
+				except:
+					alert = Alert(user=auser, type='mention', user2=request.user, post1=comment.post, comment1=comment, date=datetime.datetime.now())
+					alert.save()
+			except:
+				continue
 		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -502,6 +517,21 @@ def edit_post(request):
 			content = ultralize(post.content)
 		else:
 			content = urlize(post.content)
+		mentions = find_mentions(request, post.content)
+		mentioned = Alert.objects.filter(type='mention_post', user2=request.user, post1=post)
+		for a in mentioned:
+			if a.user not in mentions:
+				a.delete()
+		for m in mentions:
+			try:
+				auser = User.objects.get(username=m)
+				try:
+					Alert.objects.get(user=auser, type='mention_post', user2=request.user, post1=post)
+				except:
+					alert = Alert(user=auser, type='mention_post', user2=request.user, post1=post, date=datetime.datetime.now())
+					alert.save()
+			except:
+				continue
 		status = 'ok'
 	data = {'status':status, 'content':content}
 	return HttpResponse(json.dumps(data), content_type="application/json")

@@ -162,7 +162,6 @@ function after_post_load()
 			state.html = $('#posts').html();
 			state.scrolltop = $('#postscroller').scrollTop();
 			state.topmenu = $('#topmenu').html();
-
 			window.history.replaceState(state, document.title);
 		}
 	}
@@ -1530,7 +1529,14 @@ function edit_comment(id)
 		{
 			var s = '<textarea rows=3 class="edit_comment_area">' + data['content'] + '</textarea>';
 			s += '<div onclick="submit_comment_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_comment_edit(' + id + ')" class="edit_cancel"> cancel </div>'
-			$('#comment_' + id).find('.text2').html(s)
+			$('#comment_' + id).find('.text2').html(s).find('textarea').bind('keydown', function(e)
+			{
+				if(e.keyCode === 13)
+				{
+					e.preventDefault();
+					submit_comment_edit(id);
+				}
+			});
 			$('#comment_' + id).find('.edit_ok').css('color', theme_link);
 			$('#comment_' + id).find('.edit_cancel').css('color', theme_link);
 			$('#comment_' + id).find('textarea').focus();
@@ -1608,6 +1614,14 @@ function edit_post(id)
 			var s = '<textarea rows=3 class="edit_post_area">' + data['content'] + '</textarea>';
 			s += '<div onclick="submit_post_edit(' + id + ')" class="edit_ok"> ok </div> <div onclick="cancel_post_edit(' + id + ')" class="edit_cancel"> cancel </div>'
 			$('#post_' + id).find('.text1').html(s)
+			$('#post_' + id).find('.text1').find('textarea').bind('keydown', function(e)
+			{
+				if(e.keyCode === 13)
+				{
+					e.preventDefault();
+					submit_post_edit(id);
+				}
+			});
 			$('#post_' + id).find('.edit_ok').css('color', theme_link);
 			$('#post_' + id).find('.edit_cancel').css('color', theme_link);
 			$('#post_' + id).find('textarea').focus();
