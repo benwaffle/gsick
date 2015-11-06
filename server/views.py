@@ -399,7 +399,10 @@ def find_mentions(request, input):
 	words = input.split()
 	for w in words:
 		if w.startswith('@'):
-			l.append(w[1:].replace(',', '').replace('.', '').lower())
+			w = w[1:].replace(',', '').replace('.', '').lower()
+			if "'" in w:
+				w = w.split("'")[0]
+			l.append(w)
 	return l
 
 @login_required
