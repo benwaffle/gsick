@@ -17,13 +17,13 @@
             <td style='text-align:center'><a href='/'><img src='/site_media/img/rad.png' max-width='100%'</a></td>
         </tr>
         <tr>
-            <td style='padding-bottom:8px;font-size:10px'> username <input type="text" name="username" style="font-size:18px;width:100%" tabindex="1"></td>
+            <td style='padding-bottom:14px;font-size:10px'> username <input type="text" name="username" style="font-size:18px;width:100%" tabindex="1"></td>
         </tr>
         <tr>
             <td style='font-size:10px'> password <input type="password" name="password" style="font-size:18px;width:100%" tabindex="2"></td>
         </tr>
         <tr>
-            <td style='font-size:10px'>
+            <td style='padding-top:5px; font-size:10px'>
                 <input name='btnlogin' type="submit" value="login" tabindex="3">
             </td>
         </tr>
@@ -45,13 +45,16 @@
     <input style="display:none" type="password" name="fakepasswordremembered"/>
     <table align="center" id="regtbl" border="0">
         <tr>
-            <td style='padding-bottom:8px;font-size:10px'> username <input autocomplete="off" type="text" name="register_username" style="font-size:18px;width:100%" tabindex="4"></td>
+            <td style='padding-bottom:14px;font-size:10px'> username <input autocomplete="off" type="text" name="register_username" style="font-size:18px;width:100%" tabindex="4"></td>
         </tr>
         <tr>
-            <td style='font-size:10px'> password <input autocomplete="off" type="password" name="register_password" style="font-size:18px;width:100%" tabindex="5"></td>
+            <td style='padding-bottom:14px;font-size:10px'> password <input autocomplete="off" type="password" name="register_password" style="font-size:18px;width:100%" tabindex="5"></td>
         </tr>
         <tr>
-            <td style='font-size:10px'>
+            <td style='font-size:10px'> if a car is going at 80 miles per hour <br> how much will it take it to travel 80 miles? <input autocomplete="off" type="text" name="register_answer" style="font-size:18px;width:100%" tabindex="6"></td>
+        </tr>
+        <tr>
+            <td style='padding-top:5px; font-size:10px'>
                 <input name='btnregister' type="submit" value="register" tabindex="7">
             </td>
         </tr>    
@@ -60,9 +63,7 @@
  
     <br><br>
 
-    {% if repetir1 %} <div align="center" id="denegado" style="color:red"> wrong username or password </div> {% endif %}
-
-    {% if repetir2 %} <div align="center" id="denegado" style="color:red"> username already exists or you used more than letters and numbers <br> for the username </div> {% endif %}
+    {% if msg %} <div align="center" id="denegado" style="color:red"> {{msg}} </div> {% endif %}
 
     <br><br>
  

@@ -532,3 +532,8 @@ a:hover
     font-size:20px;
     padding-bottom:30px;
 }
+
+table 
+{
+    width: 300px;
+}

@@ -83,13 +83,14 @@ def enter(request):
 					return HttpResponseRedirect('/')
 			else:
 				c = create_c(request)
-				c['repetir1'] = True
+				c['msg'] = 'wrong username or password'
 				return render_to_response('enter.html', c, context_instance=RequestContext(request))
 		if 'btnregister' in request.POST:
-			if error_register(request):
+			status = error_register(request)
+			if status != 'ok':
 				c = {}
 				c.update(csrf(request))
-				c['repetir2'] = True
+				c['msg'] = status
 				return render_to_response('enter.html', c, context_instance=RequestContext(request))
 			else:
 				username = clean_username(request.POST['register_username']).lower()
@@ -108,18 +109,25 @@ def enter(request):
 def error_register(request):
 	username = request.POST['register_username'].lower()
 	password = request.POST['register_password']  
+	answer = request.POST['register_answer'].lower()
+	if answer not in ['1 hour', '1h', '1 h', 'one hour']:
+		return 'wrong answer'
 	if not clean_username(username):
-		return True
-	if username.replace(" ", "") == "" or password.replace(" ", "") == "":
-		return True
-	if len(username) > 20 or len(password) > 50:
-		return True
+		return 'wrong username format'
+	if username.replace(" ", "") == "":
+		return 'username is empty'
+	if password.replace(" ", "") == "":
+		return 'password is empty'
+	if len(username) > 20:
+		return 'username is too long'
+	if len(password) > 50:
+		return 'password is too long'
 	try:
 		User.objects.get(username=username)
-		return True
+		return 'username already exists'
 	except:
 		pass
-	return False
+	return 'ok'
 
 @login_required
 def settings(request):
