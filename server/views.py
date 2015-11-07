@@ -405,6 +405,12 @@ def find_mentions(request, input):
 			l.append(w)
 	return l
 
+def linkify_mentions(text):
+	p = re.compile(ur'(?:(?<=^)|(?<=\s))@([a-z0-9]+\b)')
+	subst = "<span class='mention_link' onclick='change_user(\"" + r"\1" + "\"); return false'>@" + r"\1" + "</span>"
+	result = re.sub(p, subst, text)
+	return result
+
 @login_required
 def post_comment(request):
 	if user_is_banned(request):
@@ -470,7 +476,7 @@ def edit_comment(request):
 	else:
 		comment.content = content
 		comment.save()
-		content = urlize(comment.content)
+		content = linkify_mentions(urlize(comment.content))
 		mentions = find_mentions(request, comment.content)
 		mentioned = Alert.objects.filter(type='mention', user2=request.user, post1=comment.post, comment1=comment)
 		for a in mentioned:
@@ -517,9 +523,9 @@ def edit_post(request):
 		post.save()
 		eo = get_embed_option(request.user)
 		if eo == 'embed':
-			content = ultralize(post.content)
+			content = linkify_mentions(ultralize(post.content))
 		else:
-			content = urlize(post.content)
+			content = linkify_mentions(urlize(post.content))
 		mentions = find_mentions(request, post.content)
 		mentioned = Alert.objects.filter(type='mention_post', user2=request.user, post1=post)
 		for a in mentioned:
@@ -2048,9 +2054,9 @@ def post_to_html(request, post):
 		s = s + 	    "<div style='width:100%;display:table'><div style='text-align:left;display:table-cell'><a onClick='change_user(\"" + post.user.username + "\");return false;' href=\"#\">" + post.user.username + "</a></div><div style='text-align:right;display:table-cell'>" + pins + "<a onClick='go_to_bottom();return false;'href='#'>bottom</a></div></div>"
 	s = s + 	    "<time datetime='" + post.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(post.date)) +"</time>"
 	if eo == 'embed':
-		s = s + 		"<div class='post_content text1'>" + ultralize(post.content) + "</div>"
+		s = s + 		"<div class='post_content text1'>" + linkify_mentions(ultralize(post.content)) + "</div>"
 	else:
-		s = s + 		"<div class='post_content text1'>" + urlize(post.content) + "</div>"
+		s = s + 		"<div class='post_content text1'>" + linkify_mentions(urlize(post.content)) + "</div>"
 	s = s + 	"</div>"
 	s = s + "</div>"
 	return s
@@ -2093,9 +2099,9 @@ def posts_to_html(request, posts, mode="channel"):
 		post = post + 		  "<input type='hidden' value='" + p.user.username + "' class='username'>"
 		post = post + 		  "</div>"
 		if eo == 'embed':
-			post = post + 		  "<div class='post_content text1'>" + ultralize(p.content) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + linkify_mentions(ultralize(p.content)) + "</div>"
 		else:
-			post = post + 		  "<div class='post_content text1'>" + urlize(p.content) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + linkify_mentions(urlize(p.content)) + "</div>"
 		post = post + 	"</div>"
 		post = post + "</div>"
 		s = s + post
@@ -2129,9 +2135,9 @@ def pins_to_html(request, posts, mode="channel"):
 		post = post + 		  "<input type='hidden' value='" + p.post.user.username + "' class='username'>"
 		post = post + 		  "</div>"
 		if eo == 'embed':
-			post = post + 		  "<div class='post_content text1'>" + ultralize(p.post.content) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + linkify_mentions(ultralize(p.post.content)) + "</div>"
 		else:
-			post = post + 		  "<div class='post_content text1'>" + urlize(p.post.content) + "</div>"
+			post = post + 		  "<div class='post_content text1'>" + linkify_mentions(urlize(p.post.content)) + "</div>"
 		post = post + 	"</div>"
 		post = post + "</div>"
 		s = s + post
@@ -2164,10 +2170,10 @@ def comments_to_html(request, comments):
 		if c.reply:
 			s = s + "<div class='quote_body'>"
 			s = s + "<span> quote by </span>" + "<a class='quote_username' onClick='change_user(\"" + c.reply.user.username + "\");return false;' href=\"#\">" + c.reply.user.username + "</a>"
-			s = s + "<div style='width:100%' class='comment_content reply'>" + urlize(c.reply.content) + "</div>"
+			s = s + "<div style='width:100%' class='comment_content reply'>" + linkify_mentions(urlize(c.reply.content)) + "</div>"
 			s = s + "</div>"
 			s = s + "<div style='padding-bottom:8px'></div>"
-		s = s +   "<div class='comment_content text2'>" + urlize(c.content) + "</div>"
+		s = s +   "<div class='comment_content text2'>" + linkify_mentions(urlize(c.content)) + "</div>"
 		s = s +  "</div>"
 		s = s + "</div>"
 	return s
@@ -2211,26 +2217,14 @@ def chat_to_html(request, posts, mode='default', last=None):
 		s = s + "</a></div>"
 		s = s + "<time datetime='" + p.date.isoformat()+"-00:00" + "' class='timeago date'>"+ str(radtime(p.date)) +"</time>"
 		if eo == 'embed':
-			s = s + "<div class='text1'>" + ultralize(p.message) + "</div>"
+			s = s + "<div class='text1'>" + linkify_mentions(ultralize(p.message)) + "</div>"
 		else:
-			s = s + "<div class='text1'>" + urlize(p.message) + "</div>"
+			s = s + "<div class='text1'>" + linkify_mentions(urlize(p.message)) + "</div>"
 		s = s + "<input type='hidden' value='" + str(p.id) + "' id='chat_post' class='id'>"
 		s = s + "<input type='hidden' value='" + p.sender.username + "' class='username'>"
 		s = s + "<input type='hidden' value='" + p.user.username + "' class='receiver'>"
 		s = s + "</div>"
 		s = s + "</div>"
-	return s
-
-def silenced_to_html(request, ss):
-	s = ""
-	s = s + "<div id='postscroller' class='scroller'>"
-	s = s + "<div id='#silenced_holder'>"
-	for si in ss:
-		s = s + "<div class='silenced_container'>"
-		s = s +  "<div style='font-size:20px;padding-bottom:20px'>" + si.brat.username + "</div>"
-		s = s + "</div>"
-	s = s + "</div>"
-	s = s + "</div>"
 	return s
 
 def settings_to_html(request):
@@ -2297,7 +2291,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' commented on your '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'		
-				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.comment1.content) + '</div>'	
+				s = s + '<div class="text2" style="padding-top:5px">' + linkify_mentions(urlize(a.comment1.content)) + '</div>'	
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2318,7 +2312,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.comment1.content) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linkify_mentions(urlize(a.comment1.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:
@@ -2339,7 +2333,7 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="change_user(\''+ str(a.user2) + '\'); return false;" href="#">' + str(a.user2) + '</a>'
 				s = s + ' mentioned you in a '
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
-				s = s + '<div class="text2" style="padding-top:5px">' + urlize(a.post1.content) + '</div>'
+				s = s + '<div class="text2" style="padding-top:5px">' + linkify_mentions(urlize(a.post1.content)) + '</div>'
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'comment'
 				try:
@@ -2362,11 +2356,11 @@ def alerts_to_html(request, alerts, last=None):
 				s = s + '<a onClick="open_post('+ str(a.post1.id) + '); return false;" href="#">post on ' + a.post1.channel.name + '</a>'
 				s = s + "<div style='padding-top:8px'></div>"
 				s = s + "<div class='quote_body'>"
-				s = s + "<div style='width:100%' class='comment_content reply'>" + urlize(a.comment1.reply.content) + "</div>"
+				s = s + "<div style='width:100%' class='comment_content reply'>" + linkify_mentions(urlize(a.comment1.reply.content)) + "</div>"
 				s = s + "</div>"
 				s = s + "<div style='padding-bottom:8px'></div>"
 				s = s + "<div style='padding-bottom:4px'></div>"
-				s = s + "<div class='text2' style=''>" + urlize(a.comment1.content) + "</div>"
+				s = s + "<div class='text2' style=''>" + linkify_mentions(urlize(a.comment1.content)) + "</div>"
 				s = s + "<div style='padding-top:10px'></div>"
 				ph = 'reply'
 				try:

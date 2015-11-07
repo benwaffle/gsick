@@ -785,3 +785,8 @@ a.alerts_filter:link, a.alerts_filter:hover, a.alerts_filter:visited
     margin: 0;
     padding: 0;
 }
+
+.mention_link
+{
+    cursor: pointer;
+}

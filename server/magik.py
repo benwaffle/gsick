@@ -30,7 +30,7 @@ root = os.path.dirname(os.path.dirname(__file__))
 
 def log(s):
 	with open(root + 'log', 'a') as log:
-		log.write(str(s) + '\n\n');
+		log.write(str(s) + '\n\n')
 
 def random_string(n):
 	return ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(n))
