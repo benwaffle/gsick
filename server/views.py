@@ -113,7 +113,7 @@ def error_register(request):
 	if answer not in ['1 hour', '1h', '1 h', 'one hour']:
 		return 'wrong answer'
 	if not clean_username(username):
-		return 'usernames may only contain letters and numbers'
+		return 'username may only contain letters and numbers'
 	if username.replace(" ", "") == "":
 		return 'username is empty'
 	if password.replace(" ", "") == "":
