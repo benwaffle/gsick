@@ -116,8 +116,7 @@ function reset_players()
 function before_back()
 {
 	reset_players();
-	$('#topmenu').html('');
-	resize_page();
+	set_topmenu('');
 }
 
 function before_post_load()
@@ -131,8 +130,7 @@ function before_post_load()
 		state.scrolltop = $('#postscroller').scrollTop();
 		window.history.replaceState(state, document.title);
 	}
-	$('#topmenu').html('');
-	resize_page();
+	set_topmenu('');
 }
 
 function after_post_load()
@@ -768,9 +766,10 @@ function notes()
     return false;	
 }
 
-function new_note()
+function set_topmenu(s)
 {
-	$('#inputcontent').focus().val('note: ');
+	$('#topmenu').html(s);
+	resize_page();
 }
 
 function alerts(amode)
@@ -855,8 +854,7 @@ function alerts(amode)
 				s += "<a href='#' class='alerts_filter' onclick=\"alerts('themes');return false\">themes</a>"
 			}
 			s += "</div>"
-			$('#topmenu').html(s);
-			resize_page();
+			set_topmenu(s);
 			$('#posts').html(data['alerts']).ready(function()
 			{
 			});
@@ -878,8 +876,7 @@ function alerts_back(h)
 {
 	before_back();
 	$('#mode').val('alerts');
-	$('#topmenu').html(h.topmenu);
-	resize_page();
+	set_topmenu(h.topmenu);
 	$('#posts').html(h.html).ready(function()
 	{
 	});

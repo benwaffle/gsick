@@ -112,12 +112,12 @@ def error_register(request):
 	answer = request.POST['register_answer'].lower()
 	if answer not in ['1 hour', '1h', '1 h', 'one hour']:
 		return 'wrong answer'
-	if not clean_username(username):
-		return 'username may only contain letters and numbers'
 	if username.replace(" ", "") == "":
 		return 'username is empty'
 	if password.replace(" ", "") == "":
 		return 'password is empty'
+	if not clean_username(username):
+		return 'username may only contain letters and numbers'
 	if len(username) > 20:
 		return 'username is too long'
 	if len(password) > 50:
