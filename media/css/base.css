@@ -366,8 +366,10 @@ input, textarea, select, .form-row p {
     font-size: 11px;
 }
 
-textarea {
+textarea 
+{
     vertical-align: top !important;
+    outline: none;
 }
 
 input[type=text], input[type=password], textarea, select, .vTextField {

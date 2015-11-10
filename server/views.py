@@ -1889,6 +1889,8 @@ def change_password(request):
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def use_theme(request):
+	if user_is_banned(request):
+		return HttpResponseRedirect(banned_url)
 	status = ''
 	cmd = request.POST['cmd'].lower().strip()
 	username = cmd.split('use theme by ')[1].strip()
