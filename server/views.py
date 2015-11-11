@@ -236,19 +236,6 @@ def view_alerts(request):
 	data = {'alerts':alerts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
-def sent_messages(request):
-	data = ''
-	status = 'error'
-	posts = ''
-	s = ''
-	try:
-		posts = chat_to_html(request, get_sent_messages(request), 'sent')
-		status = 'ok'
-	except:
-		pass
-	data = {'posts':posts, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
 def get_chat_history(request, peer, last_pm_id=None):
 	if last_pm_id:
 		pmr = PrivateMessage.objects.filter(user=request.user, sender=peer, id__lt=last_pm_id)
@@ -323,86 +310,6 @@ def refresh_chatall(request):
 	data = {'messages':messages, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
-def refresh_sent(request):
-	data = ''
-	status = 'error'
-	first_chat_id = request.GET.get('first_chat_id',0)
-	pms = PrivateMessage.objects.filter(sender=request.user, id__gt=first_chat_id).exclude(info1='welcome')
-	messages = chat_to_html(request, pms, 'sent')
-	status = 'ok'
-	data = {'messages':messages, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-@login_required		
-def note(request):
-	data = 'no'
-	note = stripper(request.POST['note'].strip())
-	if error_note(note):
-		return HttpResponse(json.dumps(data), content_type="application/json")
-	else:
-		pm = Note(user=request.user, content=note, date=datetime.datetime.now())
-		pm.save()
-		data = 'yes'
-		return HttpResponse(json.dumps(data), content_type="application/json")
-
-def error_note(note):
-	if len(note) > 2000:
-		return True
-	if len(note) == 0:
-		return True
-	return False
-
-def seen(request):
-	data = ''
-	date = ''
-	try:
-		user = User.objects.get(username=request.GET['uname'].replace(" ",""))
-		pdate = pmdate = cdate = logindate = user.date_joined
-	except:
-		pass
-	try:
-		logindate = user.last_login
-	except:
-		pass
-	try:	
-		post = Post.objects.filter(user=user).order_by('-date')[0]
-		pdate = post.date
-	except:
-		pass
-	try:
-		pm = PrivateMessage.objects.filter(sender=user).order_by('-date')[0]
-		pmdate = pm.date
-	except:
-		pass
-	try:
-		dates = [pdate,pmdate,cdate,logindate]
-		date = max(dates)
-		date = radtime(date)
-		data = {'date':date, 'uname':user.username}
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def mail_inbox(request):
-	try:
-		inbox = ""
-		inbox = inbox + "<div>"
-		inbox = inbox + ""
-		inbox = inbox + "</div>"
-	except:
-		pass
-	arrows = 'none';
-	data = {'inbox':inbox, 'arrows':arrows}
-	return HttpResponse(json.dumps(data), content_type="application/json")	
-
-def whoami(request):
-	data = ''
-	try:
-		data = request.user.username
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
 def find_mentions(request, input):
 	l = []
 	words = input.split()
@@ -434,6 +341,7 @@ def post_comment(request):
 		comment = Comment(user=request.user, content=content, date=datetime.datetime.now(), post=post)
 		comment.save()
 		post.date_modified = datetime.datetime.now()
+		post.num_comments += 1
 		post.save()
 		mentions = find_mentions(request, content)
 		for m in mentions:
@@ -456,7 +364,7 @@ def error_comment(request, content, id):
 		return 'empty'
 	if len(content) > 2000:
 		return 'toobig'
-	if Comment.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
+	if Comment.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 20:
 		return 'toomuch'
 	return 'ok'
 
@@ -580,48 +488,49 @@ def open_post(request, id=None):
 	data = {'post':post, 'comments':comments, 'status':status, 'cname':cname}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
-def save_top_posts():
-	# days and num_pins__gte should be changed as the site grows in users 
-	# days is how old can a post be to be considered for top
-	# num_pins__gte is the minimum amount of likes (pins) to be considered for top
-	posts = Post.objects.annotate(num_pins=Count('pin')).filter(date__gte=(datetime.datetime.now() - datetime.timedelta(days=5))).filter(num_pins__gte='1').order_by('-num_pins', '-date')[:10]
-	s = ''
-	for p in posts:
-		s += str(p.id)
-		s += ','
-	s = s[:-1]
-	info = Info.objects.first()
-	info.top_posts = s
-	info.top_posts_date = datetime.datetime.now()
-	info.save()
-	return posts
-		
-def get_top_posts():
-	info = Info.objects.first()
-	if info == None:
-		info = Info(top_posts='', top_posts_date=datetime.datetime.now())
-		info.save()
-		return save_top_posts()
-	if datetime.datetime.now() - info.top_posts_date > datetime.timedelta(minutes=5):
-		return save_top_posts()
-	else:
-		ids = map(int, info.top_posts.split(','))
-		posts = Post.objects.filter(id__in=ids)
-		post_list = list(posts)
-		post_list.sort(key=lambda x: ids.index(x.id))
-		return post_list
-
 def top_posts(request):
 	posts = ''
 	status = ''
 	try:
-		posts = get_top_posts()
+		posts = get_top_posts(request)
 		posts = posts_to_html(request, posts, 'new')
 		status = 'ok'
 	except:
 		pass
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def load_more_top_posts(request):
+	posts = get_more_top_posts(request)
+	posts = posts_to_html(request, posts, 'new')
+	status = 'ok'
+	data = {'posts':posts, 'status':status}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+		
+def get_top_posts(request):
+	# as the site grows bigger num_likes and days must change
+	num_likes = 1
+	days = 10
+	mode = request.GET['mode']
+	if mode == 'all':
+		posts = Post.objects.filter(num_likes__gte=num_likes, date__gte=(datetime.datetime.now() - datetime.timedelta(days=days))).order_by('-num_likes', '-date')[:10]
+	if mode == 'subscriptions':
+		channels = get_sub_channels(request)
+		posts = Post.objects.filter(channel__in=channels, num_likes__gte=num_likes, date__gte=(datetime.datetime.now() - datetime.timedelta(days=days))).order_by('-num_likes', '-date')[:10]
+	return posts
+
+def get_more_top_posts(request):
+	# as the site grows bigger num_likes and days must change
+	num_likes = 1
+	days = 10
+	mode = request.GET['mode']
+	ids = request.GET.get('ids', 0).split(',')
+	if mode == 'all':
+		posts = Post.objects.filter(num_likes__gte=num_likes, date__gte=(datetime.datetime.now() - datetime.timedelta(days=days))).exclude(id__in=ids).order_by('-num_likes', '-date')
+	if mode == 'subscriptions':
+		channels = get_sub_channels(request)
+		posts = Post.objects.filter(channel__in=channels, num_likes__gte=num_likes, date__gte=(datetime.datetime.now() - datetime.timedelta(days=days))).exclude(id__in=ids).order_by('-num_likes', '-date')[:10]
+	return posts
 
 def get_channel_posts_by_user(request, user, channel):
 	posts = Post.objects.filter(user=user, channel=channel).order_by('-id')[:10]
@@ -664,15 +573,14 @@ def user_on_channel(request):
 def new_posts(request):
 	posts = ''
 	posts = get_new_posts(request)
-	posts = posts_to_html(request, posts,'new')
+	posts = posts_to_html(request, posts, 'new')
 	status = 'ok'
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def load_more_new(request):
-	id = request.GET.get('id', 0)
-	posts = get_more_new_posts(request,id)
-	posts = posts_to_html(request,posts,'new')
+	posts = get_more_new_posts(request)
+	posts = posts_to_html(request, posts, 'new')
 	status = 'ok'
 	data = {'posts':posts, 'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -727,20 +635,20 @@ def get_sub_channels(request):
 def get_new_posts(request):
 	mode = request.GET['mode']
 	if mode == 'all':
-		posts = Post.objects.all().order_by('-date_modified')[:10]
+		posts = Post.objects.all().order_by('-id')[:10]
 	if mode == 'subscriptions':
 		channels = get_sub_channels(request)
-		posts = Post.objects.filter(channel__in=channels).order_by('-date_modified')[:10]
+		posts = Post.objects.filter(channel__in=channels).order_by('-id')[:10]
 	return posts
 
-def get_more_new_posts(request, id):
+def get_more_new_posts(request):
 	mode = request.GET['mode']
-	ids = request.GET.get('ids', 0).split(',')
+	id = request.GET.get('id', 0)
 	if mode == 'all':
-		posts = Post.objects.filter(id__lt=id).exclude(id__in=ids).order_by('-date_modified')[:10]
+		posts = Post.objects.filter(id__lt=id).order_by('-id')[:10]
 	if mode == 'subscriptions':
 		channels = get_sub_channels(request)
-		posts = Post.objects.filter(channel__in=channels, id__lt=id).exclude(id__in=ids).order_by('-date_modified')[:10]
+		posts = Post.objects.filter(channel__in=channels, id__lt=id).order_by('-id')[:10]
 	return posts
 
 def get_users():
@@ -991,38 +899,6 @@ def get_chat_messages(request, last_pm_id=None):
 		p.save()
 	return msgs
 
-def get_sent_messages(request, last_pm_id=None):
-	ss = Silenced.objects.filter(user=request.user)
-	n = 20
-	bl = []
-	senders = []
-	receivers = []
-	y = 0
-	while True:
-		if last_pm_id:	
-			pms = PrivateMessage.objects.filter(sender=request.user, hidden=False, id__lt=last_pm_id).exclude(user__username__in=receivers).exclude(info1='welcome').order_by('-id')[:n]
-		else:	
-			pms = PrivateMessage.objects.filter(sender=request.user, hidden=False).exclude(user__username__in=receivers).exclude(info1='welcome').order_by('-id')[:n]
-		l = list(pms)
-		bl = bl + l
-		bl = bl[:n]
-		bl = remove_duplicate_senders(request, bl)
-		senders = get_senders_list(request,bl)
-		receivers = receivers + get_receivers_list(request,bl);
-		last_pm_id = bl[-1].id
-		y = y + 1
-		if y > 30:
-			break
-		if len(bl) >= 20 or not pms:
-			break
-	return bl
-
-def check_pm_limit(request):
-	num_pms = PrivateMessage.objects.filter(sender=request.user, date__gte=(datetime.datetime.now() - datetime.timedelta(days=1))).count()
-	if num_pms < 200:
-		return True
-	return False
-
 @login_required
 def post_to_channel(request):
 	if user_is_banned(request):
@@ -1054,43 +930,6 @@ def post_to_channel(request):
 				continue
 	data = {'status':status, 'id':id}
 	return HttpResponse(json.dumps(data), content_type="application/json") 
-
-@csrf_exempt
-def doggo_post_to_channel(request):
-	data = ''
-	post = ''
-	status = ''
-	id = ''
-	status = doggo_error_post(request)
-	if status == 'ok':
-		cname = request.POST['channel'].lower()
-		cname = request.POST['channel'].replace('_', '')
-		try:
-			channel = Channel.objects.get(name=cname)
-		except:
-			channel = Channel(name=cname)
-			channel.save()
-		content = stripper(request.POST['content']).strip()
-		usernames = ['doggo', 'normie', 'atros', 'raphael', 'sytrus', 'dickiev', 'alexis', 'amalek']
-		post = Post(content=content, channel=channel, user=User.objects.get(username=random.choice(usernames)), date=datetime.datetime.now(), date_modified=datetime.datetime.now())
-		post.save()
-		id = post.id
-	data = {'status':status, 'id':id}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def doggo_error_post(request):
-	cname = request.POST['channel'].lower()
-	cname = request.POST['channel'].replace('_', '')
-	content = stripper(request.POST['content'].strip())
-	if cname in forbidden_channels:
-		return 'forbiddenchannel'
-	if len(cname) > 25:
-		return 'cnametoolong'
-	if content == "":
-		return 'empty'
-	if len(content) > 2000:
-		return 'toobig'
-	return 'ok'
 
 def error_post(request):
 	cname = request.POST['channel'].lower()
@@ -1168,12 +1007,6 @@ def error_message(request, content, receiver, message):
 	if PrivateMessage.objects.filter(sender=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 30:
 		return 'toomuch'
 	return 'ok'
-
-def check_inbox_limit(request):
-	num_inbox = PrivateMessage.objects.filter(sender=request.user, date__gte=(datetime.datetime.now() - datetime.timedelta(days=1))).count()
-	if num_inbox < 200:
-		return False
-	return True 
 
 def get_inbox_match(content):
 	match = re.search('^@([^ ]+)\s(.*)', content)
@@ -1276,17 +1109,8 @@ def show_new(request):
 def show_chat(request, uname):
 	return main(request, mode='chat', info=uname)
 
-def show_notes(request):
-	return main(request, mode='notes')
-
-def show_inbox(request):
-	return main(request, mode='inbox')
-
 def show_chatall(request):
 	return main(request, mode='chatall')
-
-def show_sent(request):
-	return main(request, mode='sent')
 
 def show_help(request):
 	return main(request, mode='help')
@@ -1348,9 +1172,11 @@ def pin_post(request):
 	except:
 		pin = Pin(user=request.user, post=post, date=datetime.datetime.now())
 		pin.save()
+		post.num_likes += 1
+		post.save()
 		alert = Alert(user=post.user, type='pin', user2=request.user, post1=post, date=datetime.datetime.now())
 		alert.save()
-	num_pins = Pin.objects.filter(post=post).count()
+	num_pins = post.num_likes
 	status = 'ok'
 	data = {'status':status, 'num_pins':num_pins}
 	return HttpResponse(json.dumps(data), content_type="application/json")
@@ -1387,11 +1213,13 @@ def like_comment(request):
 	except:	
 		cl = CommentLike(comment=comment, user=request.user, date=datetime.datetime.now())
 		cl.save()
+		comment.num_likes += 1
+		comment.save()
 		alert = Alert(user=comment.user, type='comment_like', user2=request.user, comment1=comment, date=datetime.datetime.now())
 		alert.save()
-	num_comments = CommentLike.objects.filter(comment=comment).count()
+	num_likes = comment.num_likes
 	status = 'ok'
-	data = {'status':status, 'num_comments':num_comments}
+	data = {'status':status, 'num_likes':num_likes}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_post_likes(request):
@@ -1507,81 +1335,6 @@ def get_channel_list(request):
 	channels = channel_list_to_html(request)
 	data = {'status':status, 'channels': channels}
 	return HttpResponse(json.dumps(data), content_type="application/json")
-	
-def get_user_arrows(post):
-	arrows = 'none'
-	arrow_prev = False
-	arrow_next = False
-	try:
-		prev_post = Post.objects.filter(user=post.user, id__gt=post.id).order_by('date')[0]
-		arrow_prev = True
-	except:
-		pass
-	try:
-		next_post = Post.objects.filter(user=post.user, id__lt=post.id).order_by('-date')[0]
-		arrow_next = True
-	except:
-		pass
-	if arrow_prev and arrow_next:
-		arrows = 'both'
-	if arrow_prev and not arrow_next:
-		arrows = 'prev'
-	if arrow_next and not arrow_prev:
-		arrows = 'next'
-	return arrows
-		
-def next_channel_post(request):
-	data = ''
-	try:
-		post_id = request.GET['post_id']
-		post = Post.objects.get(id=post_id)
-		next_post = Post.objects.filter(channel=post.channel, id__lt=post.id).order_by('-date')[0]
-		post = posts_to_html(request, next_post)
-		arrows = get_channel_arrows(next_post)
-		data = {'post':post, 'arrows':arrows}
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json") 
-
-def prev_channel_post(request):
-	data = ''
-	try:
-		post_id = request.GET['post_id']
-		post = Post.objects.get(id=post_id)
-		prev_post = Post.objects.filter(channel=post.channel, id__gt=post.id).order_by('date')[0]
-		post = posts_to_html(request, prev_post)
-		arrows = get_channel_arrows(prev_post)
-		data = {'post':post, 'arrows':arrows}
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json")
-	
-def next_user_post(request):
-	data = ''
-	arrows = 'none'
-	try:
-		post_id = request.GET['post_id']
-		post = Post.objects.get(id=post_id)
-		next_post = Post.objects.filter(user=post.user, date__lt=post.date).order_by('-date')[0]
-		arrows = get_user_arrows(next_post)
-		next_post = posts_to_html(request, next_post, 'history')
-		data = {'post':next_post, 'arrows':arrows}
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json") 
-
-def prev_user_post(request):
-	data = ''
-	try:
-		post_id = request.GET['post_id']
-		post = Post.objects.get(id=post_id)
-		prev_post = Post.objects.filter(user=post.user, date__gt=post.date).order_by('date')[0]
-		arrows = get_user_arrows(prev_post)
-		prev_post = posts_to_html(request, prev_post, 'history')
-		data = {'post':prev_post, 'arrows':arrows}
-	except:
-		pass
-	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def load_more_pms(request):
 	data = ''
@@ -1683,46 +1436,6 @@ def load_more_chat(request):
 		messages = chat_to_html(request,messages)
 		status = 'ok'
 	data = {'messages':messages, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def load_more_sent(request):
-	data = ''
-	messages = ''
-	status = 'error'
-	last_pm_id = request.GET.get('last_pm_id',0)
-	if last_pm_id != 0:
-		messages = get_sent_messages(request, last_pm_id)
-		messages = chat_to_html(request,messages,'sent')
-		status = 'ok'
-	data = {'messages':messages, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def get_notes(request):
-	notes = Note.objects.filter(user=request.user).order_by('-id')[:20]
-	notes = notes_to_html(request,notes)
-	status = 'ok'
-	data = {'notes':notes, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def load_more_notes(request):
-	data = ''
-	notes = ''
-	status = 'error'
-	last_note_id = request.GET.get('last_note_id',0)
-	if last_note_id != 0:
-		notes = Note.objects.filter(user=request.user, id__lt=last_note_id).order_by('-id')[:20]
-		notes = notes_to_html(request,notes)
-		status = 'ok'
-	data = {'notes':notes, 'status':status}
-	return HttpResponse(json.dumps(data), content_type="application/json")
-
-def delete_note(request):
-	status = ''
-	id = request.GET['id']
-	note = PrivateMessage.objects.get(id=id)
-	note.delete()
-	status = 'ok'
-	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def set_theme(request):
@@ -2039,6 +1752,8 @@ def delete_comment(request):
 					else:
 						comment.post.date_modified = comment.post.date
 					comment.post.save()
+				comment.post.num_comments -= 1
+				comment.post.save()
 				comment.delete()
 				status = 'ok'
 			except:
@@ -2055,6 +1770,8 @@ def delete_comment(request):
 						else:
 							comment.post.date_modified = comment.post.date
 						comment.post.save()
+					comment.post.num_comments -= 1
+					comment.post.save()
 					comment.delete()
 					status = 'ok'
 				except:
@@ -2091,7 +1808,7 @@ def post_to_html(request, post):
 	s = s + 	"<div class='container'>"
 	s = s + 	    "<input type=\"hidden\" value=\"" + str(post.id) + "\" class=\"post_id\">"
 
-	num_pins = Pin.objects.filter(post=post).count()
+	num_pins = post.num_likes
 
 	if Pin.objects.filter(post=post, user=request.user).count() > 0:
 		pins = "<a class='pins_status' onClick='pin(\""+str(post.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
@@ -2120,14 +1837,17 @@ def posts_to_html(request, posts, mode="channel"):
 	s = ''
 	eo = get_embed_option(request.user)
 	for p in posts:
-		num_comments = Comment.objects.filter(post=p).count()
+
+		num_comments = p.num_comments
+
 		post = ""
+
 		if request.user.username in admin_list or request.user == p.user:
 			delete = "<a id='delete_post_" + str(p.id) + "' onClick='delete_post(\""+str(p.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
 
-		num_pins = Pin.objects.filter(post=p).count()
+		num_pins = p.num_likes
 
 		if Pin.objects.filter(post=p, user=request.user).count() > 0:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
@@ -2162,18 +1882,21 @@ def posts_to_html(request, posts, mode="channel"):
 		s = s + post
 	return s
 
-def pins_to_html(request, posts, mode="channel"):
+def pins_to_html(request, pins, mode="channel"):
 	s = ''
 	eo = get_embed_option(request.user)
-	for p in posts:
-		num_comments = Comment.objects.filter(post=p.post).count()
+	for p in pins:
+
+		num_comments = p.post.num_comments
+
 		post = ""
+
 		if request.user.username in admin_list or request.user == p.post.user:
 			delete = "<a id='delete_post_" + str(p.post.id) + "' onClick='delete_post(\""+str(p.post.id)+"\");return false;' href='#'>delete</a>&nbsp;&nbsp;&nbsp;"
 		else:
 			delete = ""
 
-		num_pins = Pin.objects.filter(post=p.post).count()
+		num_pins = p.post.num_likes
 
 		if Pin.objects.filter(post=p.post, user=request.user).count() > 0:
 			pins = "<a class='pins_status' onClick='pin(\""+str(p.post.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_post_likes(\""+str(p.post.id)+"\"); return false;' href='#'> (" + str(num_pins) + ")</a>&nbsp;&nbsp;&nbsp;"
@@ -2205,12 +1928,12 @@ def comments_to_html(request, comments):
 		s = s +  "<div class='container'>"
 		s = s +   "<input type=\"hidden\" value=\"" + str(c.id) + "\" class=\"comment_id\">"
 
-		num_cms = CommentLike.objects.filter(comment=c).count()
+		num_likes = c.num_likes
 
 		if CommentLike.objects.filter(comment=c, user=request.user).count() > 0:
-			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
+			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>liked</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_likes) + ")</a>&nbsp;&nbsp;&nbsp;"
 		else:
-			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_cms) + ")</a>&nbsp;&nbsp;&nbsp;"
+			likes = "<a class='comment_like_status' onClick='like_comment(\""+str(c.id)+"\"); return false;' href='#'>like</a>" + "<a class='num_likes' onClick='show_comment_likes(\""+str(c.id)+"\"); return false;' href='#'> (" + str(num_likes) + ")</a>&nbsp;&nbsp;&nbsp;"
 
 		if c.user == request.user:
 			edit = "<a class='edit_comment' onClick='edit_comment(\""+str(c.id)+"\"); return false;' href='#'>edit</a>&nbsp;&nbsp;&nbsp;"

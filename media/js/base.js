@@ -58,54 +58,6 @@ var alerts_mode;
 var new_mode;
 var top_mode;
 
-function silence(uname)
-{
-	$.get('/silence/',
-		{
-			'uname':uname
-		},
-	function(data)
- 	{
-		if(data['status'] === 'ok')
-		{
-			msg =  "<a onClick='change_user(\"" + uname + "\");return false;' class='pm_user_link' href=\"#\">";
-			msg =  msg + uname + "</a>";
-			msg = msg + ' was silenced';
-			dialog(msg);
-			if($('#mode').val() === 'silenced')
-			{
-				silenced();
-			}
-		}
-	});
-	clear();
-	return false;
-}
-
-function unsilence(uname)
-{
-	$.get('/unsilence/',
-		{
-			'uname':uname
-		},
-	function(data) 
-	{
-		if(data['status'] === 'ok')
-		{
-			msg =  "<a onClick='change_user(\"" + uname + "\");return false;' class='pm_user_link' href=\"#\">";
-			msg =  msg + uname + "</a>";
-			msg = msg + ' was unsilenced';
-			dialog(msg);
-			if($('#mode').val() === 'silenced')
-			{
-				silenced();
-			}
-		}
-	});
-	clear()
-	return false;
-}
-
 function reset_players()
 {
 	yt_players = [];
@@ -195,29 +147,6 @@ function after_post_load_back()
 	{
 		//
 	}
-}
-
-function silenced(post_id)
-{
-	$.get('/silenced/',
-		{
-			
-		},
-	function(data) 
-	{
-		if(data['status'] === 'ok')
-		{
-			$('#mode').val('silenced');
-			$('#posts').html(data['html']);
-			setHeader('silenced');
-			clear();
-			after_post_load();
-			document.title = 'silenced';
-			hide_input();
-		}
-	});
-	clear();
-	return false;
 }
 
 function open_post(post_id)
@@ -731,43 +660,6 @@ function show_advanced()
 	}
 }
 
-function notes()
-{
-	if(loggedin !== 'yes')
-	{
-		show_guest_status();
-		clear();
-		return false;
-	}
-	$.get('/get_notes/',
-		{
-        
-		},
-	function(data) 
-	{
-		before_post_load();
-		if(data['status'] === 'ok')
-		{
-			$('#mode').val('notes');
-			$('#posts').html(data['notes']).ready(function()
-			{
-			});
-			setHeader('notes');
-			clear();
-			after_post_load();
-			$('#postscroller').scrollTop(0);
-			document.title = 'notes';
-			show_input('make a note')
-		}
-		else
-		{
-			
-		}
-	});
-	clear();
-    return false;	
-}
-
 function set_topmenu(s)
 {
 	$('#topmenu').html(s);
@@ -1026,35 +918,6 @@ function chatall_back()
     return false;	
 }
 
-function sent()
-{
-	if(loggedin !== 'yes')
-	{
-		show_guest_status();
-		clear();
-		return false;
-	}
-	$.get('/sent_messages/',
-		{
-        
-		},
-	function(data) 
-	{
-		$('#mode').val('sent');
-		$('#posts').html(data['posts']).ready(function()
-		{
-		});
-		setHeader('sent');
-		clear();
-		after_post_load();
-		$('#postscroller').scrollTop(0);
-		document.title = 'sent';
-		hide_input();
-	});
-	clear();
-    return false;	
-}
-
 function chat(username)
 {
 	if(loggedin !== 'yes')
@@ -1217,88 +1080,6 @@ function refresh_chatall()
 	return false;
 }
 
-function refresh_sent()
-{
-	id = $('#chat_post:first').attr('value')
-	if(id)
-	{
-
-	}
-	else{
-		id = 0;
-	}
-	$.get('/refresh_sent/',
-	 {
-	 	first_chat_id:id,
-	 },
-	function(data)
-	{
-		if(data['status'] === "ok")
-		{
-            $(data['messages']).hide().prependTo('#posts').fadeIn('slow').ready(function()
-        	{
-        		remove_duplicate_sent_receivers();
-        	});
-			after_post_load();
-		}
-		return false;
-	});
-	return false;
-}
-
-function note(note)
-{
-	if (loggedin !== 'yes')
-	{
-		clear();
-		show_guest_status();
-		dialog (msg);
-		return false;
-	}
-	$.post('/note/',
-		{
-        note:note,
-        csrfmiddlewaretoken: csrf_token
-		},
-	function(data) 
-	{
-        if($('#mode').val() === 'notes')
-        {
-        	notes();
-        }
-        else
-        {
-        	dialog('note saved');
-        }
-	});
-	clear();
-    return false;		
-}
-
-function seen(uname)
-{
-	$.get('/seen/',
-		{
-        uname:uname
-		},
-	function(data) 
-	{
-        var msg = "";
-        if(data!="")
-        {
-            msg =  "<a onClick='change_user(\"" + data['uname'] + "\");return false;' class='pm_user_link' href=\"#\">";
-            msg = msg + data['uname'] + "</a> was seen " + data['date'];
-        }
-        else{
-            msg = "I have not seen " + uname;
-        }
-        dialog(msg);
-        clear();
-        return false;
-	});
-    return false;
-}
-
 function activate_timeago()
 {
 	$('.timeago').each(function()
@@ -1365,17 +1146,13 @@ function load_more()
 	{
 		load_more_chatall();
 	}
-	else if(mode === 'sent')
-	{
-		load_more_sent();
-	}
-	else if(mode === 'inbox')
-	{
-		load_more_inbox();
-	}
 	else if(mode === 'stream')
 	{
 		load_more_stream();
+	}
+	else if(mode === 'top')
+	{
+		load_more_top();
 	}
 	else if(mode === 'new')
 	{
@@ -1450,7 +1227,7 @@ function like_comment(id)
 		if(data['status'] === 'ok')
 		{
 			$('#comment_' + id).find('.comment_like_status').html('liked');
-			$('#comment_' + id).find('.num_likes').html(' (' + data['num_comments'] + ')');
+			$('#comment_' + id).find('.num_likes').html(' (' + data['num_likes'] + ')');
 		}
 		else if(data['status'] === 'sameuser')
 		{
@@ -1941,129 +1718,10 @@ function load_more_chat()
 	return false;
 }
 
-function load_more_inbox()
-{
-	last_pm_id = $('.id:last').val();
-	$.get('/load_more_inbox/',
-		{
-			last_pm_id: last_pm_id
-		},
-	function(data) 
-	{
-		if(data['status'] === 'ok')
-		{
-			messages = data['messages'];
-			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
-			{
-			});
-			after_post_load();
-		}
-		bottomdown = false;
-	});
-	return false;
-}
-
-function load_more_sent()
-{
-	last_pm_id = $('.id:last').val();
-	$.get('/load_more_sent/',
-		{
-			last_pm_id: last_pm_id
-		},
-	function(data) 
-	{
-		if(data['status'] === 'ok')
-		{
-			messages = data['messages'];
-			$(messages).hide().appendTo('#posts').fadeIn('slow').ready(function()
-			{
-			});
-			after_post_load();
-		}
-		bottomdown = false;
-	});
-	return false;
-}
-
-function load_more_notes()
-{
-	last_note_id = $('.id:last').val();
-	$.get('/load_more_notes/',
-		{
-			last_note_id: last_note_id
-		},
-	function(data) 
-	{
-		if(data['status'] === 'ok')
-		{
-			notes = data['notes'];
-			$(notes).hide().appendTo('#posts').fadeIn('slow').ready(function()
-			{
-			});
-			after_post_load();
-		}
-		bottomdown = false;
-	});
-	return false;
-}
-
-function whoami()
-{
-	if(loggedin !== 'yes')
-	{
-		msg = 'you are a guest';
-		dialog(msg);
-		clear();
-		return false;
-	}
-	$.get('/whoami/',
-		{
-		},
-	function(data) 
-	{
-        var msg = "";
-        msg = msg + "you are ";
-		msg = msg + "<a onClick='change_user(\"" + data + "\");return false;' class='pm_user_link' href=\"#\">";
-		msg = msg + data + "</a>"
-        dialog(msg);
-		clear();
-        return false;
-	});
-    return false;
-}
-
 function calculator(operation)
 {
     dialog(eval(operation));
     return false;
-}
-
-function close_tab()
-{
-	window.open('', '_self', '');
-	window.close();
-	return false;
-}
-
-function open_tab()
-{
-	clear();
-	window.open(document.location, "_blank");	
-	return false;
-}
-
-function send_global_pm()
-{
-	$.get('/send_global_pm/',
-		{
-		message:$('#inputcontent').val().substring(7)
-		},
-	function(data) 
-	{
-		refresh_pm();
-		clear();
-	});
-	return false;
 }
 
 function get_help()
@@ -2225,7 +1883,7 @@ function start_left_menu()
 	s = s + "<div class='unselectable' style='padding-top:50px'>"
 	s = s + "<div class='menu_link' id='menu_1'><a onClick='stream();return false;' href='#'>stream</a></div>";
 	s = s + "<div class='menu_link' id='menu_2'><a onClick='show_goto();return false;' href='#'>goto</a></div>";
-	s = s + "<div class='menu_link' id='menu_3'><a onClick='top_posts();return false;' href='#'>top</a></div>";
+	s = s + "<div class='menu_link' id='menu_3'><a onClick='cookie_top_posts();return false;' href='#'>top</a></div>";
 	s = s + "<div class='menu_link' id='menu_4'><a onClick='cookie_new_posts();return false;' href='#'>new</a></div>";
 	s = s + "<div class='menu_link' id='menu_5'><a class='menu_link' onClick='window.history.back();return false' href='#'>back</a></div>";
 	s = s + "</div>"
@@ -2483,7 +2141,7 @@ function goto(cmd)
 		}
 		if(cmd === 'top')
 		{
-			top_posts();
+			cookie_top_posts();
 			return false;
 		}
 		if(cmd === 'random')
@@ -3006,7 +2664,17 @@ function get_posts_ids()
 	return s.substring(0, s.length - 1);
 }
 
-function top_posts(uname)
+function cookie_top_posts()
+{
+	var c_top_mode = get_cookie('c_top_mode');
+	if(c_top_mode === '' || c_top_mode === 'undefined')
+	{
+	    c_top_mode = 'all';
+	}
+	top_posts(c_top_mode);
+}
+
+function top_posts(mode)
 {
 	if(typeof event !== 'undefined' && event.which == 2)
 	{
@@ -3014,9 +2682,12 @@ function top_posts(uname)
 	}
 	else
 	{
+		top_mode = mode;
+		document.cookie="c_top_mode=" + top_mode + "; expires=Thu, 21 Aug 2033 3:17:00 UTC";
+
 		$.get('/top_posts/',
 		{
-			uname: uname
+			mode: top_mode
 		},
 		function(data) 
 		{
@@ -3024,6 +2695,14 @@ function top_posts(uname)
 			if(data != '')
 			{
 				setHeader('top');
+				if(top_mode === 'all')
+				{
+					set_topmenu("<center><a href='#' class='top_wide selected' onclick='top_posts(\"all\");return false'>all</a> <a href='#' onclick='top_posts(\"subscriptions\");return false'>subscriptions</a></center>");
+				}
+				else if(top_mode === 'subscriptions')
+				{
+					set_topmenu("<center><a href='#' class='top_wide' onclick='top_posts(\"all\");return false'>all</a> <a href='#' class='selected' onclick='top_posts(\"subscriptions\");return false'>subscriptions</a></center>");	
+				}
 				$('#posts').html(data['posts']);
 				$('#mode').val('top');
 				document.title = 'top';
@@ -3041,6 +2720,7 @@ function top_posts_back(h)
 {
 	before_back();
 	setHeader('top');
+	set_topmenu(h.topmenu);
 	$('#posts').html(h.html);
 	$('#mode').val('top');
 	document.title = 'top';
@@ -3048,6 +2728,28 @@ function top_posts_back(h)
 	$('#postscroller').scrollTop(h.scrolltop);
 	hide_input();
 	clear();
+}
+
+function load_more_top()
+{
+	ids = get_posts_ids();
+	$.get('/load_more_top/',
+	{
+		ids: ids,
+		mode: top_mode
+	},
+	function(data) 
+	{
+		if(data!="")
+		{
+			$(data['posts']).hide().appendTo('#posts').fadeIn('slow').ready(function()
+			{
+			});
+			after_post_load();
+		}
+	});
+	clear();
+	return false;
 }
 
 function user_on_channel(cmd)
@@ -3126,7 +2828,7 @@ function get_cookie(cname)
 function cookie_new_posts()
 {
 	var c_new_mode = get_cookie('c_new_mode');
-	if(c_new_mode === '')
+	if(c_new_mode === '' || c_new_mode === 'undefined')
 	{
 	    c_new_mode = 'all';
 	}
@@ -3192,12 +2894,10 @@ function new_posts_back(h)
 function load_more_new()
 {
 	id = $('.post_id:last').val();
-	var ids = get_posts_ids();
 	$.get('/load_more_new/',
 	{
 		id: id,
-		mode: new_mode,
-		ids: ids
+		mode: new_mode
 	},
 	function(data) 
 	{
@@ -4645,7 +4345,7 @@ function init(mode, info)
     }
     else if(mode === 'top')
     {
-    	top_posts(info);
+    	cookie_top_posts();
     }
     else if(mode === 'pins')
     {

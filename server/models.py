@@ -11,6 +11,8 @@ class Post(models.Model):
     user = models.ForeignKey(User)
     channel = models.ForeignKey(Channel)
     content = models.TextField(max_length=4000, default=None, null=True)
+    num_likes = models.IntegerField(default=0)
+    num_comments = models.IntegerField(default=0)
     date = models.DateTimeField(default=datetime.datetime.now())
     date_modified = models.DateTimeField(default=datetime.datetime.now())
 
@@ -19,6 +21,7 @@ class Comment(models.Model):
     post = models.ForeignKey(Post)
     content = models.TextField(max_length=4000, default=None, null=True)
     reply = models.ForeignKey('self', default=None, null=True)
+    num_likes = models.IntegerField(default=0)
     date = models.DateTimeField(default=datetime.datetime.now())
 
 class Pin(models.Model):
@@ -40,10 +43,6 @@ class Conversation(models.Model):
     user2 = models.ForeignKey(User, related_name='user2')
     last_message = models.ForeignKey(PrivateMessage)
     date_modified = models.DateTimeField()
-
-class Silenced(models.Model):
-    user = models.ForeignKey(User, related_name='who_wants_silence')
-    brat = models.ForeignKey(User, related_name='who_to_be_silenced')
 
 class Alert(models.Model):
     type = models.CharField(max_length=100, default='', null=True)
@@ -71,10 +70,6 @@ class Visited(models.Model):
 class Paste(models.Model):
     content = models.TextField(max_length=100000, default=None, null=False) 
     date = models.DateTimeField(default=datetime.datetime.now())
-
-class Info(models.Model):
-    top_posts = models.TextField(max_length=1000)
-    top_posts_date = models.DateTimeField()
 
 class Ban(models.Model):
     username = models.CharField(max_length=30)
