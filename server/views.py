@@ -2471,7 +2471,8 @@ def welcome_to_html():
 	s = ""
 	s = """welcome to gsick. as you can see there is a menu at the left and a menu at the right. the left menu is for public functions. 
 	the right one is for more personal functions. in the left: stream shows posts by people who you are following. goto lets you go to
-	a channel or issue commands. top shows the posts with more likes over a time period. new shows the newest posts. back lets you go
+	a channel or issue commands. top shows the posts with more likes over a time period. new shows posts with new activity, it can be 
+	filtered between all channels and subscribed channels. back lets you go
 	to where you were before. on the right: posts show the posts you have made. pins shows posts you have liked. chat holds open personal
 	conversations you have with other people. alerts shows activity regarding you. including likes. comments. replies. follows. mentions. 
 	settings allows you to costumize the site. you can completely change the color theme. people will see your theme when they go
@@ -2480,7 +2481,8 @@ def welcome_to_html():
 	or click it if it's already in the list below. once in the channel you can see all other posts people have posted in it. you can
 	also post something by writing some text or a link or both in the textbox. when other people go to the
 	channel they will see your post. or they can see it in their stream if they're following you. or they can see it in new if it
-	was just published. or if it gets many likes. they will see it in top. people can like your post and leave a comment. 
+	was just published. or if it gets many likes. they will see it in top. people can like your post and leave a comment. you can follow
+	users to see their posts in stream and subscribe to channels to see their posts in new. 
 	start playing with it to get comfortable. try making some posts. make your own theme. discover new things. get some followers.
 	chat. do what you want."""
 	return s

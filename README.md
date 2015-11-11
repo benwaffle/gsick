@@ -3,8 +3,10 @@ every post goes in a single channel.
 you can comment on posts.
 you can like posts and comments.
 you can follow users.
+you can subscribe to channels
 posts by people you follow appear in 'stream'.
-new posts by everyone appear in 'new'.
+posts with new activity appear in 'new'.
+these can be filtered by all channels or subscribed channels.
 posts with most likes appear in 'top'.
 posts you've made appear in 'posts'.
 posts you've liked appear in 'pins'.
