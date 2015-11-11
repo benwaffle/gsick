@@ -60,6 +60,7 @@ def main(request, mode='start', info=''):
 	c['scroll_background'] = p.theme_scroll_background
 	c['embed_option'] = p.embed_option
 	p.ip = get_ip(request)
+	p.last_entrance = datetime.datetime.now()
 	p.save()
 	return render_to_response('base.html', c, context_instance=RequestContext(request))	
 
@@ -716,12 +717,30 @@ def reply_to_comment(request):
 	data = {'status':status}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
+def get_sub_channels(request):
+	subs = Subscription.objects.filter(user=request.user)
+	channels = []
+	for s in subs:
+		channels.append(s.channel)
+	return channels
+
 def get_new_posts(request):
-	posts = Post.objects.all().order_by('-id')[:10]
+	mode = request.GET['mode']
+	if mode == 'all':
+		posts = Post.objects.all().order_by('-date_modified')[:10]
+	if mode == 'subscriptions':
+		channels = get_sub_channels(request)
+		posts = Post.objects.filter(channel__in=channels).order_by('-date_modified')[:10]
 	return posts
 
 def get_more_new_posts(request, id):
-	posts = Post.objects.filter(id__lt=id).order_by('-id')[:10]
+	mode = request.GET['mode']
+	ids = request.GET.get('ids', 0).split(',')
+	if mode == 'all':
+		posts = Post.objects.filter(id__lt=id).exclude(id__in=ids).order_by('-date_modified')[:10]
+	if mode == 'subscriptions':
+		channels = get_sub_channels(request)
+		posts = Post.objects.filter(channel__in=channels, id__lt=id).exclude(id__in=ids).order_by('-date_modified')[:10]
 	return posts
 
 def get_users():
@@ -792,6 +811,27 @@ def toggle_follow(request):
 				alert.save()
 			status = 'followed'
 	data = {'status':status}
+	return HttpResponse(json.dumps(data), content_type="application/json")
+
+def toggle_subscribe(request):
+	if Subscription.objects.filter(user=request.user, date__gt=datetime.datetime.now() - datetime.timedelta(minutes=10)).count() >= 10:
+		data = {'status':'toomuch'}
+		return HttpResponse(json.dumps(data), content_type="application/json")
+	cname = request.POST['cname']
+	try:
+		channel = Channel.objects.get(name=cname)
+	except:
+		channel = Channel(name=cname)
+		channel.save()
+	try:
+		sub = Subscription.objects.get(user=request.user, channel=channel)
+		sub.delete()
+		action = 'subscribe'
+	except:
+		sub = Subscription(user=request.user, channel=channel, date=datetime.datetime.now())
+		sub.save()
+		action = 'unsubscribe'
+	data = {'status':'ok', 'action':action}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_stream(request):
@@ -1450,7 +1490,12 @@ def get_channel(request, cname=''):
 		pass
 	if cname.strip() == '':
 		status = 'empty'
-	data = {'cname': cname, 'posts':posts, 'status':status}
+	try:
+		Subscription.objects.get(user=request.user, channel=channel)
+		subscribed = 'yes'
+	except:
+		subscribed = 'no'
+	data = {'cname': cname, 'posts':posts, 'status':status, 'subscribed':subscribed}
 	return HttpResponse(json.dumps(data), content_type="application/json")
 
 def get_channel_posts(request, channel):

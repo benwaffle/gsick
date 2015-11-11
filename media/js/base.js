@@ -55,6 +55,8 @@ var scroll_background;
 var csrf_token;
 var playing_yt_video = false;
 var alerts_mode;
+var new_mode;
+var top_mode;
 
 function silence(uname)
 {
@@ -2224,7 +2226,7 @@ function start_left_menu()
 	s = s + "<div class='menu_link' id='menu_1'><a onClick='stream();return false;' href='#'>stream</a></div>";
 	s = s + "<div class='menu_link' id='menu_2'><a onClick='show_goto();return false;' href='#'>goto</a></div>";
 	s = s + "<div class='menu_link' id='menu_3'><a onClick='top_posts();return false;' href='#'>top</a></div>";
-	s = s + "<div class='menu_link' id='menu_4'><a onClick='new_posts();return false;' href='#'>new</a></div>";
+	s = s + "<div class='menu_link' id='menu_4'><a onClick='cookie_new_posts();return false;' href='#'>new</a></div>";
 	s = s + "<div class='menu_link' id='menu_5'><a class='menu_link' onClick='window.history.back();return false' href='#'>back</a></div>";
 	s = s + "</div>"
 	$('#leftcol').html(s);
@@ -2476,7 +2478,7 @@ function goto(cmd)
 		}
 		if(cmd === 'new')
 		{
-			new_posts();
+			cookie_new_posts();
 			return false;
 		}
 		if(cmd === 'top')
@@ -2677,7 +2679,14 @@ function goto_channel(cname)
 		{
 			$('#mode').val('channel');
 			$('#posts').html(data['posts']);
-			setHeader(data['cname']);
+			if(data['subscribed'] === 'yes')
+			{
+				setHeader(data['cname'] + ' | <a href="#" onclick="toggle_subscribe(\'' + data['cname'] + '\'); return false"><span id="sub_status">unsubscribe</span></a>');
+			}
+			else if(data['subscribed'] === 'no')
+			{
+				setHeader(data['cname'] + ' | <a href="#" onclick="toggle_subscribe(\'' + data['cname'] + '\'); return false"><span id="sub_status">subscribe</span></a>');
+			}
 			$('#postscroller').scrollTop(0);
 			channel = data['cname']
 			document.title = channel;
@@ -2699,6 +2708,26 @@ function goto_channel_back(h)
 	after_post_load_back();
 	show_input('post to the channel');
 	clear();
+}
+
+function toggle_subscribe(cname)
+{
+	$.post('/toggle_subscribe/',
+		{
+			cname: cname,
+			csrfmiddlewaretoken: csrf_token
+		},
+	function(data) 
+	{
+		if(data['status'] === 'toomuch')
+		{
+			dialog("you're doing that too much");
+		}
+		if(data['status'] === 'ok')
+		{
+			$('#sub_status').html(data['action']);
+		}
+	});
 }
 
 function hide_overlay()
@@ -3081,9 +3110,30 @@ function user_on_channel_back(h)
 	clear()
 }
 
+function get_cookie(cname) 
+{
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) 
+    {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+    }
+    return "";
+}
 
+function cookie_new_posts()
+{
+	var c_new_mode = get_cookie('c_new_mode');
+	if(c_new_mode === '')
+	{
+	    c_new_mode = 'all';
+	}
+	new_posts(c_new_mode);
+}
 
-function new_posts()
+function new_posts(mode)
 {
 	if(typeof event !== 'undefined' && event.which == 2)
 	{
@@ -3091,15 +3141,27 @@ function new_posts()
 	}
 	else
 	{
+		new_mode = mode;
+		document.cookie="c_new_mode=" + new_mode + "; expires=Thu, 17 Nov 2033 03:26:00 UTC";
+
 		$.get('/new_posts/',
-			{
-			},
+		{
+			mode: new_mode
+		},
 		function(data) 
 		{
 			before_post_load();
 			if(data!="")
 			{
 				setHeader('new');
+				if(new_mode === 'all')
+				{
+					set_topmenu("<center><a href='#' class='top_wide selected' onclick='new_posts(\"all\");return false'>all</a> <a href='#' onclick='new_posts(\"subscriptions\");return false'>subscriptions</a></center>");
+				}
+				else if(new_mode === 'subscriptions')
+				{
+					set_topmenu("<center><a href='#' class='top_wide' onclick='new_posts(\"all\");return false'>all</a> <a href='#' class='selected' onclick='new_posts(\"subscriptions\");return false'>subscriptions</a></center>");	
+				}
 				$('#posts').html(data['posts']);
 				$('#mode').val('new');
 				document.title = 'new';
@@ -3117,6 +3179,7 @@ function new_posts_back(h)
 {
 	before_back();
 	setHeader('new');
+	set_topmenu(h.topmenu)
 	$('#posts').html(h.html);
 	$('#mode').val('new');
 	document.title = 'new';
@@ -3129,9 +3192,12 @@ function new_posts_back(h)
 function load_more_new()
 {
 	id = $('.post_id:last').val();
+	var ids = get_posts_ids();
 	$.get('/load_more_new/',
 	{
-		id: id
+		id: id,
+		mode: new_mode,
+		ids: ids
 	},
 	function(data) 
 	{
@@ -4547,7 +4613,7 @@ function init(mode, info)
     }
     else if(mode === 'new')
     {
-    	new_posts();
+    	cookie_new_posts();
     }
     else if(mode === 'notes')
     {
@@ -4603,7 +4669,7 @@ function init(mode, info)
     }
     else
     {
-    	new_posts();
+    	cookie_new_posts();
     }
 	activate_key_detection();
 	activate_input_focus();

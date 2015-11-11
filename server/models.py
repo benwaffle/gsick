@@ -84,10 +84,16 @@ class CommentLike(models.Model):
     user = models.ForeignKey(User)
     comment = models.ForeignKey(Comment)
     date = models.DateTimeField(default=datetime.datetime.now())
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User)
+    channel = models.ForeignKey(Channel)
+    date = models.DateTimeField(default=datetime.datetime.now())
     
 class Profile(models.Model):
     user = models.ForeignKey(User, unique=True)
     date_registered = models.DateTimeField(default=datetime.datetime.now())
+    last_entrance = models.DateTimeField(default=datetime.datetime.now())
     theme_background = models.CharField(max_length=20, default='0')
     theme_text = models.CharField(max_length=20, default='0')
     theme_link = models.CharField(max_length=20, default='0')

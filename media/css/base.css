@@ -792,3 +792,8 @@ a.alerts_filter:link, a.alerts_filter:hover, a.alerts_filter:visited
 {
     cursor: pointer;
 }
+
+.top_wide
+{
+    padding-right: 30px;
+}
