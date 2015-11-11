@@ -5,9 +5,9 @@ you can like posts and comments.
 you can follow users.
 you can subscribe to channels
 posts by people you follow appear in 'stream'.
-posts with new activity appear in 'new'.
-these can be filtered by all channels or subscribed channels.
 posts with most likes appear in 'top'.
+the newest posts appear in 'new'.
+these can be filtered by all channels or subscribed channels.
 posts you've made appear in 'posts'.
 posts you've liked appear in 'pins'.
 you can go to channels.
