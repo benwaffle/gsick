@@ -1,3 +1,4 @@
 /server/migrations/*
 *.py[cod]
 __pycache__/
+*~
